@@ -1,0 +1,20 @@
+metadata:
+  id: ""
+  status: ""
+
+scenario:
+  title: ""
+  description: |
+  examples:
+    - ""
+
+glossary:
+  - term: ""
+    definition: ""
+    type: ""
+
+competency_questions:
+  - id: ""
+    question: ""
+    expected_query: ""
+
