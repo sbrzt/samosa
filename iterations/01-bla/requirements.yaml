@@ -1,0 +1,16 @@
+metadata:
+  id: '01'
+  status: draft
+scenario:
+  title: Bla
+  description: ''
+  examples:
+  - ''
+glossary:
+- term: ''
+  definition: ''
+  type: ''
+competency_questions:
+- id: ''
+  question: ''
+  expected_query: ''
