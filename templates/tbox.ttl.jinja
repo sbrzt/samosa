@@ -1,0 +1,14 @@
+@prefix : <{{ metadata.id }}{{ metadata.iteration_id }}/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+{% for item in glossary %}
+{% if item.term and item.type %}
+### {{ item.term }}
+:{{ item.term | replace(" ", "") }} a owl:{{ item.type }} ;
+    rdfs:label "{{ item.term }}"@en ;
+    rdfs:comment "{{ item.definition }}"@en .
+{% endif %}
+{% endfor %}

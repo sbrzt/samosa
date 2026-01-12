@@ -1,0 +1,69 @@
+@prefix : <01/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+
+### Prompt
+:Prompt a owl:Class ;
+    rdfs:label "Prompt"@en ;
+    rdfs:comment "The input given to a model."@en .
+
+
+
+### Instruction
+:Instruction a owl:Class ;
+    rdfs:label "Instruction"@en ;
+    rdfs:comment "A specific task or instruction the model is instructed to perform."@en .
+
+
+
+### Context
+:Context a owl:Class ;
+    rdfs:label "Context"@en ;
+    rdfs:comment "External information or additional context that can steer the model to better responses."@en .
+
+
+
+### Input Data
+:InputData a owl:Class ;
+    rdfs:label "Input Data"@en ;
+    rdfs:comment "the input or question that we are interested to find a response for."@en .
+
+
+
+### Output Indicator
+:OutputIndicator a owl:Class ;
+    rdfs:label "Output Indicator"@en ;
+    rdfs:comment "The type or format of the output."@en .
+
+
+
+### uses Instruction
+:usesInstruction a owl:ObjectProperty ;
+    rdfs:label "uses Instruction"@en ;
+    rdfs:comment "A relation between a Prompt and an Instruction."@en .
+
+
+
+### has Context
+:hasContext a owl:ObjectProperty ;
+    rdfs:label "has Context"@en ;
+    rdfs:comment "A relation between a Prompt and a Context."@en .
+
+
+
+### has Input Data
+:hasInputData a owl:ObjectProperty ;
+    rdfs:label "has Input Data"@en ;
+    rdfs:comment "A relation between a Prompt and some Input Data."@en .
+
+
+
+### has Output Indicator
+:hasOutputIndicator a owl:ObjectProperty ;
+    rdfs:label "has Output Indicator"@en ;
+    rdfs:comment "A relation between a Prompt and an Output Indicator."@en .
+
