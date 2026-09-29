@@ -1,0 +1,152 @@
+@prefix datacite: <http://purl.org/spar/datacite/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcam: <http://purl.org/dc/dcam/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix fabio: <http://purl.org/spar/fabio/> .
+@prefix frbr: <http://purl.org/vocab/frbr/core#> .
+@prefix literal: <http://www.essepuntato.it/2010/06/literalreification/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix reg: <http://purl.org/linked-data/registry#> .
+@prefix region: <http://www.ontologydesignpatterns.org/cp/owl/region.owl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix vaem: <http://www.linkedmodel.org/schema/vaem#> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+dcterms:RightsStatement a rdfs:Class ;
+    rdfs:label "Rights Statement"@en ;
+    dcterms:issued "2008-01-14"^^xsd:date ;
+    rdfs:comment "A statement about the intellectual property rights (IPR) held in or over a resource, a legal document giving official permission to do something with a resource, or a statement about access rights."@en ;
+    rdfs:isDefinedBy dcterms: .
+
+dcterms:rights a rdf:Property ;
+    rdfs:label "Rights"@en ;
+    dcam:rangeIncludes dcterms:RightsStatement ;
+    dcterms:description "Typically, rights information includes a statement about various property rights associated with the resource, including intellectual property rights.  Recommended practice is to refer to a rights statement with a URI.  If this is not possible or feasible, a literal value (name, label, or short text) may be provided."@en ;
+    dcterms:issued "2008-01-14"^^xsd:date ;
+    rdfs:comment "Information about rights held in and over the resource."@en ;
+    rdfs:isDefinedBy dcterms: ;
+    rdfs:subPropertyOf dc:rights .
+
+datacite:RightsIdentifier a owl:Class ;
+    rdfs:label "rights identifier"@en ;
+    vann:example """
+        :my-resource-rights 
+                datacite:hasIdentifier :my-resource-rights-id .
+
+        :my-resource-rights-id a datacite:RightsIdentifier ;
+                literal:hasLiteralValue "CC-BY-1.0" .
+        """ ;
+    rdfs:comment "An identifier that uniquely identifies a license."@en ;
+    rdfs:isDefinedBy datacite: ;
+    rdfs:subClassOf datacite:Identifier ;
+    vs:term_status reg:statusStable ;
+    skos:note """
+This is used to represent identifiers associated with rights.
+
+A rights identifier belongs to a particular scheme, such as SPDX, specified by an individual within the class `datacite:RightsIdentifierScheme`.
+        """@en .
+
+datacite:hasIdentifier a owl:InverseFunctionalProperty,
+        owl:ObjectProperty ;
+    rdfs:label "has identifier"@en ;
+    vann:example """
+        :my-resource
+                datacite:hasIdentifier :my-resource-identifier .
+        
+        :my-resource-identifier a datacite:Identifier .
+        """ ;
+    vaem:rationale """
+This is used to specify an instance of `datacite:Identifier` that provides a unique identifier for some entity.
+        """@en ;
+    rdfs:comment "A unique identifier for the entity (either a funder, a person, a license or a resource)."@en ;
+    rdfs:isDefinedBy datacite: ;
+    rdfs:range datacite:Identifier ;
+    vs:term_status reg:statusStable .
+
+datacite:spdx a datacite:RightsIdentifierScheme,
+        owl:NamedIndividual ;
+    rdfs:label "spdx"@en ;
+    fabio:hasURL "https://spdx.org/licenses/"^^xsd:anyURI ;
+    vann:example """
+        :my-resource-rights-id 
+                datacite:usesIdentifierScheme datacite:spdx ;
+                literal:hasLiteralValue "CC-BY-1.0" .
+        """ ;
+    rdfs:comment "The SPDX License List is a list of commonly found licenses and exceptions used in free and open source and other collaborative software or documentation."@en ;
+    rdfs:isDefinedBy datacite: ;
+    vs:term_status reg:statusStable ;
+    skos:note "A SPDX identifier is resolvable from the following URL: https://spdx.org/licenses/<identifier>."@en .
+
+datacite:usesIdentifierScheme a owl:ObjectProperty ;
+    rdfs:label "uses identifier scheme"@en ;
+    vann:example """
+        :my-resource-id a datacite:Identifier ;
+                datacite:usesIdentifierScheme datacite:doi .
+        """ ;
+    vaem:rationale """
+This is used to specify the scheme followed by a certain identifier. 
+Its value should be a named individual belonging to either `datacite:ResourceIdentifierScheme`, `datacite:AgentIdentifierScheme` (or its sub-classes) or `datacite:RightsIdentifierScheme`.
+        """@en ;
+    rdfs:comment "The identifier scheme used to provide the identifier for an entity (either a funder, a person, a license or a resource)."@en ;
+    rdfs:domain datacite:Identifier ;
+    rdfs:isDefinedBy datacite: ;
+    rdfs:range datacite:IdentifierScheme ;
+    vs:term_status reg:statusStable .
+
+fabio:hasURL a owl:DatatypeProperty ;
+    rdfs:label "has URL"@en ;
+    vann:example """
+        :my-journal-article a fabio:JournalArticle ;
+            fabio:hasURL 'https://www.example.org/articles/intro-semantic-web'^^xsd:anyURI .
+    """ ;
+    rdfs:comment "An identifier, in form of an HTTP Universal Resource Locator (URL), for a particular resource on the World Wide Web."@en ;
+    rdfs:domain frbr:Endeavour ;
+    rdfs:isDefinedBy fabio: ;
+    rdfs:range xsd:anyURI ;
+    rdfs:subPropertyOf dcterms:identifier ;
+    vs:term_status reg:statusStable .
+
+literal:hasLiteralValue a owl:DatatypeProperty,
+        owl:FunctionalProperty ;
+    rdfs:label "has literal value"@en ;
+    vann:example """
+    :my-literal a literal:Literal ;
+        literal:hasLiteralValue "My Resource" .
+    """ ;
+    rdfs:comment "The literal value that a reified literal represents."@en ;
+    rdfs:domain literal:Literal ;
+    rdfs:isDefinedBy <http://purl.org/spar/literal/> ;
+    rdfs:range rdfs:Literal ;
+    rdfs:subPropertyOf region:hasRegionDataValue ;
+    vs:term_status reg:statusStable .
+
+owl:Thing a owl:Class ;
+    rdfs:label "Thing" ;
+    rdfs:comment "The class of OWL individuals." ;
+    rdfs:isDefinedBy owl: .
+
+datacite:RightsIdentifierScheme a owl:Class ;
+    rdfs:label "rights identifier scheme"@en ;
+    vann:example """
+        :my-resource-rights 
+                datacite:hasIdentifier :my-resource-rights-id .
+
+        :my-resource-rights-id a datacite:RightsIdentifier ;
+                datacite:usesIdentifierScheme datacite:spdx .
+
+        datacite:spdx a datacite:RightsIdentifierScheme .
+        """ ;
+    rdfs:comment "The identifier scheme used to identify a license."@en ;
+    rdfs:isDefinedBy datacite: ;
+    rdfs:subClassOf datacite:IdentifierScheme ;
+    vs:term_status reg:statusStable ;
+    skos:note """
+This is used to specify the identifier scheme used by a rights identifier.
+
+Individual schemes are defined as members of this class.
+        """@en .
+

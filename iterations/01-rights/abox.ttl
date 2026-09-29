@@ -1,0 +1,28 @@
+@prefix : <https://www.example.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+
+:thing1 a :Thing ;
+    :hasRights :rightsstatement2 .
+
+
+
+:rightsstatement2 a :RightsStatement ;
+    :hasIdentifier :rightsidentifier3 ;
+    :hasURL "https://creativecommons.org/licenses/by/1.0/legalcode" .
+
+
+
+:rightsidentifier3 a :RightsIdentifier ;
+    :hasLiteralValue "CC-BY-1.0" ;
+    :usesIdentifierScheme :spdx .
+
+
+
+:spdx a :RightsIdentifierScheme ;
+    :hasURL "https://spdx.org/licenses/" .
+

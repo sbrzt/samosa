@@ -1,0 +1,17 @@
+datacite: http://purl.org/spar/datacite/
+dcterms: http://purl.org/dc/terms/
+owl: http://www.w3.org/2002/07/owl#
+literal: http://www.essepuntato.it/2010/06/literalreification/
+fabio: http://purl.org/spar/fabio/
+vaem: http://www.linkedmodel.org/schema/vaem#
+vs: http://www.w3.org/2003/06/sw-vocab-status/ns#
+dcam: http://purl.org/dc/dcam/
+dc: http://purl.org/dc/elements/1.1/
+reg: http://purl.org/linked-data/registry#
+frbr: http://purl.org/vocab/frbr/core#
+vann: http://purl.org/vocab/vann/
+rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+rdfs: http://www.w3.org/2000/01/rdf-schema#
+xsd: http://www.w3.org/2001/XMLSchema#
+skos: http://www.w3.org/2004/02/skos/core#
+region: http://www.ontologydesignpatterns.org/cp/owl/region.owl#

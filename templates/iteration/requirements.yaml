@@ -2,9 +2,9 @@
 
 # The possible values for ["glossary"][<term>]["type"] follow the main OWL constructs, namely:
 #   - Class
-#   - ObjectProperty
-#   - DatatypeProperty
-#   - NamedIndividual
+#   - Object Property
+#   - Datatype Property
+#   - Named Individual
 
 
 metadata:
@@ -19,11 +19,24 @@ scenario:
 
 glossary:
   - term: ""
-    definition: ""
+    definition: |
     type: ""
+    align_to: ""
+    rules:
+      domain: ""
+      range: ""
+
+abox:
+  - individual: ""
+    type: ""
+    properties:
+      - property: ""
+        value: ""
 
 competency_questions:
   - id: ""
-    question: ""
-    expected_query: ""
+    question: |
+    expected_result: |
+    query: |
+    refactored_query: |
 

@@ -1,7 +1,32 @@
 import sys
 import yaml
+from scripts.common import individual_id
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
+
+
+OWL_TYPES = {
+    "class": "Class",
+    "objectproperty": "ObjectProperty",
+    "datatypeproperty": "DatatypeProperty",
+    "namedindividual": "NamedIndividual",
+}
+
+
+def camel(text):
+    """Join words, upper-casing only each word's first letter: "has URL" -> "HasURL"."""
+    return "".join(w[:1].upper() + w[1:] for w in text.split())
+
+
+def local_name(term):
+    """Local IRI name of a glossary term, as used in tbox.ttl."""
+    term_id = camel(term["term"])
+    owl_type = OWL_TYPES[term["type"].lower().replace(" ", "").replace("_", "")]
+    if owl_type in ("ObjectProperty", "DatatypeProperty"):
+        return term_id[0].lower() + term_id[1:]
+    if owl_type == "NamedIndividual":
+        return individual_id(term["term"])
+    return term_id
 
 
 def generate_tbox(data, output_dir):
@@ -9,12 +34,18 @@ def generate_tbox(data, output_dir):
     template = env.get_template("tbox.ttl.jinja")
     glossary_data = []
     for term in data["glossary"]:
-        term_id = term["term"].title().replace(" ", "")
+        owl_type = OWL_TYPES[term["type"].lower().replace(" ", "").replace("_", "")]
+        is_property = owl_type in ("ObjectProperty", "DatatypeProperty")
+        rules = term.get("rules") or {}
+        domain = rules.get("domain")
+        range_ = rules.get("range")
         glossary_data.append({
-            "term": term_id[0].lower() + term_id[1:] if (term["type"] == "ObjectProperty" or term["type"] == "DataTypeProperty") else term_id,
-            "label": term["term"].lower() if (term["type"] == "ObjectProperty" or term["type"] == "DataTypeProperty") else term["term"],
+            "term": local_name(term),
+            "label": term["term"].lower() if is_property else term["term"],
             "definition": term["definition"],
-            "type": term["type"].title().replace(" ", "")
+            "type": owl_type,
+            "domain": camel(domain) if domain else None,
+            "range": camel(range_) if range_ else None,
         })
     template_data = {}
     template_data["glossary"] = glossary_data

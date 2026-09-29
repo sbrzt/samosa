@@ -9,6 +9,8 @@
 ### {{ item.term }}
 :{{ item.term }} a owl:{{ item.type }} ;
     rdfs:label "{{ item.label }}"@en ;
-    rdfs:comment "{{ item.definition }}"@en .
+    rdfs:comment "{{ item.definition }}"@en{% if item.domain %} ;
+    rdfs:domain :{{ item.domain }}{% endif %}{% if item.range %} ;
+    rdfs:range :{{ item.range }}{% endif %} .
 {% endif %}
 {% endfor %}

@@ -1,0 +1,279 @@
+@prefix bibo: <http://purl.org/ontology/bibo/> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <https://schema.org/> .
+@prefix swrl: <http://www.w3.org/2003/11/swrl#> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+dc:contributor a owl:AnnotationProperty .
+
+dc:creator a owl:AnnotationProperty .
+
+dc:date a owl:AnnotationProperty .
+
+dc:description a owl:AnnotationProperty .
+
+dc:title a owl:AnnotationProperty .
+
+<http://purl.org/spar/literal> a owl:Ontology ;
+    rdfs:label "Literal Reification pattern"@en ;
+    dc:contributor "Sebastian Barzaghi (https://orcid.org/0000-0002-0799-1527)"^^xsd:string ;
+    dc:creator "Aldo Gangemi (https://orcid.org/0000-0001-5568-2684)"^^xsd:string,
+        "Fabio Vitali (https://orcid.org/0000-0002-7562-5203)"^^xsd:string,
+        "Silvio Peroni (https://orcid.org/0000-0003-0530-4305)"^^xsd:string ;
+    dc:date "2026-09-16" ;
+    dc:description """
+The **_Literal Reification pattern_** is an Ontology Design Pattern that addresses scenarios in which it is needed to bless particular literals, usually when applying data properties, in order to use them as subjects and/or full-fledged objects of semantic assertions.
+
+![The main architecture of the Literal Reification pattern.](literal.png)
+
+More specifically, this pattern promotes any literal as “first class object” in OWL by reifying it as a proper individual of the class `literal:Literal`.
+
+## Examples of use
+
+In the following subsections, we introduce some examples to showcase how to use the Literal Reification pattern. 
+
+The prefixes that are used in all the examples provided below are defined as follows:
+
+    @prefix : <http://www.sparontologies.net/example/> .
+    @prefix literal: <http://www.essepuntato.it/2010/06/literalreification/> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+    @prefix dcterms: <http://purl.org/dc/terms/> .
+
+### Making assertions on values
+
+A reified literal can be enriched with metadata, such as provenance, which cannot be attached directly to plain RDF literals.
+
+    :paper-title-en a literal:Literal ;
+        literal:hasLiteralValue "Literal Reification in OWL"@en ;
+        dcterms:creator <https://orcid.org/0000-0003-0530-4305> ;
+        dcterms:issued "2026-09-16"^^xsd:date .
+
+    :paper literal:hasLiteral :paper-title-en .
+
+### Modelling domains concerning descriptive tags
+
+Literal reification allows linking synonyms, shared values, or contextual tagging without duplicating string logic.
+    
+    :tag-ai a literal:Literal ;
+        literal:hasLiteralValue "Artificial Intelligence" ;
+        literal:hasSameLiteralValueAs :tag-ai-alias .
+
+    :tag-ai-alias a literal:Literal ;
+        literal:hasLiteralValue "Artificial Intelligence" .
+
+    :paper-1 literal:hasLiteral :tag-ai .
+    :paper-2 literal:hasLiteral :tag-ai-alias .
+
+## Competency Questions
+
+Literal Reification can be sed for answering several questions related to literals' context.
+
+In the following subsections, some of them are introduced together with their respective SPARQL queries. 
+
+The prefixes that are used in all the SPARQL queries provided below are defined as follows:
+
+    PREFIX literal: <http://www.essepuntato.it/2010/06/literalreification/>
+    PREFIX dcterms: <http://purl.org/dc/terms/>
+
+### CQ1
+
+What is the literal value associated with a given entity, along with the creator of that reified literal?
+
+    SELECT ?entity ?value ?creator WHERE {
+        ?entity literal:hasLiteral ?lit .
+        ?lit literal:hasLiteralValue ?value ;
+            dcterms:creator ?creator .
+    }
+
+### CQ2
+
+Which distinct reified literals share the exact same literal value?
+
+    SELECT ?lit1 ?lit2 ?value WHERE {
+        ?lit1 literal:hasSameLiteralValueAs ?lit2 ;
+              literal:hasLiteralValue ?value .
+        FILTER(?lit1 != ?lit2)
+    }
+
+### CQ3
+
+Which entities are annotated with a literal that has a specific value?
+
+    SELECT ?entity WHERE {
+        ?entity literal:hasLiteral ?lit .
+        ?lit literal:hasLiteralValue "Artificial Intelligence" .
+    }
+
+"""@en ;
+    dc:title "The Literal Reification pattern" ;
+    dcterms:bibliographicCitation "Gangemi, A., Peroni, S., & Vitali, F. (2010). Literal reification. Proceedings of WOP, 2010, 65-66. https://dl.acm.org/doi/abs/10.5555/2878924.2878933." ;
+    dcterms:created "2011-03-23" ;
+    dcterms:issued "2011-03-23" ;
+    dcterms:license <http://creativecommons.org/licenses/by/4.0/> ;
+    dcterms:modified "2026-09-16" ;
+    dcterms:publisher <https://ror.org/00wb4mk85> ;
+    dcterms:source <https://github.com/SPAROntologies/literal/blob/master/docs/cq.md> ;
+    bibo:doi "https://doi.org/10.25504/FAIRsharing.d7f0a9" ;
+    bibo:status <http://purl.org/ontology/bibo/status/published> ;
+    vann:changes """
+* **v1.1.0**: 
+Added new documentation, including annotation properties (e.g., `bibo:doi`, `schema:codeRepository`, etc.), term properties (e.g., `vann:example`, `vs:term_status`, etc.), exemplary competency questions with their respective SPARQL queries, and a Grafoo diagram.
+Changed prefix from `litre:` to `literal:`.
+    """@en ;
+    vann:preferredNamespacePrefix "literal"@en ;
+    vann:preferredNamespaceUri "http://purl.org/spar/literal"@en ;
+    rdfs:seeAlso <http://ontologydesignpatterns.org/index.php/Submissions:Literal_Reification> ;
+    owl:backwardCompatibleWith <http://www.essepuntato.it/2010/06/literalreification/2011-03-23> ;
+    owl:imports <http://www.ontologydesignpatterns.org/cp/owl/region.owl> ;
+    owl:priorVersion <http://www.essepuntato.it/2010/06/literalreification/2011-03-23> ;
+    owl:versionIRI <http://www.essepuntato.it/2010/06/literalreification/2026-09-16> ;
+    owl:versionInfo "1.1.0" ;
+    foaf:logo <https://github.com/SPAROntologies/literal/blob/master/spar.png> ;
+    schema:codeRepository <https://github.com/SPAROntologies/literal> ;
+    schema:image <https://github.com/SPAROntologies/literal/blob/master/docs/current/literal.png> ;
+    schema:includedInDataCatalog <https://fairsharing.org/> ;
+    schema:keywords "literal values"@en,
+        "ontology design patterns"@en .
+
+<http://www.essepuntato.it/2010/06/literalreification/hasLiteral> a owl:ObjectProperty ;
+    rdfs:label "has literal"@en ;
+    vann:example """
+    :my-resource
+        literal:hasLiteral :my-literal .
+
+    :my-literal a literal:Literal ;
+        literal:hasLiteralValue "My Resource" .
+    """ ;
+    rdfs:comment "The relation between something and a reified literal."@en ;
+    rdfs:isDefinedBy <http://purl.org/spar/literal/> ;
+    rdfs:range <http://www.essepuntato.it/2010/06/literalreification/Literal> ;
+    rdfs:subPropertyOf <http://www.ontologydesignpatterns.org/cp/owl/region.owl#hasRegion> ;
+    owl:inverseOf <http://www.essepuntato.it/2010/06/literalreification/isLiteralOf> ;
+    vs:term_status <http://purl.org/linked-data/registry#statusStable> .
+
+rdfs:comment a owl:AnnotationProperty .
+
+rdfs:label a owl:AnnotationProperty .
+
+<http://www.essepuntato.it/2010/06/literalreification/hasSameLiteralValueAs> a owl:ObjectProperty,
+        owl:SymmetricProperty,
+        owl:TransitiveProperty ;
+    rdfs:label "has same literal value as"@en ;
+    vann:example """
+    :my-resource
+        literal:hasLiteral :my-literal .
+
+    :my-literal a literal:Literal ;
+        literal:hasLiteralValue "My Resource" ;
+        literal:hasSameLiteralValueAs :my-other-literal .
+
+    :my-other-literal a literal:Literal ;
+        literal:hasLiteralValue "My Resource" .
+    """ ;
+    rdfs:comment "The relation between a reified literal and another one that has the same literal value."@en ;
+    rdfs:domain <http://www.essepuntato.it/2010/06/literalreification/Literal> ;
+    rdfs:isDefinedBy <http://purl.org/spar/literal/> ;
+    rdfs:range <http://www.essepuntato.it/2010/06/literalreification/Literal> ;
+    vs:term_status <http://purl.org/linked-data/registry#statusStable> .
+
+<http://www.essepuntato.it/2010/06/literalreification/isLiteralOf> a owl:ObjectProperty ;
+    rdfs:label "is literal of"@en ;
+    vann:example """
+    :my-literal a literal:Literal ;
+        literal:hasLiteralValue "My Resource" ;
+        literal:isLiteralOf :my-resource .
+    """ ;
+    rdfs:comment "The relation between a reified literal and some thing that is using it."@en ;
+    rdfs:domain <http://www.essepuntato.it/2010/06/literalreification/Literal> ;
+    rdfs:isDefinedBy <http://purl.org/spar/literal/> ;
+    rdfs:subPropertyOf <http://www.ontologydesignpatterns.org/cp/owl/region.owl#isRegionFor> ;
+    vs:term_status <http://purl.org/linked-data/registry#statusStable> .
+
+<http://www.ontologydesignpatterns.org/cp/owl/region.owl#hasRegionDataValue> a owl:DatatypeProperty ;
+    rdfs:label "has region data value"@en ;
+    rdfs:comment "The encoded value of a region."@en ;
+    rdfs:domain <http://www.ontologydesignpatterns.org/cp/owl/region.owl#Region> ;
+    rdfs:isDefinedBy <http://www.ontologydesignpatterns.org/cp/owl/region.owl#> ;
+    rdfs:range rdfs:Literal .
+
+<http://www.ontologydesignpatterns.org/cp/owl/region.owl#isRegionFor> a owl:ObjectProperty ;
+    rdfs:label "is region for"@en ;
+    rdfs:comment "A relation between a region and an entity."@en ;
+    rdfs:isDefinedBy <http://www.ontologydesignpatterns.org/cp/owl/region.owl#> ;
+    owl:inverseOf <http://www.ontologydesignpatterns.org/cp/owl/region.owl#hasRegion> .
+
+<http://www.ontologydesignpatterns.org/cp/owl/region.owl#hasRegion> a owl:ObjectProperty ;
+    rdfs:label "has region"@en ;
+    rdfs:comment "A relation between an entity and a region."@en ;
+    rdfs:isDefinedBy <http://www.ontologydesignpatterns.org/cp/owl/region.owl#> ;
+    rdfs:range <http://www.ontologydesignpatterns.org/cp/owl/region.owl#Region> .
+
+<urn:swrl#v> a swrl:Variable .
+
+<urn:swrl#x> a swrl:Variable .
+
+<urn:swrl#y> a swrl:Variable .
+
+<http://www.essepuntato.it/2010/06/literalreification/hasLiteralValue> a owl:DatatypeProperty,
+        owl:FunctionalProperty ;
+    rdfs:label "has literal value"@en ;
+    vann:example """
+    :my-literal a literal:Literal ;
+        literal:hasLiteralValue "My Resource" .
+    """ ;
+    rdfs:comment "The literal value that a reified literal represents."@en ;
+    rdfs:domain <http://www.essepuntato.it/2010/06/literalreification/Literal> ;
+    rdfs:isDefinedBy <http://purl.org/spar/literal/> ;
+    rdfs:range rdfs:Literal ;
+    rdfs:subPropertyOf <http://www.ontologydesignpatterns.org/cp/owl/region.owl#hasRegionDataValue> ;
+    vs:term_status <http://purl.org/linked-data/registry#statusStable> .
+
+<http://www.ontologydesignpatterns.org/cp/owl/region.owl#Region> a owl:Class ;
+    rdfs:label "region"@en ;
+    rdfs:comment "Any region in a dimensional space, which can be used as a value for a quality of an entity."@en ;
+    rdfs:isDefinedBy <http://www.ontologydesignpatterns.org/cp/owl/region.owl#> .
+
+<http://www.essepuntato.it/2010/06/literalreification/Literal> a owl:Class ;
+    rdfs:label "literal"@en ;
+    vann:example """
+    :my-resource
+        literal:hasLiteral :my-literal .
+
+    :my-literal a literal:Literal ;
+        literal:hasLiteralValue "My Resource" .
+    """ ;
+    rdfs:comment "A reified literal."@en ;
+    rdfs:isDefinedBy <http://purl.org/spar/literal/> ;
+    rdfs:subClassOf <http://www.ontologydesignpatterns.org/cp/owl/region.owl#Region> ;
+    owl:equivalentClass [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty <http://www.essepuntato.it/2010/06/literalreification/hasLiteralValue> ] ;
+    vs:term_status <http://purl.org/linked-data/registry#statusStable> .
+
+[] a swrl:Imp ;
+    swrl:body [ a swrl:AtomList ;
+            rdf:first [ a swrl:IndividualPropertyAtom ;
+                    swrl:argument1 <urn:swrl#x> ;
+                    swrl:argument2 <urn:swrl#y> ;
+                    swrl:propertyPredicate <http://www.essepuntato.it/2010/06/literalreification/hasSameLiteralValueAs> ] ;
+            rdf:rest [ a swrl:AtomList ;
+                    rdf:first [ a swrl:DatavaluedPropertyAtom ;
+                            swrl:argument1 <urn:swrl#y> ;
+                            swrl:argument2 <urn:swrl#v> ;
+                            swrl:propertyPredicate <http://www.essepuntato.it/2010/06/literalreification/hasLiteralValue> ] ;
+                    rdf:rest () ] ] ;
+    swrl:head [ a swrl:AtomList ;
+            rdf:first [ a swrl:DatavaluedPropertyAtom ;
+                    swrl:argument1 <urn:swrl#x> ;
+                    swrl:argument2 <urn:swrl#v> ;
+                    swrl:propertyPredicate <http://www.essepuntato.it/2010/06/literalreification/hasLiteralValue> ] ;
+            rdf:rest () ] .
+

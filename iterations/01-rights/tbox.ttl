@@ -1,0 +1,78 @@
+@prefix : <https://www.example.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+
+### Thing
+:Thing a owl:Class ;
+    rdfs:label "thing"@en ;
+    rdfs:comment "A generic entity."@en .
+
+
+
+### RightsStatement
+:RightsStatement a owl:Class ;
+    rdfs:label "rights statement"@en ;
+    rdfs:comment "A statement about the intellectual property rights of something."@en .
+
+
+
+### RightsIdentifier
+:RightsIdentifier a owl:Class ;
+    rdfs:label "rights identifier"@en ;
+    rdfs:comment "An identifier that uniquely identifies a license."@en .
+
+
+
+### RightsIdentifierScheme
+:RightsIdentifierScheme a owl:Class ;
+    rdfs:label "rights identifier scheme"@en ;
+    rdfs:comment "The identifier scheme used to identify a license."@en .
+
+
+
+### hasRights
+:hasRights a owl:ObjectProperty ;
+    rdfs:label "has rights"@en ;
+    rdfs:comment "Information about rights held in and over the resource."@en ;
+    rdfs:domain :Thing ;
+    rdfs:range :RightsStatement .
+
+
+
+### hasIdentifier
+:hasIdentifier a owl:ObjectProperty ;
+    rdfs:label "has identifier"@en ;
+    rdfs:comment "A unique identifier for the entity (either a funder, a person, a license or a resource)."@en .
+
+
+
+### usesIdentifierScheme
+:usesIdentifierScheme a owl:ObjectProperty ;
+    rdfs:label "uses identifier scheme"@en ;
+    rdfs:comment "The identifier scheme used to provide the identifier for an entity (either a funder, a person, a license or a resource)."@en .
+
+
+
+### hasLiteralValue
+:hasLiteralValue a owl:DatatypeProperty ;
+    rdfs:label "has literal value"@en ;
+    rdfs:comment "The value that a reified literal represents."@en .
+
+
+
+### hasURL
+:hasURL a owl:DatatypeProperty ;
+    rdfs:label "has url"@en ;
+    rdfs:comment "An identifier, in form of an HTTP Universal Resource Locator (URL), for a particular resource on the World Wide Web."@en .
+
+
+
+### spdx
+:spdx a owl:NamedIndividual ;
+    rdfs:label "spdx"@en ;
+    rdfs:comment "A list of commonly found licenses and exceptions used in free and open source and other collaborative software or documentation."@en .
+
