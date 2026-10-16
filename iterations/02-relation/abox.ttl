@@ -1,0 +1,21 @@
+@prefix : <https://www.example.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+
+
+
+:dataset1 a owl:Thing .
+
+
+
+:article1 a owl:Thing .
+
+
+
+:qualifiedrelation1 a :QualifiedRelation ;
+    :hasRelationSubject :dataset1 ;
+    :hasRelationObject :article1 ;
+    :hasRelationCharacterization :isCitedBy .
+

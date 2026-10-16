@@ -25,6 +25,7 @@ glossary:
     rules:
       domain: ""
       range: ""
+      member_of: ""  # Named Individual only: class the individual belongs to
 
 abox:
   - individual: ""

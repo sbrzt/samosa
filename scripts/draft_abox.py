@@ -1,57 +1,46 @@
 # scripts/draft_abox.py
-#
-# Drafts an `abox:` block into requirements.yaml by extracting entities and
-# relations from the scenario/CQ text, constrained to the classes and
-# properties already formalized in the glossary (TBox). Never invents a
-# class or property outside the glossary. The user reviews/edits the
-# resulting `abox:` block by hand before running `main.py abox`.
 
+import json
+import os
 import re
 import sys
+import urllib.error
+import urllib.request
 from pathlib import Path
 
-import spacy
 import yaml
-from rapidfuzz import fuzz
+from scripts.common import dump_yaml
 from scripts.generate_tbox import camel
 
-MATCH_THRESHOLD = 75
-_nlp = None
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
+DRAFT_MODEL = os.environ.get("DRAFT_MODEL", "qwen3:4b")
 
+PROMPT = """You draft the ABox (individuals) of an OWL ontology from a scenario.
 
-def get_nlp():
-    global _nlp
-    if _nlp is None:
-        _nlp = spacy.load("en_core_web_sm")
-    return _nlp
+Use only the classes and properties listed below. Create one individual for
+each concrete entity mentioned in the scenario examples, give it a class, and
+link individuals with properties. Entities that fit none of the classes
+(e.g. things only used as subject or object of a relation) still become
+individuals, with type Thing. A property value is either the name of
+another individual you created or a plain literal string.
+Individual names are lowerCamelCase and descriptive, e.g. dataset1, article1.
 
+Classes:
+{classes}
 
-def source_text(data):
-    scenario = data.get("scenario") or {}
-    parts = [scenario.get("description") or ""]
-    parts.extend(scenario.get("examples") or [])
-    parts.extend(cq.get("question") or "" for cq in data.get("competency_questions") or [])
-    return "\n".join(p for p in parts if p)
+Properties:
+{properties}
 
+Scenario:
+{scenario}
 
-def best_class_match(chunk_text, classes):
-    best_term, best_score = None, 0
-    for term in classes:
-        score = fuzz.token_sort_ratio(chunk_text.lower(), term.lower())
-        if score > best_score:
-            best_term, best_score = term, score
-    if best_score >= MATCH_THRESHOLD:
-        return best_term
-    return None
+Examples:
+{examples}
+"""
 
 
 def to_slug(term):
     return re.sub(r"[^A-Za-z0-9]", "", camel(term))
-
-
-def to_individual_name(term, index):
-    slug = to_slug(term)
-    return f"{slug[0].lower()}{slug[1:]}{index}"
 
 
 def to_property_id(term):
@@ -59,88 +48,90 @@ def to_property_id(term):
     return f"{slug[0].lower()}{slug[1:]}"
 
 
-def extract_entities(doc, classes):
-    entities = []
-    seen_spans = set()
-    for chunk in doc.noun_chunks:
-        text = chunk.text.strip()
-        if not text or text.lower() in seen_spans:
-            continue
-        matched_class = best_class_match(text, classes)
-        if not matched_class:
-            continue
-        seen_spans.add(text.lower())
-        entities.append({"span": chunk, "class": matched_class, "label": text})
-    return entities
+def describe(term):
+    rules = term.get("rules") or {}
+    extra = ", ".join(f"{k}: {rules[k]}" for k in ("domain", "range") if rules.get(k))
+    return f"- {term['term']}: {term.get('definition') or ''}" + (f" ({extra})" if extra else "")
 
 
-def extract_relations(entities, properties):
-    """Per sentence, pair the first entity of a property's domain class with
-    the first entity of its range class. Loose on purpose: this is a draft
-    the user reviews, not a final assertion."""
-    relations = []
-    by_sentence = {}
-    for ent in entities:
-        by_sentence.setdefault(ent["span"].sent, []).append(ent)
+def response_schema(class_ids, property_ids):
+    return {
+        "type": "object",
+        "properties": {
+            "abox": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "individual": {"type": "string"},
+                        "type": {"type": "string", "enum": class_ids},
+                        "properties": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "property": {"type": "string", "enum": property_ids},
+                                    "value": {"type": "string"},
+                                },
+                                "required": ["property", "value"],
+                            },
+                        },
+                    },
+                    "required": ["individual", "type", "properties"],
+                },
+            }
+        },
+        "required": ["abox"],
+    }
 
-    for sent_entities in by_sentence.values():
-        used_pairs = set()
-        for prop in properties:
-            subj = next((e for e in sent_entities if e["class"] == prop["domain"]), None)
-            obj = next((e for e in sent_entities if e["class"] == prop["range"] and e is not subj), None)
-            if subj and obj and (id(subj), prop["term"]) not in used_pairs:
-                relations.append((subj, obj, prop["term"]))
-                used_pairs.add((id(subj), prop["term"]))
-    return relations
+
+def ask_ollama(prompt, schema):
+    body = json.dumps({
+        "model": DRAFT_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "format": schema,
+        "stream": False,
+        "think": False,
+        "options": {"temperature": 0},
+    }).encode()
+    req = urllib.request.Request(f"{OLLAMA_URL}/api/chat", data=body, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=1800) as resp:
+            return json.loads(json.loads(resp.read())["message"]["content"])
+    except urllib.error.URLError as e:
+        sys.exit(f"Error: cannot reach Ollama at {OLLAMA_URL} ({e}). Is it running, and is '{DRAFT_MODEL}' pulled?")
 
 
 def draft_abox(data):
     glossary = data.get("glossary") or []
-    classes = [t["term"] for t in glossary if t.get("type") == "Class"]
-    properties = [
-        {"term": t["term"], "domain": (t.get("rules") or {}).get("domain"), "range": (t.get("rules") or {}).get("range")}
-        for t in glossary
-        if t.get("type") == "ObjectProperty" and (t.get("rules") or {}).get("domain") and (t.get("rules") or {}).get("range")
-    ]
-
-    text = source_text(data)
-    if not text or not classes:
+    classes = [t for t in glossary if t.get("type") == "Class"]
+    properties = [t for t in glossary if t.get("type") in ("ObjectProperty", "DatatypeProperty")]
+    scenario = data.get("scenario") or {}
+    if not classes or not (scenario.get("description") or scenario.get("examples")):
         return []
 
-    doc = get_nlp()(text)
-    entities = extract_entities(doc, classes)
-
-    individual_names = {}
-    for i, ent in enumerate(entities, start=1):
-        individual_names[id(ent)] = to_individual_name(ent["class"], i)
-
-    relations = extract_relations(entities, properties)
+    prompt = PROMPT.format(
+        classes="\n".join(describe(t) for t in classes),
+        properties="\n".join(describe(t) for t in properties) or "(none)",
+        scenario=scenario.get("description") or "",
+        examples="\n".join(f"- {e}" for e in scenario.get("examples") or []),
+    )
+    class_ids = [to_slug(t["term"]) for t in classes] + ["Thing"]
+    property_ids = [to_property_id(t["term"]) for t in properties] or [""]
+    result = ask_ollama(prompt, response_schema(class_ids, property_ids))
 
     abox = []
-    added = set()
-    for ent in entities:
-        name = individual_names[id(ent)]
-        if name in added:
+    for item in result.get("abox") or []:
+        name = to_property_id(item.get("individual") or "")
+        if not name:
             continue
-        added.add(name)
-        abox.append({
-            "individual": name,
-            "type": to_slug(ent["class"]),
-            "properties": [],
-            "_source_text": ent["label"],
-        })
-
-    by_name = {item["individual"]: item for item in abox}
-    for subj, obj, prop_term in relations:
-        subj_name = individual_names[id(subj)]
-        obj_name = individual_names[id(obj)]
-        by_name[subj_name]["properties"].append({"property": to_property_id(prop_term), "value": obj_name})
-
-    for item in abox:
-        item.pop("_source_text", None)
-        if not item["properties"]:
-            item.pop("properties")
-
+        entry = {"individual": name}
+        if item.get("type") != "Thing":
+            entry["type"] = item.get("type")
+        props = [p for p in item.get("properties") or [] if p.get("property") in property_ids and p.get("value")]
+        if props:
+            entry["properties"] = props
+        abox.append(entry)
     return abox
 
 
@@ -162,12 +153,11 @@ def main():
 
     drafted = draft_abox(data)
     if not drafted:
-        print("No entities matched against the glossary; nothing drafted.")
+        print("Nothing drafted (no classes, no scenario text, or empty model output).")
         return
 
     data["abox"] = drafted
-    with open(req_file, "w", encoding="utf-8") as f:
-        yaml.dump(data, f, sort_keys=False, allow_unicode=True, default_flow_style=False)
+    dump_yaml(data, req_file)
 
     print(f"Drafted {len(drafted)} individual(s) into {req_file}. Review and edit before running 'abox'.")
 

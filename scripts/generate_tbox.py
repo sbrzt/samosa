@@ -1,3 +1,5 @@
+# scripts/generate_tbox.py
+
 import sys
 import yaml
 from scripts.common import individual_id
@@ -39,6 +41,7 @@ def generate_tbox(data, output_dir):
         rules = term.get("rules") or {}
         domain = rules.get("domain")
         range_ = rules.get("range")
+        member_of = rules.get("member_of") if owl_type == "NamedIndividual" else None
         glossary_data.append({
             "term": local_name(term),
             "label": term["term"].lower() if is_property else term["term"],
@@ -46,6 +49,7 @@ def generate_tbox(data, output_dir):
             "type": owl_type,
             "domain": camel(domain) if domain else None,
             "range": camel(range_) if range_ else None,
+            "member_of": camel(member_of) if member_of else None,
         })
     template_data = {}
     template_data["glossary"] = glossary_data

@@ -6,23 +6,23 @@
 
 
 
-:thing1 a :Thing ;
-    :hasRights :rightsstatement2 .
+:paper1 a owl:Thing ;
+    :hasRights :rightsstatement1 .
 
 
 
-:rightsstatement2 a :RightsStatement ;
-    :hasIdentifier :rightsidentifier3 ;
+:rightsstatement1 a :RightsStatement ;
+    :hasIdentifier :rightsidentifier1 ;
     :hasURL "https://creativecommons.org/licenses/by/1.0/legalcode" .
 
 
 
-:rightsidentifier3 a :RightsIdentifier ;
+:rightsidentifier1 a :RightsIdentifier ;
     :hasLiteralValue "CC-BY-1.0" ;
-    :usesIdentifierScheme :spdx .
+    :usesIdentifierScheme :rightsidentifierscheme1 .
 
 
 
-:spdx a :RightsIdentifierScheme ;
+:rightsidentifierscheme1 a :RightsIdentifierScheme ;
     :hasURL "https://spdx.org/licenses/" .
 

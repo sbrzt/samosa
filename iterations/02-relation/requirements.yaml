@@ -1,0 +1,117 @@
+metadata:
+  id: '02'
+  status: draft
+scenario:
+  title: Relation
+  description: |
+    Sometimes there are situations where a given relation between two entities  needs to be qualified in some way, e.g. with a description that  specifies the nature of said relation.
+    A qualified relation represents a certain relationship existing between  two entities. The qualified relation is linked with one entity (more  specifically, the subject of the relation) and with the other (the object  of the relation).
+    The type of relation itself is defined via a characterization, e.g. "in this  relation, the subject cites the object."
+  examples:
+  - Between a given dataset and a given article there exists a qualified relation in which the dataset is the subject of the relation, the article is the object, and its characterization is "is cited by".
+glossary:
+- term: qualified relation
+  definition: A reified relation between two resources.
+  type: Class
+  align_to: datacite:QualifiedRelation
+  rules:
+    domain: ''
+    range: ''
+    member_of: ''
+- term: has relation subject
+  definition: The resource that is the subject of a reified relation.
+  type: ObjectProperty
+  align_to: datacite:hasRelationSubject
+  rules:
+    domain: qualified relation
+    range: ''
+    member_of: ''
+- term: has relation object
+  definition: The resource that is the object of a reified relation.
+  type: ObjectProperty
+  align_to: datacite:hasRelationObject
+  rules:
+    domain: qualified relation
+    range: ''
+    member_of: ''
+- term: has relation characterization
+  definition: The specific nature or type of a qualified relation.
+  type: ObjectProperty
+  align_to: datacite:hasRelationCharacterization
+  rules:
+    domain: qualified relation
+    range: ''
+    member_of: ''
+- term: is cited by
+  definition: The cited entity is cited by the citing entity.
+  type: ObjectProperty
+  align_to: cito:isCitedBy
+  rules:
+    domain: ''
+    range: ''
+    member_of: ''
+abox:
+- individual: dataset1
+- individual: article1
+- individual: qualifiedRelation1
+  type: QualifiedRelation
+  properties:
+  - property: hasRelationSubject
+    value: dataset1
+  - property: hasRelationObject
+    value: article1
+  - property: hasRelationCharacterization
+    value: is cited by
+competency_questions:
+- id: '01'
+  question: What is the subject of a given relation?
+  expected_result:
+  - :qualifiedRelation1, :dataset1
+  query: |
+    SELECT ?relation ?subject
+    WHERE {
+      ?relation a :QualifiedRelation ;
+        :hasRelationSubject ?subject .
+    }
+  refactored_query: |
+    SELECT ?relation ?subject
+    WHERE {
+      ?relation a <http://purl.org/spar/datacite/QualifiedRelation> ;
+        <http://purl.org/spar/datacite/hasRelationSubject> ?subject .
+    }
+- id: '02'
+  question: What is the object of a given relation?
+  expected_result:
+  - :qualifiedRelation1, :article1
+  query: |
+    SELECT ?relation ?object
+    WHERE {
+      ?relation a :QualifiedRelation ;
+        :hasRelationObject ?object .
+    }
+  refactored_query: |
+    SELECT ?relation ?object
+    WHERE {
+      ?relation a <http://purl.org/spar/datacite/QualifiedRelation> ;
+        <http://purl.org/spar/datacite/hasRelationObject> ?object .
+    }
+- id: '03'
+  question: What is the characterization of a given relation between two entities?
+  expected_result:
+  - :qualifiedRelation1, :dataset1, :isCitedBy, :article1
+  query: |
+    SELECT ?relation ?subject ?char ?object
+    WHERE {
+      ?relation a :QualifiedRelation ;
+        :hasRelationSubject ?subject ;
+        :hasRelationCharacterization ?char ;
+        :hasRelationObject ?object .
+    }
+  refactored_query: |
+    SELECT ?relation ?subject ?char ?object
+    WHERE {
+      ?relation a <http://purl.org/spar/datacite/QualifiedRelation> ;
+        <http://purl.org/spar/datacite/hasRelationSubject> ?subject ;
+        <http://purl.org/spar/datacite/hasRelationCharacterization> ?char ;
+        <http://purl.org/spar/datacite/hasRelationObject> ?object .
+    }

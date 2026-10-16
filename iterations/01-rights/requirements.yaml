@@ -3,32 +3,16 @@ metadata:
   status: draft
 scenario:
   title: Rights
-  description: 'A thing can hold a rights statement.
-
+  description: |
+    A thing can hold a rights statement.
     A rights statement may have a rights identifier.
-
-    A rights identifier is an identifier that uniquely identify a license, containing
-    a literal value which expresses the identifier as a string.
-
+    A rights identifier is an identifier that uniquely identify a license, containing a literal value which expresses the identifier as a string.
     It is used to represent identifiers associated with rights.
-
-    A rights identifier belongs to a particular scheme, such as SPDX, specified by
-    an individual right identifier scheme.
-
+    A rights identifier belongs to a particular scheme, such as SPDX, specified by an individual right identifier scheme.
     Both a rights statement and a rights identifier scheme can have a URL.
-
-    '
   examples:
-  - A paper holds a rights statement which has a rights identifier with the literal
-    value "CC-BY-1.0" and belonging to the rights identifier scheme "SPDX".
+  - A paper holds a rights statement which has a rights identifier with the literal value "CC-BY-1.0" and belonging to the rights identifier scheme "SPDX". The right statement has "https://creativecommons.org/licenses/by/1.0/legalcode" as its URL, while the rights identifier scheme has "https://spdx.org/licenses/" as its URL.
 glossary:
-- term: thing
-  definition: A generic entity.
-  type: Class
-  align_to: owl:Thing
-  rules:
-    domain: ''
-    range: ''
 - term: rights statement
   definition: A statement about the intellectual property rights of something.
   type: Class
@@ -55,97 +39,124 @@ glossary:
   type: ObjectProperty
   align_to: dcterms:rights
   rules:
-    domain: thing
+    domain: ''
     range: rights statement
 - term: has identifier
-  definition: A unique identifier for the entity (either a funder, a person, a license
-    or a resource).
+  definition: A unique identifier for the entity (either a funder, a person, a license or a resource).
   type: ObjectProperty
   align_to: datacite:hasIdentifier
   rules:
-    domain: ''
-    range: ''
+    domain: rights statement
+    range: rights identifier
 - term: uses identifier scheme
-  definition: The identifier scheme used to provide the identifier for an entity (either
-    a funder, a person, a license or a resource).
+  definition: The identifier scheme used to provide the identifier for an entity (either a funder, a person, a license or a resource).
   type: ObjectProperty
   align_to: datacite:usesIdentifierScheme
   rules:
-    domain: ''
-    range: ''
+    domain: rights identifier
+    range: rights identifier scheme
 - term: has literal value
   definition: The value that a reified literal represents.
   type: DatatypeProperty
   align_to: literal:hasLiteralValue
   rules:
-    domain: ''
+    domain: rights identifier
     range: ''
 - term: has URL
-  definition: An identifier, in form of an HTTP Universal Resource Locator (URL),
-    for a particular resource on the World Wide Web.
+  definition: An identifier, in form of an HTTP Universal Resource Locator (URL), for a particular resource on the World Wide Web.
   type: DatatypeProperty
   align_to: fabio:hasURL
   rules:
     domain: ''
     range: ''
 - term: spdx
-  definition: A list of commonly found licenses and exceptions used in free and open
-    source and other collaborative software or documentation.
+  definition: A list of commonly found licenses and exceptions used in free and open source and other collaborative software or documentation.
   type: NamedIndividual
   align_to: datacite:spdx
   rules:
     domain: ''
     range: ''
+    member_of: rights identifier scheme
 abox:
-- individual: thing1
-  type: Thing
+- individual: paper1
   properties:
   - property: hasRights
-    value: rightsStatement2
-- individual: rightsStatement2
+    value: rightsStatement1
+- individual: rightsStatement1
   type: RightsStatement
   properties:
   - property: hasIdentifier
-    value: rightsIdentifier3
+    value: rightsIdentifier1
   - property: hasURL
     value: https://creativecommons.org/licenses/by/1.0/legalcode
-- individual: rightsIdentifier3
+- individual: rightsIdentifier1
   type: RightsIdentifier
   properties:
   - property: hasLiteralValue
     value: CC-BY-1.0
   - property: usesIdentifierScheme
-    value: spdx
-- individual: spdx
+    value: rightsIdentifierScheme1
+- individual: rightsIdentifierScheme1
   type: RightsIdentifierScheme
   properties:
   - property: hasURL
     value: https://spdx.org/licenses/
 competency_questions:
 - id: 1
-  question: What is the literal value of the identifier of the rights statement held
-    by the resource?
-  expected_result: '- ''CC-BY-1.0''
+  question: What is the literal value of the identifier of the rights statement held by the resource?
+  expected_result:
+    - 'CC-BY-1.0'
+  query: |
+    PREFIX : <https://www.example.org/>
 
-    '
-  query: "PREFIX : <https://www.example.org/>\n\nSELECT ?literal_value \nWHERE {\n\
-    \  ?resource :hasRights [\n    :hasIdentifier [\n      :hasLiteralValue ?literal_value\n\
-    \    ]\n  ] .\n}\n"
-  refactored_query: "PREFIX : <https://www.example.org/>\n\nSELECT ?literal_value\
-    \ \nWHERE {\n  ?resource <http://purl.org/dc/terms/rights> [\n    <http://purl.org/spar/datacite/hasIdentifier>\
-    \ [\n      <http://www.essepuntato.it/2010/06/literalreification/hasLiteralValue>\
-    \ ?literal_value\n    ]\n  ] .\n}\n"
+    SELECT ?literal_value
+    WHERE {
+      ?resource :hasRights [
+        :hasIdentifier [
+          :hasLiteralValue ?literal_value
+        ]
+      ] .
+    }
+  refactored_query: |
+    PREFIX : <https://www.example.org/>
+
+    SELECT ?literal_value
+    WHERE {
+      ?resource <http://purl.org/dc/terms/rights> [
+        <http://purl.org/spar/datacite/hasIdentifier> [
+          <http://www.essepuntato.it/2010/06/literalreification/hasLiteralValue> ?literal_value
+        ]
+      ] .
+    }
 - id: 2
-  question: What are the URL of the rights statement held by the resource, the identifier
-    scheme used by the rights statement held by the resource, and the identifier scheme
-    URL?
-  expected_result: https://creativecommons.org/licenses/by/1.0/legalcode, https://spdx.org/licenses/
-  query: "PREFIX : <https://www.example.org/>\n\nSELECT ?rights_statement_url ?rights_identifier_scheme_url\
-    \ \nWHERE {\n  ?resource :hasRights [\n    :hasURL ?rights_statement_url ;\n \
-    \   :hasIdentifier [\n      :usesIdentifierScheme [\n        :hasURL ?rights_identifier_scheme_url\n\
-    \      ]\n    ]\n  ] .\n}\n"
-  refactored_query: "PREFIX : <https://www.example.org/>\n\nSELECT ?rights_statement_url\
-    \ ?rights_identifier_scheme_url \nWHERE {\n  ?resource <http://purl.org/dc/terms/rights>\
-    \ [\n    <http://purl.org/spar/fabio/hasURL> ?rights_statement_url ;\n    <http://purl.org/spar/datacite/hasIdentifier>\
-    \ [\n      <http://purl.org/spar/datacite/usesIdentifierScheme> [\n        <http://purl.org/spar/fabio/hasURL>\
-    \ ?rights_identifier_scheme_url\n      ]\n    ]\n  ] .\n}\n"
+  question: What are the URL of the rights statement held by the resource, the identifier scheme used by the rights statement held by the resource, and the identifier scheme URL?
+  expected_result: 
+  - https://creativecommons.org/licenses/by/1.0/legalcode, https://spdx.org/licenses/
+  query: |
+    PREFIX : <https://www.example.org/>
+
+    SELECT ?rights_statement_url ?rights_identifier_scheme_url
+    WHERE {
+      ?resource :hasRights [
+        :hasURL ?rights_statement_url ;
+        :hasIdentifier [
+          :usesIdentifierScheme [
+            :hasURL ?rights_identifier_scheme_url
+          ]
+        ]
+      ] .
+    }
+  refactored_query: |
+    PREFIX : <https://www.example.org/>
+
+    SELECT ?rights_statement_url ?rights_identifier_scheme_url
+    WHERE {
+      ?resource <http://purl.org/dc/terms/rights> [
+        <http://purl.org/spar/fabio/hasURL> ?rights_statement_url ;
+        <http://purl.org/spar/datacite/hasIdentifier> [
+          <http://purl.org/spar/datacite/usesIdentifierScheme> [
+            <http://purl.org/spar/fabio/hasURL> ?rights_identifier_scheme_url
+          ]
+        ]
+      ] .
+    }

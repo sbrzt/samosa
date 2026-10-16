@@ -5,8 +5,8 @@
 
 
 {% for item in abox %}
-{% if item.individual and item.type %}
-:{{ item.individual }} a :{{ item.type }} {% for p in item.properties %};
+{% if item.individual %}
+:{{ item.individual }} a {% if item.type %}:{{ item.type }}{% else %}owl:Thing{% endif %} {% for p in item.properties %};
     :{{ p.property }} {{ p.value }} {% endfor %}.
 {% endif %}
 {% endfor %}

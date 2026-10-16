@@ -1,4 +1,5 @@
 @prefix : <https://www.example.org/> .
+@prefix cito: <http://purl.org/spar/cito/> .
 @prefix datacite: <http://purl.org/spar/datacite/> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
 @prefix fabio: <http://purl.org/spar/fabio/> .
@@ -6,17 +7,26 @@
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-:thing1 a owl:Thing ;
-    dcterms:rights :rightsstatement2 .
+:paper1 a owl:Thing ;
+    dcterms:rights :rightsstatement1 .
 
-datacite:spdx a datacite:RightsIdentifierScheme ;
-    fabio:hasURL "https://spdx.org/licenses/"^^xsd:anyURI .
+:qualifiedrelation1 a datacite:QualifiedRelation ;
+    datacite:hasRelationCharacterization cito:isCitedBy ;
+    datacite:hasRelationObject :article1 ;
+    datacite:hasRelationSubject :dataset1 .
 
-:rightsidentifier3 a datacite:RightsIdentifier ;
-    datacite:usesIdentifierScheme datacite:spdx ;
+:article1 a owl:Thing .
+
+:dataset1 a owl:Thing .
+
+:rightsidentifier1 a datacite:RightsIdentifier ;
+    datacite:usesIdentifierScheme :rightsidentifierscheme1 ;
     literal:hasLiteralValue "CC-BY-1.0" .
 
-:rightsstatement2 a dcterms:RightsStatement ;
-    datacite:hasIdentifier :rightsidentifier3 ;
+:rightsidentifierscheme1 a datacite:RightsIdentifierScheme ;
+    fabio:hasURL "https://spdx.org/licenses/"^^xsd:anyURI .
+
+:rightsstatement1 a dcterms:RightsStatement ;
+    datacite:hasIdentifier :rightsidentifier1 ;
     fabio:hasURL "https://creativecommons.org/licenses/by/1.0/legalcode"^^xsd:anyURI .
 

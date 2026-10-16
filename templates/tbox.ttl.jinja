@@ -7,7 +7,7 @@
 {% for item in glossary %}
 {% if item.term and item.type %}
 ### {{ item.term }}
-:{{ item.term }} a owl:{{ item.type }} ;
+:{{ item.term }} a owl:{{ item.type }}{% if item.member_of %}, :{{ item.member_of }}{% endif %} ;
     rdfs:label "{{ item.label }}"@en ;
     rdfs:comment "{{ item.definition }}"@en{% if item.domain %} ;
     rdfs:domain :{{ item.domain }}{% endif %}{% if item.range %} ;

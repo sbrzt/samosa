@@ -3,6 +3,7 @@
 import sys
 import yaml
 from scripts.common import individual_id
+from scripts.generate_tbox import local_name
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
@@ -12,21 +13,32 @@ def generate_abox(data, output_dir):
     template = env.get_template("abox.ttl.jinja")
 
     individuals = {individual_id(item["individual"]) for item in data.get("abox") or [] if item.get("individual")}
+    # Glossary terms are resolvable too (by label or local name), so an individual
+    # can be, or point to, a TBox entity via punning.
+    terms = {}
+    for term in data.get("glossary") or []:
+        if term.get("term") and term.get("type"):
+            terms[term["term"].strip()] = terms[local_name(term)] = local_name(term)
+
+    def resolve(name):
+        if individual_id(name) in individuals:
+            return individual_id(name)
+        return terms.get(name.strip())
 
     abox_data = []
     for item in data.get("abox") or []:
-        if not item.get("individual") or not item.get("type"):
+        if not item.get("individual"):
             continue
         properties = []
         for prop in item.get("properties") or []:
             if not prop.get("property") or not prop.get("value"):
                 continue
-            value = prop["value"]
-            rendered_value = f":{individual_id(value)}" if individual_id(value) in individuals else f'"{value}"'
+            value = str(prop["value"])
+            rendered_value = f":{resolve(value)}" if resolve(value) else f'"{value}"'
             properties.append({"property": prop["property"], "value": rendered_value})
         abox_data.append({
-            "individual": individual_id(item["individual"]),
-            "type": item["type"],
+            "individual": terms.get(item["individual"].strip()) or individual_id(item["individual"]),
+            "type": item.get("type"),
             "properties": properties,
         })
 

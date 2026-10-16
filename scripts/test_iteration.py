@@ -1,6 +1,4 @@
 # scripts/test_iteration.py
-# Test one iteration: its TBox+ABox against its SPARQL queries.
-# Default: original files + requirements.yaml queries. --refactored: refactoring/<iter>/ files.
 
 import sys
 from pathlib import Path

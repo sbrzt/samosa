@@ -5,6 +5,7 @@ import sys
 import yaml
 import shutil
 from pathlib import Path
+from scripts.common import dump_yaml
 
 
 def compile(file_path, iteration_id, iteration_name):
@@ -15,8 +16,7 @@ def compile(file_path, iteration_id, iteration_name):
             data = yaml.safe_load(f)
         data["metadata"]["id"] = iteration_id
         data["scenario"]["title"] = iteration_name.title()
-        with open(file_path, "w", encoding="utf-8") as f:
-            yaml.dump(data, f, sort_keys=False, allow_unicode=True, default_flow_style=False)
+        dump_yaml(data, file_path)
     except Exception as e:
         print(f"Error: {e}")
 

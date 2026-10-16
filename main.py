@@ -5,6 +5,7 @@ from scripts import (
     check_consistency,
     draft_abox,
     align,
+    diagram,
     generate_abox,
     generate_iteration,
     generate_tbox,
@@ -14,7 +15,7 @@ from scripts import (
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="samsad", description="SAMOD-assisted ontology development.")
+    parser = argparse.ArgumentParser(prog="samosa", description="SAMOSA: Semi-Automated Modelling of Ontologies with SAMOD.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     new_parser = subparsers.add_parser("new", help="Create a new iteration from the template.")
@@ -32,6 +33,10 @@ def main():
     test_parser = subparsers.add_parser("test", help="Run an iteration's SPARQL queries on its TBox+ABox.")
     test_parser.add_argument("iteration")
     test_parser.add_argument("--refactored", action="store_true", help="Test the refactored files.")
+
+    diagram_parser = subparsers.add_parser("diagram", help="Draw tbox.graphml + tbox.png of an iteration's TBox.")
+    diagram_parser.add_argument("iteration")
+    diagram_parser.add_argument("--refactored", action="store_true", help="Draw the refactored TBox.")
 
     align_parser = subparsers.add_parser("align", help="Refactor TBox, ABox and queries using align_to IRIs.")
     align_parser.add_argument("iteration")
@@ -59,6 +64,9 @@ def main():
     elif args.command == "align":
         sys.argv = ["align.py", args.iteration]
         align.main()
+    elif args.command == "diagram":
+        sys.argv = ["diagram.py", args.iteration] + (["--refactored"] if args.refactored else [])
+        diagram.main()
     elif args.command == "merge":
         merge.main()
     elif args.command == "check":

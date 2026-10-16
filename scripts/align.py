@@ -1,7 +1,4 @@
 # scripts/align.py
-# Refactor TBox, ABox (refactoring/<iteration>/) and CQ queries (refactored_query in requirements.yaml) of one iteration using glossary `align_to` IRIs.
-# Aligned terms: their triples are pulled from the source vocabulary into the refactored TBox.
-# Terms without `align_to` stay terms of the new vocabulary (namespace EX).
 
 import json
 import re
@@ -13,7 +10,7 @@ from urllib.request import urlopen
 from rdflib import BNode, Graph, Literal, URIRef
 from rdflib.namespace import RDFS, XSD
 from rdflib.namespace import split_uri
-from scripts.common import EX, load_yaml, resolve_iteration
+from scripts.common import EX, dump_yaml, load_yaml, resolve_iteration
 from scripts.generate_tbox import local_name
 
 
@@ -170,6 +167,25 @@ def main():
                     print(f"Warning: no triples for <{iri}> in its vocabulary.")
                 for t in triples:
                     dst.add(t)
+            # named superclass chains (e.g. datacite:Identifier -> literal:Literal), kept only up to the last class
+            # the TBox already mentions (as class, domain, range...), without the ancestors' full definitions
+            relevant = {t for t in dst.all_nodes() if isinstance(t, URIRef)}
+
+            def supers(c):
+                vocab = vocabulary(str(c), prefixes)
+                return [s for s in vocab.objects(c, RDFS.subClassOf) if isinstance(s, URIRef)] if vocab is not None else []
+
+            def climb(c, seen):
+                """Add c's superclass links that lead to a relevant class; True if any did."""
+                found = False
+                for sup in supers(c):
+                    if sup not in seen and (climb(sup, seen | {sup}) or sup in relevant):
+                        dst.add((c, RDFS.subClassOf, sup))
+                        found = True
+                return found
+
+            for iri in by_lower.values():
+                climb(iri, {iri})
         register_prefixes(dst, prefixes)
         if name == "tbox":
             tbox = dst
@@ -178,8 +194,7 @@ def main():
     for cq in data.get("competency_questions") or []:
         if cq.get("query"):
             cq["refactored_query"] = refactor_query(cq["query"], names)
-    with open(it / "requirements.yaml", "w", encoding="utf-8") as f:
-        yaml.safe_dump(data, f, sort_keys=False, allow_unicode=True)
+    dump_yaml(data, it / "requirements.yaml")
     print(f"Aligned {len(names)} term(s); wrote {out}")
 
 

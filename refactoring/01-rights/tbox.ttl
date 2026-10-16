@@ -124,11 +124,6 @@ literal:hasLiteralValue a owl:DatatypeProperty,
     rdfs:subPropertyOf region:hasRegionDataValue ;
     vs:term_status reg:statusStable .
 
-owl:Thing a owl:Class ;
-    rdfs:label "Thing" ;
-    rdfs:comment "The class of OWL individuals." ;
-    rdfs:isDefinedBy owl: .
-
 datacite:RightsIdentifierScheme a owl:Class ;
     rdfs:label "rights identifier scheme"@en ;
     vann:example """
@@ -149,4 +144,6 @@ This is used to specify the identifier scheme used by a rights identifier.
 
 Individual schemes are defined as members of this class.
         """@en .
+
+datacite:Identifier rdfs:subClassOf literal:Literal .
 

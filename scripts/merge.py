@@ -1,6 +1,4 @@
 # scripts/merge.py
-# Merge refactored ABoxes of all iterations, run all refactored queries on them.
-# Only if everything passes, merge refactored TBoxes too. Output: project/{abox,tbox}.ttl.
 
 import sys
 from pathlib import Path

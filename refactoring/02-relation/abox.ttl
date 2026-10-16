@@ -1,0 +1,14 @@
+@prefix : <https://www.example.org/> .
+@prefix cito: <http://purl.org/spar/cito/> .
+@prefix datacite: <http://purl.org/spar/datacite/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+:qualifiedrelation1 a datacite:QualifiedRelation ;
+    datacite:hasRelationCharacterization cito:isCitedBy ;
+    datacite:hasRelationObject :article1 ;
+    datacite:hasRelationSubject :dataset1 .
+
+:article1 a owl:Thing .
+
+:dataset1 a owl:Thing .
+

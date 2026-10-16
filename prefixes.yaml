@@ -1,3 +1,4 @@
+cito: http://purl.org/spar/cito/
 datacite: http://purl.org/spar/datacite/
 dcterms: http://purl.org/dc/terms/
 owl: http://www.w3.org/2002/07/owl#
@@ -15,3 +16,4 @@ rdfs: http://www.w3.org/2000/01/rdf-schema#
 xsd: http://www.w3.org/2001/XMLSchema#
 skos: http://www.w3.org/2004/02/skos/core#
 region: http://www.ontologydesignpatterns.org/cp/owl/region.owl#
+sit: http://www.ontologydesignpatterns.org/cp/owl/situation.owl#
