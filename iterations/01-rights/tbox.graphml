@@ -146,7 +146,7 @@
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e6" source="n2" target="n4">
+    <edge id="e6" source="n0" target="n4">
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
@@ -157,7 +157,7 @@
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e7" source="n0" target="n4">
+    <edge id="e7" source="n2" target="n4">
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />

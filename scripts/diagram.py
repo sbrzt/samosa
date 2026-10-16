@@ -120,9 +120,9 @@ def dot(nodes, edges, name):
     return "\n".join(out)
 
 
-def main():
-    it = resolve_iteration(sys.argv[1])
-    base = Path("refactoring") / it.name if "--refactored" in sys.argv[2:] else it
+def main(iteration, refactored=False):
+    it = resolve_iteration(iteration)
+    base = Path("refactoring") / it.name if refactored else it
     tbox = base / "tbox.ttl"
     if not tbox.exists():
         print(f"Error: {tbox} not found. Run the previous step first.")
@@ -142,4 +142,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1], "--refactored" in sys.argv[2:])

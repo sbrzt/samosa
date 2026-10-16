@@ -105,7 +105,7 @@ competency_questions:
 - id: 1
   question: What is the literal value of the identifier of the rights statement held by the resource?
   expected_result:
-    - 'CC-BY-1.0'
+  - CC-BY-1.0
   query: |
     PREFIX : <https://www.example.org/>
 
@@ -130,7 +130,7 @@ competency_questions:
     }
 - id: 2
   question: What are the URL of the rights statement held by the resource, the identifier scheme used by the rights statement held by the resource, and the identifier scheme URL?
-  expected_result: 
+  expected_result:
   - https://creativecommons.org/licenses/by/1.0/legalcode, https://spdx.org/licenses/
   query: |
     PREFIX : <https://www.example.org/>

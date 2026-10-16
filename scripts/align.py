@@ -124,8 +124,8 @@ def refactor_query(query, names):
     return query
 
 
-def main():
-    it = resolve_iteration(sys.argv[1])
+def main(iteration):
+    it = resolve_iteration(iteration)
     data = load_yaml(it / "requirements.yaml")
 
     prefixes = load_yaml(Path("prefixes.yaml")) if Path("prefixes.yaml").exists() else {}
@@ -199,4 +199,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1])

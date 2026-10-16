@@ -1,5 +1,4 @@
 import argparse
-import sys
 
 from scripts import (
     check_consistency,
@@ -46,32 +45,18 @@ def main():
 
     args = parser.parse_args()
 
-    if args.command == "new":
-        sys.argv = ["generate_iteration.py", args.name]
-        generate_iteration.main()
-    elif args.command == "tbox":
-        sys.argv = ["generate_tbox.py", args.iteration]
-        generate_tbox.main()
-    elif args.command == "abox":
-        sys.argv = ["generate_abox.py", args.iteration]
-        generate_abox.main()
-    elif args.command == "draft-abox":
-        sys.argv = ["draft_abox.py", args.iteration]
-        draft_abox.main()
-    elif args.command == "test":
-        sys.argv = ["test_iteration.py", args.iteration] + (["--refactored"] if args.refactored else [])
-        test_iteration.main()
-    elif args.command == "align":
-        sys.argv = ["align.py", args.iteration]
-        align.main()
-    elif args.command == "diagram":
-        sys.argv = ["diagram.py", args.iteration] + (["--refactored"] if args.refactored else [])
-        diagram.main()
-    elif args.command == "merge":
-        merge.main()
-    elif args.command == "check":
-        check_consistency.main()
-
+    commands = {
+        "new": lambda: generate_iteration.main(args.name),
+        "tbox": lambda: generate_tbox.main(args.iteration),
+        "abox": lambda: generate_abox.main(args.iteration),
+        "draft-abox": lambda: draft_abox.main(args.iteration),
+        "test": lambda: test_iteration.main(args.iteration, args.refactored),
+        "align": lambda: align.main(args.iteration),
+        "diagram": lambda: diagram.main(args.iteration, args.refactored),
+        "merge": merge.main,
+        "check": check_consistency.main,
+    }
+    commands[args.command]()
 
 if __name__ == "__main__":
     main()

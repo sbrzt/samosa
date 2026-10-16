@@ -6,10 +6,8 @@ import re
 import sys
 import urllib.error
 import urllib.request
-from pathlib import Path
 
-import yaml
-from scripts.common import dump_yaml
+from scripts.common import dump_yaml, load_yaml, resolve_iteration
 from scripts.generate_tbox import camel
 
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
@@ -135,21 +133,9 @@ def draft_abox(data):
     return abox
 
 
-def main():
-    iter_path = sys.argv[1]
-    if Path(iter_path).exists():
-        iter_path = Path(iter_path)
-    elif (Path("iterations") / iter_path).exists():
-        iter_path = Path("iterations") / iter_path
-    else:
-        sys.exit(1)
-    req_file = iter_path / "requirements.yaml"
-    if not req_file.exists():
-        print(f"Error: File {req_file} not found.")
-        sys.exit(1)
-
-    with open(req_file, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
+def main(iteration):
+    req_file = resolve_iteration(iteration) / "requirements.yaml"
+    data = load_yaml(req_file)
 
     drafted = draft_abox(data)
     if not drafted:
@@ -163,4 +149,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1])

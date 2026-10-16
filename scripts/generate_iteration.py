@@ -2,27 +2,21 @@
 
 import os
 import sys
-import yaml
 import shutil
 from pathlib import Path
-from scripts.common import dump_yaml
+from scripts.common import dump_yaml, load_yaml
 
 
 def compile(file_path, iteration_id, iteration_name):
     if not file_path.exists():
         return
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-        data["metadata"]["id"] = iteration_id
-        data["scenario"]["title"] = iteration_name.title()
-        dump_yaml(data, file_path)
-    except Exception as e:
-        print(f"Error: {e}")
+    data = load_yaml(file_path)
+    data["metadata"]["id"] = iteration_id
+    data["scenario"]["title"] = iteration_name.title()
+    dump_yaml(data, file_path)
 
 
-def main():
-    iteration_name = sys.argv[1]
+def main(iteration_name):
     root_dir = Path.cwd()
     template_dir = root_dir / "templates" / "iteration"
     iterations_dir = root_dir / "iterations"
@@ -48,4 +42,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1])

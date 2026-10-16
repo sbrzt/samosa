@@ -7,9 +7,8 @@ from scripts.common import load_yaml, resolve_iteration
 from scripts.verify_cqs import run_queries
 
 
-def main():
-    it = resolve_iteration(sys.argv[1])
-    refactored = "--refactored" in sys.argv[2:]
+def main(iteration, refactored=False):
+    it = resolve_iteration(iteration)
     base = Path("refactoring") / it.name if refactored else it
 
     graph = Graph()
@@ -29,4 +28,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1], "--refactored" in sys.argv[2:])

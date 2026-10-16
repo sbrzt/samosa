@@ -32,7 +32,17 @@ Each iteration lives under `iterations/<NN>-<name>/requirements.yaml` and declar
 
 `align` also fills the refactored TBox: for each aligned term it fetches the term's vocabulary (content negotiation on the prefix namespace, cached as `vocabularies/<prefix>.ttl`) and copies every triple describing the term (blank nodes followed). Every namespace used by the refactored TBox/ABox but missing from `prefixes.yaml` is appended to it. The prefix name comes from, in order: bindings in the loaded vocabularies/rdflib, the namespace's own RDF (fetched), prefix.cc, or the namespace IRI itself. If a namespace does not serve RDF, drop the vocabulary's Turtle file into `vocabularies/<prefix>.ttl` by hand.
 
-Per iteration: `new` → fill in `requirements.yaml` → `tbox` → `diagram` → `abox` → `test` → add `align_to` to glossary terms → `align` → `diagram --refactored` → `test --refactored`.
+Per iteration: 
+1. `new`
+2. fill in `requirements.yaml`
+3. `tbox`
+4. `diagram`
+5. `abox`
+6. `test`
+7. add `align_to` to glossary terms
+8. `align`
+9. `diagram --refactored`
+10. `test --refactored`.
 
 Once every iteration is refactored, `merge` merges all refactored ABoxes, runs every refactored query of every iteration on the result, and only if all pass merges the refactored TBoxes. Output: `project/abox.ttl`, `project/tbox.ttl`. Then `check`.
 
