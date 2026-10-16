@@ -8,11 +8,10 @@ It consists in a CLI interface that allows one to generate small, testable itera
 
 Each iteration lives under `iterations/<NN>-<name>/requirements.yaml` and declares:
 
-- `scenario`: title, description, examples — the motivating scenario.
-- `glossary`: terms with `type` (`Class`, `ObjectProperty`, `DataTypeProperty`, `NamedIndividual`), `definition`, and for properties a `rules.domain`/`rules.range`.
-- `abox`: example individuals instantiating the glossary, used to test CQs concretely.
+- `scenario`: title, description, examples.
+- `glossary`: terms with `type` (`Class`, `ObjectProperty`, `DataTypeProperty`, `NamedIndividual`), `definition`, and for properties a `rules.domain`/`rules.range`, used to generate the TBox.
+- `abox`: example individuals instantiating the scenario as modelled according to the TBox, used to test CQs.
 - `competency_questions`: `question`, `expected_result` (filled by hand), `query` (SPARQL on the first-version ABox) and `refactored_query` (filled by `align`, run on the refactored ABox) to verify the ontology answers it.
-
 - glossary terms may carry `align_to: <prefix:term or full IRI>` (prefixes defined project-wide in `prefixes.yaml`): the existing vocabulary term that replaces the local one. Terms without it become terms of the new vocabulary.
 
 ## CLI
@@ -36,6 +35,21 @@ Each iteration lives under `iterations/<NN>-<name>/requirements.yaml` and declar
 Per iteration: `new` → fill in `requirements.yaml` → `tbox` → `diagram` → `abox` → `test` → add `align_to` to glossary terms → `align` → `diagram --refactored` → `test --refactored`.
 
 Once every iteration is refactored, `merge` merges all refactored ABoxes, runs every refactored query of every iteration on the result, and only if all pass merges the refactored TBoxes. Output: `project/abox.ttl`, `project/tbox.ttl`. Then `check`.
+
+### Expected results
+
+`test` (and `merge`) compare each query's results with the competency question's `expected_result`:
+
+```yaml
+expected_result:
+- :qualifiedRelation1, :dataset1
+- [:x, "value, with comma"]
+```
+
+- `:name` matches any IRI whose local name is `name`, ignoring case, so it still matches after `align` (e.g. `:isCitedBy` matches `cito:isCitedBy`).
+- Anything else (literals, full IRIs) must match exactly.
+- Row order is ignored; missing and unexpected rows both fail, and are printed.
+- Without `expected_result`, a query passes if it returns at least one row.
 
 ### Drafting the ABox
 
