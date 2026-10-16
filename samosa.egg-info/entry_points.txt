@@ -1,0 +1,2 @@
+[console_scripts]
+samosa = main:main

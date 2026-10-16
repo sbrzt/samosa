@@ -17,19 +17,19 @@ Each iteration lives under `iterations/<NN>-<name>/requirements.yaml` and declar
 
 ## CLI
 
-```
-uv run main.py new <name>                 # scaffold a new iteration
-uv run main.py tbox <iter>                # glossary -> tbox.ttl
-uv run main.py draft-abox <iter>          # (optional) draft the abox: block
-uv run main.py diagram <iter>             # tbox.graphml (yEd, Graffoo style) + tbox.png
-uv run main.py abox <iter>                # abox: block -> abox.ttl
-uv run main.py test <iter>                # run the CQ queries on tbox.ttl + abox.ttl
-uv run main.py align <iter>               # -> refactoring/<iter>/{tbox,abox}.ttl, refactored_query in requirements.yaml
-uv run main.py diagram <iter> --refactored # same, into refactoring/<iter>/
-uv run main.py test <iter> --refactored   # run refactored queries on refactored TBox+ABox
-uv run main.py merge                      # all iterations, see below
-uv run main.py check                      # OWL 2 RL consistency check (owlrl, pure Python) on project/
-```
+| Command                         | Description                         |
+| ------------------------------- | ----------------------------------- |
+| `samosa new <name>`             | scaffold a new iteration            |
+| `samosa tbox <iter>`            | glossary -> tbox.ttl                |
+| `samosa draft-abox <iter>`      | (optional) draft the abox: block    |
+| `samosa diagram <iter>`         | tbox.graphml (yEd, Graffoo style) + tbox.png |
+| `samosa abox <iter>`            | abox: block -> abox.ttl             |
+| `samosa test <iter>`            | run the CQ queries on tbox.ttl + abox.ttl |
+| `samosa align <iter>`           | refactoring/\<iter\>/{tbox,abox}.ttl, refactored_query in requirements.yaml |
+| `samosa diagram <iter> --refactored` |  same, into refactoring/\<iter\>/ |
+| `samosa test <iter> --refactored` | run refactored queries on refactored TBox+ABox |
+| `samosa merge`                  | all iterations, see below           |
+| `samosa check`                  | OWL 2 RL consistency check (owlrl, pure Python) on project/ |
 
 `align` also fills the refactored TBox: for each aligned term it fetches the term's vocabulary (content negotiation on the prefix namespace, cached as `vocabularies/<prefix>.ttl`) and copies every triple describing the term (blank nodes followed). Every namespace used by the refactored TBox/ABox but missing from `prefixes.yaml` is appended to it. The prefix name comes from, in order: bindings in the loaded vocabularies/rdflib, the namespace's own RDF (fetched), prefix.cc, or the namespace IRI itself. If a namespace does not serve RDF, drop the vocabulary's Turtle file into `vocabularies/<prefix>.ttl` by hand.
 
@@ -48,6 +48,7 @@ with `OLLAMA_URL` (default `http://localhost:11434`).
 
 ```
 uv sync
+uv tool install -e .   # puts `samosa` on PATH (run it from the project folder)
 # optional, for draft-abox: install Ollama (https://ollama.com), then
 ollama pull qwen3:4b
 ```
