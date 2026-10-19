@@ -2,7 +2,7 @@
 
 SMOSA is a tool to semi-automate [SAMOD](https://essepuntato.it/samod/) (Simplified Agile Methodology for Ontology Development).
 
-It consists in a CLI interface that allows one to generate small, testable iterations that each add a fragment of an ontology (_modelet_), driven by a motivating scenario, a glossary, and a series of competency questions (CQs).
+It consists in a CLI interface that allows one to generate small, iterated model development iterations, driven by a series of documentation artifacts, such as a motivating scenario, a glossary, a series of competency questions (CQs), and so on.
 
 ## Iteration workflow
 
@@ -37,14 +37,14 @@ Per iteration:
 2. fill in `requirements.yaml`
 3. `tbox`
 4. `diagram`
-5. `abox`
+5. `draft-abox`, then `abox`
 6. `test`
 7. add `align_to` to glossary terms
 8. `align`
 9. `diagram --refactored`
-10. `test --refactored`.
-
-Once every iteration is refactored, `merge` merges all refactored ABoxes, runs every refactored query of every iteration on the result, and only if all pass merges the refactored TBoxes. Output: `project/abox.ttl`, `project/tbox.ttl`. Then `check`.
+10. `test --refactored`
+11. once refactorinf is complete, `merge` merges all refactored ABoxes, runs every refactored query of every iteration on the result, and only if all pass merges the refactored TBoxes, generating `project/abox.ttl` and `project/tbox.ttl`
+12. `check`
 
 ### Expected results
 
