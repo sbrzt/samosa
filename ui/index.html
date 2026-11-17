@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAMOSA</title>
+<style>
+  :root {
+    --bg: #fff; --fg: #1b1f24; --muted: #5c6670; --line: #d8dde3; --panel: #f4f6f8;
+    --accent: #1d4ed8; --ok: #15803d; --fail: #b91c1c; --ok-bg: #ecfdf3; --fail-bg: #fef2f2;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0f1215; --fg: #e6e8eb; --muted: #9aa4ae; --line: #2a3037; --panel: #171b20;
+            --accent: #7aa2ff; --ok: #4ade80; --fail: #f87171; --ok-bg: #10261a; --fail-bg: #2b1515; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--fg);
+         display: grid; grid-template-columns: 260px 1fr; grid-template-rows: auto 1fr; min-height: 100vh; }
+  header { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 18px; margin: 0; }
+  header span { color: var(--muted); font-size: 13px; }
+  nav { border-right: 1px solid var(--line); background: var(--panel); padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+  nav h2, main h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+  nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+  nav li button { width: 100%; text-align: left; }
+  nav li button[aria-current="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  main { padding: 20px; display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; }
+  section { min-width: 0; }
+  .steps ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+  .steps li { display: contents; }
+  button, input, select, textarea { font: inherit; }
+  button { padding: 7px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); cursor: pointer; }
+  button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:disabled { opacity: .5; cursor: progress; }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .step-num { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 6px; }
+  form { display: flex; gap: 6px; }
+  input, select, textarea { flex: 1; width: 100%; min-width: 0; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); }
+  textarea { resize: vertical; field-sizing: content; max-height: 60vh; }
+  textarea.code { font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; tab-size: 2; white-space: pre; }
+  #form, .list, .body { display: grid; gap: 8px; }
+  fieldset { margin: 0; padding: 10px 12px; min-width: 0; border: 1px solid var(--line); border-radius: 6px; display: grid; gap: 8px; }
+  legend { padding: 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  label { display: grid; gap: 2px; flex: 1; min-width: 0; }
+  label > span { font-size: 12px; color: var(--muted); }
+  details { border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; background: var(--panel); }
+  summary { cursor: pointer; font-weight: 600; overflow-wrap: anywhere; }
+  .body { margin-top: 8px; }
+  .row { display: flex; gap: 6px; align-items: end; }
+  .list > button, .body > button { justify-self: start; }
+  .editor-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .editor-bar h2 { margin: 0; }
+  #status { color: var(--muted); font-size: 13px; }
+  pre { margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); white-space: pre-wrap;
+        font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; max-height: 40vh; overflow: auto; }
+  pre.ok { border-color: var(--ok); background: var(--ok-bg); }
+  pre.fail { border-color: var(--fail); background: var(--fail-bg); }
+  .diagrams { grid-column: 1 / -1; display: grid; gap: 20px; grid-template-columns: 1fr 1fr; }
+  .diagrams img { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .diagrams figure { margin: 0; }
+  .diagrams figcaption { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+  [hidden] { display: none !important; }
+  @media (max-width: 900px) { body { grid-template-columns: 1fr; } nav { border-right: 0; border-bottom: 1px solid var(--line); }
+                              main, .diagrams { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header><h1>SAMOSA</h1><span>Semi-Automated Modelling of Ontologies with SAMOD</span></header>
+
+<nav aria-label="Iterations">
+  <div>
+    <h2>Iterations</h2>
+    <ul id="iterations"></ul>
+  </div>
+  <form id="new-form">
+    <label for="new-name" class="visually-hidden" hidden>New iteration name</label>
+    <input id="new-name" placeholder="new iteration name" required pattern="[A-Za-z0-9_-]+" title="letters, digits, - and _">
+    <button type="submit">New</button>
+  </form>
+  <div>
+    <h2>Project</h2>
+    <ul>
+      <li><button data-cmd="merge">Merge all iterations</button></li>
+      <li><button data-cmd="check">Check consistency</button></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+  <section id="iteration" hidden>
+    <div class="editor-bar">
+      <h2 id="editor-title">requirements.yaml</h2>
+      <span><span id="status"></span> <a id="raw" target="_blank">saved YAML</a> <button id="save" class="primary">Save</button></span>
+    </div>
+    <div id="form"></div>
+  </section>
+
+  <section>
+    <div class="steps" id="steps" hidden>
+      <h2>Steps</h2>
+      <ol>
+        <li><button data-cmd="tbox"><span class="step-num">1</span>Generate TBox</button></li>
+        <li><button data-cmd="diagram"><span class="step-num">2</span>Draw diagram</button></li>
+        <li><button data-cmd="draft-abox"><span class="step-num">3</span>Draft ABox (LLM)</button></li>
+        <li><button data-cmd="abox"><span class="step-num">4</span>Generate ABox</button></li>
+        <li><button data-cmd="test"><span class="step-num">5</span>Test CQs</button></li>
+        <li><button data-cmd="align"><span class="step-num">6</span>Align to vocabularies</button></li>
+        <li><button data-cmd="diagram" data-refactored><span class="step-num">7</span>Draw refactored diagram</button></li>
+        <li><button data-cmd="test" data-refactored><span class="step-num">8</span>Test refactored CQs</button></li>
+      </ol>
+    </div>
+    <h2 style="margin-top:20px">Output</h2>
+    <pre id="out" aria-live="polite">Select or create an iteration.</pre>
+  </section>
+
+  <section class="diagrams" id="diagrams" hidden>
+    <figure><figcaption>TBox (click to open)</figcaption><a id="a-tbox" target="_blank"><img id="img-tbox" alt="TBox diagram" hidden></a></figure>
+    <figure><figcaption>Refactored TBox (click to open)</figcaption><a id="a-refactored" target="_blank"><img id="img-refactored" alt="Refactored TBox diagram" hidden></a></figure>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let current = null, data = {}, clean = "{}";
+
+// Shape of requirements.yaml: a string is a field kind, [x] is a list of x, {...} is a group of fields.
+const TYPES = ["Class", "ObjectProperty", "DatatypeProperty", "NamedIndividual"];
+const SCHEMA = {
+  metadata: { id: "text", status: "text" },
+  scenario: { title: "text", description: "long", examples: ["long"] },
+  glossary: [{ term: "text", type: "owltype", definition: "long", align_to: "text", rules: { domain: "text", range: "text", subclass_of: "text", subproperty_of: "text", member_of: "text" } }],
+  abox: [{ individual: "text", type: "text", properties: [{ property: "text", value: "text" }] }],
+  competency_questions: [{ id: "text", question: "long", expected_result: "rows", query: "code", refactored_query: "code" }],
+};
+
+const el = (tag, props, ...kids) => { const e = Object.assign(document.createElement(tag), props); e.append(...kids); return e; };
+const label = (key) => String(key).replace(/_/g, " ");
+// Empty value with the full shape of a schema node, so new items are saved with every key, in template order.
+const blank = (kind) => typeof kind === "string" ? "" : Array.isArray(kind) ? [] : Object.fromEntries(Object.entries(kind).map(([k, v]) => [k, blank(v)]));
+const dirty = () => ($("status").textContent = JSON.stringify(data) !== clean ? "unsaved changes" : "");
+
+// One input bound to obj[key]. obj[key] changes only when the user edits the input.
+function field(obj, key, kind, text = label(key)) {
+  const v = obj[key] ?? "";
+  let input;
+  if (kind === "owltype") input = el("select", {}, ...[...new Set(["", ...TYPES, v])].map((t) => el("option", { textContent: t })));
+  else if (kind === "text") input = el("input");
+  else input = el("textarea", { rows: kind === "code" ? 6 : 2, className: kind, spellcheck: kind === "long" });
+  if (kind === "rows") input.placeholder = "one row per line, cells separated by commas";
+  input.value = kind === "rows" && Array.isArray(v) ? v.map((r) => (Array.isArray(r) ? r.join(", ") : r)).join("\n") : v;
+  input.oninput = () => {
+    // ponytail: rows are saved as "a, b" strings, so a cell that itself contains a comma cannot be typed here. Edit the YAML for that.
+    obj[key] = kind === "rows" ? input.value.split("\n").map((s) => s.trim()).filter(Boolean) : input.value;
+    dirty();
+  };
+  return el("label", {}, el("span", { textContent: text }), input);
+}
+
+function fields(obj, schema) {
+  return Object.entries(schema).map(([key, kind]) => {
+    if (typeof kind === "string") return field(obj, key, kind);
+    if (Array.isArray(kind)) return list(obj, key, kind[0]);
+    obj[key] ??= {};
+    return el("fieldset", {}, el("legend", { textContent: label(key) }), ...fields(obj[key], kind));
+  });
+}
+
+function list(obj, key, kind) {
+  if (!Array.isArray(obj[key])) obj[key] = obj[key] ? [obj[key]] : [];
+  const arr = obj[key], box = el("div", { className: "list" });
+  const scalar = typeof kind === "string";
+  const flat = !scalar && Object.values(kind).every((k) => k === "text");  // short items (property/value) stay on one line
+  const draw = (openAt) => box.replaceChildren(...arr.map((_, i) => {
+    const remove = el("button", { type: "button", textContent: "Remove", onclick: () => { arr.splice(i, 1); draw(); dirty(); } });
+    if (scalar) return el("div", { className: "row" }, field(arr, i, kind, `${label(key)} ${i + 1}`), remove);
+    const value = (arr[i] ??= {});
+    if (flat) return el("div", { className: "row" }, ...fields(value, kind), remove);
+    const summary = el("summary");
+    const title = () => (summary.textContent = Object.keys(kind).slice(0, 2).map((k) => value[k]).filter(Boolean).join(" · ") || "(empty)");
+    title();
+    return el("details", { open: i === openAt, oninput: title }, summary, el("div", { className: "body" }, ...fields(value, kind), remove));
+  }), el("button", { type: "button", textContent: "+ Add", onclick: () => { arr.push(blank(kind)); draw(arr.length - 1); dirty(); } }));
+  draw();
+  return el("fieldset", {}, el("legend", { textContent: label(key) }), box);
+}
+
+const show = (ok, text) => { $("out").textContent = text; $("out").className = ok == null ? "" : ok ? "ok" : "fail"; };
+const busy = (on) => document.querySelectorAll("button").forEach((b) => (b.disabled = on));
+
+async function listIterations() {
+  const names = await (await fetch("/iterations")).json();
+  $("iterations").innerHTML = names.map((n) => `<li><button data-select="${n}" aria-current="${n === current}">${n}</button></li>`).join("")
+    || "<li><em>none yet</em></li>";
+}
+
+async function select(name) {
+  const same = name === current;
+  current = name;
+  location.hash = name;
+  $("editor-title").textContent = `${name}/requirements.yaml`;
+  $("raw").href = `/iterations/${name}/requirements.yaml`;
+  $("iteration").hidden = $("steps").hidden = $("diagrams").hidden = false;
+  const r = await fetch(`/iterations/${name}/requirements`, { cache: "no-store" });
+  const fresh = (r.ok && (await r.json())) || {};
+  const nodes = fields(fresh, SCHEMA);  // also fills missing sections in `fresh`
+  if (!same || JSON.stringify(fresh) !== JSON.stringify(data)) {  // unchanged on disk: keep the form, and which items are open
+    data = fresh;
+    $("form").replaceChildren(...nodes);
+  }
+  clean = JSON.stringify(data);
+  $("status").textContent = "";
+  if ($("out").textContent.startsWith("Select")) show(null, "Fill in the requirements, then run the steps in order.");
+  refreshImages();
+  listIterations();
+}
+
+function refreshImages() {
+  for (const [id, dir] of [["tbox", "iterations"], ["refactored", "refactoring"]]) {
+    const img = $(`img-${id}`);
+    img.hidden = true;
+    img.onload = () => (img.hidden = false);
+    $(`a-${id}`).href = img.src = `/${dir}/${current}/tbox.png?${Date.now()}`;
+  }
+}
+
+async function save() {
+  const body = JSON.stringify(data);
+  if (!current || body === clean) return true;
+  const r = await fetch(`/iterations/${current}/requirements`, { method: "PUT", body, headers: { "Content-Type": "application/json" } });
+  if (!r.ok) { show(false, JSON.stringify((await r.json()).detail)); return false; }
+  clean = body;
+  $("status").textContent = "saved";
+  return true;
+}
+
+async function run(cmd, params) {
+  busy(true);
+  show(null, `Running ${cmd}…`);
+  try {
+    if (await save()) {
+      const r = await fetch(`/${cmd}?` + new URLSearchParams(params), { method: "POST" });
+      const body = await r.json();
+      show(r.ok && body.ok, r.ok ? body.output || "(no output)" : JSON.stringify(body.detail));
+      if (current) await select(current);  // draft-abox and align rewrite requirements.yaml
+    }
+  } catch (e) {
+    show(false, String(e));
+  } finally {
+    busy(false);
+  }
+}
+
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.select) select(b.dataset.select);
+  else if (b.dataset.cmd) {
+    const params = {};
+    if (!["merge", "check"].includes(b.dataset.cmd)) params.iteration = current;
+    if ("refactored" in b.dataset) params.refactored = true;
+    run(b.dataset.cmd, params);
+  }
+});
+$("save").onclick = save;
+$("new-form").onsubmit = async (e) => {
+  e.preventDefault();
+  await run("new", { iteration_name: $("new-name").value });
+  const names = await (await fetch("/iterations")).json();
+  $("new-name").value = "";
+  if (names.length) select(names[names.length - 1]);
+};
+window.onbeforeunload = () => (JSON.stringify(data) !== clean ? true : undefined);
+location.hash.length > 1 ? select(decodeURIComponent(location.hash.slice(1))) : listIterations();
+</script>
+</body>
+</html>

@@ -1,16 +1,13 @@
-@prefix : <https://www.example.org/> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
+{% for p, ns in prefixes.items() %}@prefix {{ p }}: <{{ ns }}> .
+{% endfor %}
 
 {% for item in glossary %}
-{% if item.term and item.type %}
 ### {{ item.term }}
-:{{ item.term }} a owl:{{ item.type }}{% if item.member_of %}, :{{ item.member_of }}{% endif %} ;
-    rdfs:label "{{ item.label }}"@en ;
-    rdfs:comment "{{ item.definition }}"@en{% if item.domain %} ;
-    rdfs:domain :{{ item.domain }}{% endif %}{% if item.range %} ;
-    rdfs:range :{{ item.range }}{% endif %} .
-{% endif %}
+:{{ item.term }} a owl:{{ item.type }}{% if item.member_of %}, {{ item.member_of }}{% endif %} ;
+    rdfs:label {{ item.label | tojson }}@en ;
+    rdfs:comment {{ item.definition | tojson }}@en{% if item.subclass_of %} ;
+    rdfs:subClassOf {{ item.subclass_of }}{% endif %}{% if item.subproperty_of %} ;
+    rdfs:subPropertyOf {{ item.subproperty_of }}{% endif %}{% if item.domain %} ;
+    rdfs:domain {{ item.domain }}{% endif %}{% if item.range %} ;
+    rdfs:range {{ item.range }}{% endif %} .
 {% endfor %}

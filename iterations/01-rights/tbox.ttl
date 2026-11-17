@@ -1,8 +1,8 @@
 @prefix : <https://www.example.org/> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
 
 
 
@@ -11,29 +11,21 @@
     rdfs:label "rights statement"@en ;
     rdfs:comment "A statement about the intellectual property rights of something."@en .
 
-
-
 ### RightsIdentifier
 :RightsIdentifier a owl:Class ;
     rdfs:label "rights identifier"@en ;
     rdfs:comment "An identifier that uniquely identifies a license."@en .
-
-
 
 ### RightsIdentifierScheme
 :RightsIdentifierScheme a owl:Class ;
     rdfs:label "rights identifier scheme"@en ;
     rdfs:comment "The identifier scheme used to identify a license."@en .
 
-
-
 ### hasRights
 :hasRights a owl:ObjectProperty ;
     rdfs:label "has rights"@en ;
     rdfs:comment "Information about rights held in and over the resource."@en ;
     rdfs:range :RightsStatement .
-
-
 
 ### hasIdentifier
 :hasIdentifier a owl:ObjectProperty ;
@@ -42,8 +34,6 @@
     rdfs:domain :RightsStatement ;
     rdfs:range :RightsIdentifier .
 
-
-
 ### usesIdentifierScheme
 :usesIdentifierScheme a owl:ObjectProperty ;
     rdfs:label "uses identifier scheme"@en ;
@@ -51,25 +41,18 @@
     rdfs:domain :RightsIdentifier ;
     rdfs:range :RightsIdentifierScheme .
 
-
-
 ### hasLiteralValue
 :hasLiteralValue a owl:DatatypeProperty ;
     rdfs:label "has literal value"@en ;
     rdfs:comment "The value that a reified literal represents."@en ;
     rdfs:domain :RightsIdentifier .
 
-
-
 ### hasURL
 :hasURL a owl:DatatypeProperty ;
     rdfs:label "has url"@en ;
     rdfs:comment "An identifier, in form of an HTTP Universal Resource Locator (URL), for a particular resource on the World Wide Web."@en .
 
-
-
 ### spdx
 :spdx a owl:NamedIndividual, :RightsIdentifierScheme ;
     rdfs:label "spdx"@en ;
     rdfs:comment "A list of commonly found licenses and exceptions used in free and open source and other collaborative software or documentation."@en .
-

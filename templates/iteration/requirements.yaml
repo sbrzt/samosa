@@ -24,7 +24,9 @@ glossary:
     align_to: ""
     rules:
       domain: ""
-      range: ""
+      range: ""  # Datatype Property: XSD datatype, e.g. date (-> xsd:date)
+      subclass_of: ""  # Class only
+      subproperty_of: ""  # properties only
       member_of: ""  # Named Individual only: class the individual belongs to
 
 abox:

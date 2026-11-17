@@ -2,3 +2,6 @@ jinja2>=3.1.6
 owlrl>=7.6.2
 pyyaml>=6.0.3
 rdflib>=7.5.0
+
+[api]
+fastapi[standard]>=0.115

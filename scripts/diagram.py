@@ -10,18 +10,16 @@ from rdflib import Graph, URIRef
 from rdflib.namespace import OWL, RDF, RDFS, XSD
 from scripts.common import resolve_iteration
 
-TEMPLATE = Path(__file__).with_name("graffoo.graphml")  # Graffoo palette, drawn in yEd
+TEMPLATE = Path(__file__).with_name("graffoo.graphml")
 NS = {"g": "http://graphml.graphdrawing.org/xmlns", "y": "http://www.yworks.com/xml/graphml"}
 for prefix, uri in (("", NS["g"]), ("y", NS["y"]), ("yed", "http://www.yworks.com/xml/yed/3"),
                     ("xsi", "http://www.w3.org/2001/XMLSchema-instance")):
     ET.register_namespace(prefix, uri)
 
-# template label of the prototype element per node / edge kind
 NODE_PROTO = {"class": "Class", "datatype": "Datatype", "individual": "instance"}
 EDGE_PROTO = {"object": "objectProperty", "data": "dataProperty", "subclass": "predicate", "type": "predicate",
               "object-use": "objectProperty", "data-use": "dataProperty"}
 
-# Graphviz approximation of the same palette, for the PNG
 DOT_NODE = {"class": 'shape=box style="rounded,filled" fillcolor="#FFFF00"',
             "datatype": 'shape=parallelogram style=filled fillcolor="#CCFFCC"',
             "individual": 'shape=circle style=filled fillcolor="#FF99CC" penwidth=3 width=0.25 fixedsize=true xlabel={label} label=""'}
@@ -33,6 +31,17 @@ DOT_EDGE["data-use"] = DOT_EDGE["data"] + " style=dashed"
 
 
 def extract(g):
+    """Collect TBox nodes and edges to draw.
+
+    Args:
+        g: Graph holding the TBox.
+
+    Returns:
+        A `(nodes, edges)` pair. `nodes` maps each IRI to its kind (`"class"`,
+        `"datatype"` or `"individual"`). `edges` lists `(source, target, property, kind)`
+        tuples, with kind `"subclass"`, `"type"`, `"object"` or `"data"`. Missing
+        domains and ranges default to `owl:Thing` or `rdfs:Literal`.
+    """
     nodes, edges = {}, []
     for c in g.subjects(RDF.type, OWL.Class):
         if isinstance(c, URIRef):
@@ -62,6 +71,15 @@ def extract(g):
 
 
 def usage(g, abox, nodes, edges):
+    """Add property usages found in the ABox, in place.
+
+    Args:
+        g: Graph holding the TBox, used to find object and datatype properties.
+        abox: Graph holding the ABox.
+        nodes: Node dict from `extract`, updated with new classes and datatypes.
+        edges: Edge list from `extract`, extended with `"object-use"` and
+            `"data-use"` edges between the types of subjects and objects.
+    """
     kinds = {p: k for k, t in (("object", OWL.ObjectProperty), ("data", OWL.DatatypeProperty)) for p in g.subjects(RDF.type, t)}
     classes = lambda i: [t for t in abox.objects(i, RDF.type) if isinstance(t, URIRef) and t != OWL.NamedIndividual]
     seen = {(s, t, p) for s, t, p, _ in edges}
@@ -79,6 +97,16 @@ def usage(g, abox, nodes, edges):
 
 
 def graphml(nodes, edges, name):
+    """Render nodes and edges as Graffoo GraphML for yEd.
+
+    Args:
+        nodes: Node dict from `extract`.
+        edges: Edge list from `extract`.
+        name: Function mapping an IRI to its display label.
+
+    Returns:
+        The GraphML document as a string, built from the prototypes in `graffoo.graphml`.
+    """
     tree = ET.parse(TEMPLATE)
     graph = tree.getroot().find("g:graph", NS)
     label_of = lambda el: (el.findtext(".//y:NodeLabel", "", NS) or el.findtext(".//y:EdgeLabel", "", NS)).strip()
@@ -88,14 +116,13 @@ def graphml(nodes, edges, name):
             graph.remove(el)
 
     ids = {n: f"n{i}" for i, n in enumerate(nodes)}
-    # ponytail: grid positions only; in yEd run Layout > Hierarchical once
     for i, (n, kind) in enumerate(nodes.items()):
         node = copy.deepcopy(protos[NODE_PROTO[kind]])
         node.set("id", ids[n])
         node.find(".//y:NodeLabel", NS).text = name(n)
         geo = node.find(".//y:Geometry", NS)
-        if kind != "individual":  # individuals keep the small circle, label sits outside
-            geo.set("width", str(10 * len(name(n)) + 30))  # ponytail: ~10px per char at Dialog 16
+        if kind != "individual":  
+            geo.set("width", str(10 * len(name(n)) + 30))
         geo.set("x", str((i % 5) * 300)); geo.set("y", str((i // 5) * 150))
         graph.append(node)
     for i, (s, t, p, kind) in enumerate(edges):
@@ -109,6 +136,16 @@ def graphml(nodes, edges, name):
 
 
 def dot(nodes, edges, name):
+    """Render nodes and edges as a Graphviz DOT graph in Graffoo style.
+
+    Args:
+        nodes: Node dict from `extract`.
+        edges: Edge list from `extract`.
+        name: Function mapping an IRI to its display label.
+
+    Returns:
+        The DOT source as a string.
+    """
     q = lambda s: '"' + s.replace('"', '\\"') + '"'
     out = ['digraph G { rankdir=LR; node [fontname="Helvetica"]; edge [fontname="Helvetica"];']
     for n, kind in nodes.items():
@@ -120,7 +157,16 @@ def dot(nodes, edges, name):
     return "\n".join(out)
 
 
-def main(iteration, refactored=False):
+def main(iteration: str, refactored: bool = False):
+    """Write `tbox.graphml` and, if Graphviz is installed, `tbox.png` for an iteration.
+
+    Args:
+        iteration: Iteration path or name, resolved with `resolve_iteration`.
+        refactored: If true, read from `refactoring/<iteration>/` instead.
+
+    Raises:
+        SystemExit: If `tbox.ttl` does not exist.
+    """
     it = resolve_iteration(iteration)
     base = Path("refactoring") / it.name if refactored else it
     tbox = base / "tbox.ttl"

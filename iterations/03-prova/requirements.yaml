@@ -1,0 +1,29 @@
+metadata:
+  id: '03'
+  status: draft
+scenario:
+  title: Prova
+  description: ''
+  examples:
+  - ''
+glossary:
+- term: ''
+  definition: ''
+  type: ''
+  align_to: ''
+  rules:
+    domain: ''
+    range: ''
+    member_of: ''
+abox:
+- individual: ''
+  type: ''
+  properties:
+  - property: ''
+    value: ''
+competency_questions:
+- id: ''
+  question: ''
+  expected_result: ''
+  query: ''
+  refactored_query: ''

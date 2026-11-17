@@ -1,8 +1,8 @@
 @prefix : <https://www.example.org/> .
-@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
 
 
 
@@ -11,15 +11,11 @@
     rdfs:label "qualified relation"@en ;
     rdfs:comment "A reified relation between two resources."@en .
 
-
-
 ### hasRelationSubject
 :hasRelationSubject a owl:ObjectProperty ;
     rdfs:label "has relation subject"@en ;
     rdfs:comment "The resource that is the subject of a reified relation."@en ;
     rdfs:domain :QualifiedRelation .
-
-
 
 ### hasRelationObject
 :hasRelationObject a owl:ObjectProperty ;
@@ -27,18 +23,13 @@
     rdfs:comment "The resource that is the object of a reified relation."@en ;
     rdfs:domain :QualifiedRelation .
 
-
-
 ### hasRelationCharacterization
 :hasRelationCharacterization a owl:ObjectProperty ;
     rdfs:label "has relation characterization"@en ;
     rdfs:comment "The specific nature or type of a qualified relation."@en ;
     rdfs:domain :QualifiedRelation .
 
-
-
 ### isCitedBy
 :isCitedBy a owl:ObjectProperty ;
     rdfs:label "is cited by"@en ;
     rdfs:comment "The cited entity is cited by the citing entity."@en .
-

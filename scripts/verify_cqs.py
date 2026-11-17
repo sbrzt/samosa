@@ -5,6 +5,16 @@ from rdflib.namespace import split_uri
 
 
 def _cell(term):
+    """Split a query result term into its printable value and local name.
+
+    Args:
+        term: An rdflib term from a result row, or None for an unbound variable.
+
+    Returns:
+        A `(value, local)` pair. For an IRI, `local` is its local name, or the full
+        IRI if it cannot be split. For anything else, `local` is None, and `value`
+        is `""` for None.
+    """
     if isinstance(term, URIRef):
         try:
             return str(term), split_uri(term)[1]
@@ -14,8 +24,19 @@ def _cell(term):
 
 
 def _match(expected, term):
-    """`:name` matches any IRI with that local name, ignoring case (abox lowercases
-    individual names), so it also holds after align."""
+    """Check if one expected cell matches one result term.
+
+    `:name` matches any IRI with that local name, ignoring case (abox lowercases
+    individual names), so it also holds after align. Any other expected value must
+    equal the term's string value. Surrounding whitespace and quotes are ignored.
+
+    Args:
+        expected: Expected cell from `expected_result`.
+        term: An rdflib term from a result row.
+
+    Returns:
+        True if the term matches.
+    """
     value, local = _cell(term)
     expected = str(expected).strip().strip("'\"")
     if expected.startswith(":") and local is not None:
@@ -24,14 +45,33 @@ def _match(expected, term):
 
 
 def _rows(expected):
-    """expected_result: list of rows; a row is a list or a comma-separated string."""
+    """Normalize `expected_result` to a list of rows of cells.
+
+    Args:
+        expected: A list of rows, or one row. A row is a list of cells or a
+            comma-separated string. Use a list row when a cell contains a comma.
+
+    Returns:
+        A list of rows, each a list of cells.
+    """
     if isinstance(expected, str):
         expected = [expected]
     return [row if isinstance(row, list) else [c.strip() for c in str(row).split(",")] for row in expected]
 
 
 def _diff(expected, results):
-    """Return (missing expected rows, unexpected result rows), order-insensitive."""
+    """Compare expected rows with result rows, ignoring order.
+
+    Each result row can match only one expected row.
+
+    Args:
+        expected: Expected rows from `_rows`.
+        results: Result rows from the query.
+
+    Returns:
+        A `(missing, unexpected)` pair: expected rows with no matching result row,
+        and result rows left unmatched.
+    """
     left = list(results)
     missing = []
     for row in expected:
@@ -44,7 +84,22 @@ def _diff(expected, results):
 
 
 def run_queries(graph, cqs, label, key="query"):
-    """Run each CQ's `key` query on graph and compare with expected_result. Return (checked, failures)."""
+    """Run the competency question queries on a graph and print PASS or FAIL for each.
+
+    A query with an `expected_result` passes if its results match it exactly,
+    ignoring order. A query without one passes if it returns any result.
+    Competency questions without a `key` query are skipped.
+
+    Args:
+        graph: Graph to query.
+        cqs: List of competency questions from `requirements.yaml`, or None.
+        label: Name shown in each printed line, e.g. the iteration name.
+        key: Field holding the SPARQL query, `"query"` or `"refactored_query"`.
+
+    Returns:
+        A `(checked, failures)` pair: the number of queries run and the number
+        that failed or raised an error.
+    """
     checked = failures = 0
     for cq in cqs or []:
         query = cq.get(key)
@@ -81,7 +136,7 @@ if __name__ == "__main__":
     from rdflib import Graph, Literal
     EX = "https://www.example.org/"
     rows = [(URIRef(EX + "a"), Literal("x, y")), (URIRef("http://purl.org/spar/cito/isCitedBy"), Literal("z"))]
-    assert _diff(_rows([":a, x", ":isCitedBy, z"]), rows)[0] == [[":a", "x"]]  # comma in literal needs list row
+    assert _diff(_rows([":a, x", ":isCitedBy, z"]), rows)[0] == [[":a", "x"]]
     assert _diff(_rows([[":a", "x, y"], [":isCitedBy", "z"]]), rows) == ([], [])
     assert _diff(_rows([":isCitedBy, z"]), rows)[1] == [rows[0]]
     print("ok")

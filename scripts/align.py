@@ -15,7 +15,18 @@ from scripts.generate_tbox import local_name
 
 
 def expand(value, prefixes):
-    """`prefix:term` -> full IRI. Full IRIs pass through."""
+    """Expand a `prefix:term` CURIE to a full IRI.
+
+    Args:
+        value: CURIE such as `fabio:hasURL`, or a full IRI.
+        prefixes: Mapping of prefix name to namespace IRI.
+
+    Returns:
+        The full IRI. Values that already contain `://` are returned unchanged.
+
+    Raises:
+        SystemExit: If the prefix is not in `prefixes`.
+    """
     if "://" in value:
         return value
     prefix, _, local = value.partition(":")
@@ -29,7 +40,20 @@ _vocabularies = {}
 
 
 def vocabulary(iri, prefixes):
-    """Graph of the ontology owning `iri`, fetched once from its namespace and cached in vocabularies/."""
+    """Load the ontology that owns `iri`.
+
+    The owning namespace is the longest one in `prefixes` that `iri` starts with.
+    The graph is read from `vocabularies/<prefix>.ttl` if present, otherwise
+    fetched from the namespace IRI and saved there. Results are memoized.
+
+    Args:
+        iri: Term IRI to look up.
+        prefixes: Mapping of prefix name to namespace IRI.
+
+    Returns:
+        The vocabulary graph (empty if loading failed), or None if no known
+        namespace matches `iri`.
+    """
     prefix, ns = max(((p, n) for p, n in prefixes.items() if iri.startswith(n)),
                      key=lambda x: len(x[1]), default=(None, None))
     if prefix is None:
@@ -41,7 +65,7 @@ def vocabulary(iri, prefixes):
             if path.exists():
                 g.parse(path, format="turtle")
             else:
-                g.parse(ns)  # content negotiation on the namespace IRI
+                g.parse(ns)
                 path.parent.mkdir(exist_ok=True)
                 g.serialize(destination=path, format="turtle")
         except Exception as e:
@@ -51,7 +75,15 @@ def vocabulary(iri, prefixes):
 
 
 def describe(g, term):
-    """All triples with `term` as subject, following blank nodes."""
+    """Yield all triples with `term` as subject, following blank nodes.
+
+    Args:
+        g: Graph to read from.
+        term: Subject to describe.
+
+    Yields:
+        `(s, p, o)` triples about `term` and any blank nodes reachable from it.
+    """
     todo, seen = [term], set()
     while todo:
         s = todo.pop()
@@ -63,34 +95,49 @@ def describe(g, term):
 
 
 def prefix_for(ns, known, taken):
-    """Prefix name for an unregistered namespace: known bindings, the namespace's own RDF, prefix.cc, the IRI."""
+    """Pick a prefix name for an unregistered namespace.
+
+    Sources, in order: known bindings, the namespace's own RDF, prefix.cc,
+    and finally the last path segment of the IRI.
+
+    Args:
+        ns: Namespace IRI.
+        known: Mapping of namespace IRI to prefix name, from loaded graphs.
+        taken: Prefix names already in use.
+
+    Returns:
+        A prefix name. Not guaranteed unique; the caller resolves clashes.
+    """
     if ns in known:
         return known[ns]
     try:
-        g = Graph().parse(ns)  # content negotiation on the namespace IRI
-        # skip names already taken: badly parsed RDF/XML can bind e.g. `owl` to the wrong namespace
+        g = Graph().parse(ns)
         name = next((p for p, n in g.namespaces() if p and str(n) == ns and p not in taken), None)
         if name:
             return name
     except Exception:
         pass
     try:
-        # plain http: prefix.cc's https certificate has expired
         url = "http://prefix.cc/reverse?" + urlencode({"uri": ns, "format": "json"})
         return next(iter(json.load(urlopen(url, timeout=10))))
     except Exception:
         pass
-    # last path segment, file extension dropped: .../region.owl# -> region
     words = re.findall(r"[A-Za-z][\w-]*", re.sub(r"\.\w+[#/]?$", "", ns.split("://", 1)[-1]))
     return words[-1].lower() if words else "ns"
 
 
 def register_prefixes(dst, prefixes):
-    """Register in prefixes.yaml every namespace used by dst and missing from it."""
+    """Register every namespace used by `dst` and missing from prefixes.yaml.
+
+    New prefixes are appended to prefixes.yaml and bound in `dst`.
+
+    Args:
+        dst: Graph whose IRIs are scanned.
+        prefixes: Mapping of prefix name to namespace IRI. Updated in place.
+    """
     known = {str(n): p for g in (*_vocabularies.values(), dst) for p, n in g.namespaces()
              if p and not re.fullmatch(r"ns\d+", p)}
     missing = set()
-    # ponytail: every IRI counts, doc links included; filter by triple position if junk prefixes show up
     for t in {t for triple in dst for t in triple if isinstance(t, URIRef)}:
         if any(t.startswith(n) for n in prefixes.values()):
             continue
@@ -117,14 +164,30 @@ def register_prefixes(dst, prefixes):
 
 
 def refactor_query(query, names):
+    """Rewrite local terms in a SPARQL query to their aligned IRIs.
+
+    Args:
+        query: SPARQL query using local `:name` or `<EX name>` terms.
+        names: Mapping of local name to aligned IRI.
+
+    Returns:
+        The query with every aligned local term replaced by `<iri>`.
+    """
     for name, iri in names.items():
-        # case-insensitive: glossary "has url" -> hasUrl, but hand-written ABox/queries may say hasURL
         query = re.sub(re.escape(f"<{EX}{name}>"), f"<{iri}>", query, flags=re.I)
         query = re.sub(rf"(?<![\w:]):{re.escape(name)}\b", f"<{iri}>", query, flags=re.I)
     return query
 
 
-def main(iteration):
+def main(iteration: str):
+    """Align an iteration's TBox, ABox and queries to external vocabularies.
+
+    Writes `refactoring/<iteration>/{tbox,abox}.ttl` and adds a
+    `refactored_query` to each competency question in requirements.yaml.
+
+    Args:
+        iteration: Iteration identifier, resolved by `resolve_iteration`.
+    """
     it = resolve_iteration(iteration)
     data = load_yaml(it / "requirements.yaml")
 
@@ -133,7 +196,16 @@ def main(iteration):
     by_lower = {n.lower(): URIRef(iri) for n, iri in names.items()}
 
     def aligned(t):
-        """Aligned IRI for a local term, matched case-insensitively (hasUrl == hasURL)."""
+        """Return the aligned IRI for a local term.
+
+        Matching is case-insensitive (hasUrl == hasURL).
+
+        Args:
+            t: Any RDF term.
+
+        Returns:
+            The aligned URIRef, or None if `t` is not an aligned local term.
+        """
         if isinstance(t, URIRef) and t.startswith(EX):
             return by_lower.get(t[len(EX):].lower())
         return None
@@ -149,12 +221,10 @@ def main(iteration):
         for prefix, ns in prefixes.items():
             dst.bind(prefix, ns)
         for s, p, o in src:
-            # aligned terms are defined by their external vocabulary: drop local declaration
             if name == "tbox" and aligned(s):
                 continue
             s, p, o = (aligned(t) or t for t in (s, p, o))
             if name == "abox" and isinstance(o, Literal) and o.datatype is None and not o.language:
-                # type plain literals with the aligned property's XSD range (e.g. fabio:hasURL -> xsd:anyURI)
                 rng = tbox.value(p, RDFS.range)
                 if rng is not None and str(rng).startswith(str(XSD)) and rng != XSD.string:
                     o = Literal(str(o), datatype=rng)
@@ -167,16 +237,30 @@ def main(iteration):
                     print(f"Warning: no triples for <{iri}> in its vocabulary.")
                 for t in triples:
                     dst.add(t)
-            # named superclass chains (e.g. datacite:Identifier -> literal:Literal), kept only up to the last class
-            # the TBox already mentions (as class, domain, range...), without the ancestors' full definitions
             relevant = {t for t in dst.all_nodes() if isinstance(t, URIRef)}
 
             def supers(c):
+                """Return the named direct superclasses of `c` in its vocabulary.
+
+                Args:
+                    c: Class IRI.
+
+                Returns:
+                    List of URIRef superclasses; empty if no vocabulary is known.
+                """
                 vocab = vocabulary(str(c), prefixes)
                 return [s for s in vocab.objects(c, RDFS.subClassOf) if isinstance(s, URIRef)] if vocab is not None else []
 
             def climb(c, seen):
-                """Add c's superclass links that lead to a relevant class; True if any did."""
+                """Add the superclass links of `c` that lead to a relevant class.
+
+                Args:
+                    c: Class IRI to climb from.
+                    seen: Classes already on the current path, to stop cycles.
+
+                Returns:
+                    True if at least one link was added.
+                """
                 found = False
                 for sup in supers(c):
                     if sup not in seen and (climb(sup, seen | {sup}) or sup in relevant):

@@ -11,6 +11,11 @@ dependencies = [
     "rdflib>=7.5.0",
 ]
 
+[project.optional-dependencies]
+api = [
+    "fastapi[standard]>=0.115",
+]
+
 [project.scripts]
 samosa = "main:main"
 
@@ -19,5 +24,5 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["main"]
+py-modules = ["main", "api"]
 packages = ["scripts"]
