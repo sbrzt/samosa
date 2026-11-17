@@ -126,6 +126,15 @@ literal:hasLiteralValue a owl:DatatypeProperty,
     rdfs:subPropertyOf region:hasRegionDataValue ;
     vs:term_status reg:statusStable .
 
+<https://www.example.org/ex/> a owl:Ontology ;
+    dcterms:creator "Jane Doe",
+        "John Doe" ;
+    dcterms:description "This is an example ontology."@en ;
+    dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+    dcterms:title "Example ontology"@en ;
+    owl:versionIRI <https://www.example.org/ex/0-1-0> ;
+    owl:versionInfo "0.1.0" .
+
 cito:isCitedBy a owl:ObjectProperty ;
     rdfs:label "is cited by"@en ;
     vann:example """

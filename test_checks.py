@@ -4,6 +4,7 @@
 from rdflib import Graph
 from scripts.check_consistency import inconsistencies, reason
 from scripts.generate_tbox import BASE_PREFIXES, ref
+from scripts.merge import conflicts, duplicates
 from scripts.test_iteration import misused, uncovered, undeclared
 
 TBOX = """@prefix : <https://www.example.org/> . @prefix owl: <http://www.w3.org/2002/07/owl#> .
@@ -31,4 +32,10 @@ if __name__ == "__main__":
     data = {"glossary": [{"term": "animal", "type": "Class"}, {"term": "eats", "type": "ObjectProperty"}],
             "competency_questions": [{"query": "SELECT ?a WHERE { ?a a :Animal }"}]}
     assert set(uncovered(data, abox)) == {("Animal", "abox"), ("eats", "queries")}
+    old = Graph().parse(format="turtle", data=TBOX)
+    new = Graph().parse(format="turtle", data="""@prefix : <https://www.example.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> . @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+:eats a owl:ObjectProperty ; rdfs:range :Meal . :animal a owl:Class . :mammal a owl:ObjectProperty .""")
+    assert [(str(t).rsplit("/", 1)[1], w) for t, w, _, _ in conflicts(new, old)] == [("eats", "range")]
+    assert [(str(a).rsplit("/", 1)[1], str(b).rsplit("/", 1)[1]) for a, b, _ in duplicates(new, old)] == [("animal", "Animal")]
     print("ok")

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rdf:RDF
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+>
+  <rdf:Description rdf:about="http://purl.org/spar/datacite/Identifier">
+    <rdfs:subClassOf rdf:resource="http://www.essepuntato.it/2010/06/literalreification/Literal"/>
+  </rdf:Description>
+</rdf:RDF>

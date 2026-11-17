@@ -23,7 +23,7 @@ def _cell(term):
     return ("" if term is None else str(term)), None
 
 
-def _match(expected, term):
+def _match(expected, term, aliases=None):
     """Check if one expected cell matches one result term.
 
     `:name` matches any IRI with that local name, ignoring case (abox lowercases
@@ -33,6 +33,9 @@ def _match(expected, term):
     Args:
         expected: Expected cell from `expected_result`.
         term: An rdflib term from a result row.
+        aliases: Optional mapping of casefolded local name to the casefolded
+            local name of the term it was aligned or renamed to, so `:hasRights`
+            also matches `dcterms:rights`.
 
     Returns:
         True if the term matches.
@@ -40,7 +43,8 @@ def _match(expected, term):
     value, local = _cell(term)
     expected = str(expected).strip().strip("'\"")
     if expected.startswith(":") and local is not None:
-        return expected[1:].casefold() == local.casefold()
+        name = expected[1:].casefold()
+        return local.casefold() in (name, (aliases or {}).get(name))
     return expected == value
 
 
@@ -59,7 +63,7 @@ def _rows(expected):
     return [row if isinstance(row, list) else [c.strip() for c in str(row).split(",")] for row in expected]
 
 
-def _diff(expected, results):
+def _diff(expected, results, aliases=None):
     """Compare expected rows with result rows, ignoring order.
 
     Each result row can match only one expected row.
@@ -67,6 +71,7 @@ def _diff(expected, results):
     Args:
         expected: Expected rows from `_rows`.
         results: Result rows from the query.
+        aliases: See `_match`.
 
     Returns:
         A `(missing, unexpected)` pair: expected rows with no matching result row,
@@ -75,7 +80,7 @@ def _diff(expected, results):
     left = list(results)
     missing = []
     for row in expected:
-        hit = next((r for r in left if len(r) == len(row) and all(_match(e, t) for e, t in zip(row, r))), None)
+        hit = next((r for r in left if len(r) == len(row) and all(_match(e, t, aliases) for e, t in zip(row, r))), None)
         if hit is None:
             missing.append(row)
         else:
@@ -83,7 +88,7 @@ def _diff(expected, results):
     return missing, left
 
 
-def run_queries(graph, cqs, label, key="query"):
+def run_queries(graph, cqs, label, key="query", aliases=None):
     """Run the competency question queries on a graph and print PASS or FAIL for each.
 
     A query with an `expected_result` passes if its results match it exactly,
@@ -95,6 +100,7 @@ def run_queries(graph, cqs, label, key="query"):
         cqs: List of competency questions from `requirements.yaml`, or None.
         label: Name shown in each printed line, e.g. the iteration name.
         key: Field holding the SPARQL query, `"query"` or `"refactored_query"`.
+        aliases: See `_match`.
 
     Returns:
         A `(checked, failures)` pair: the number of queries run and the number
@@ -119,7 +125,7 @@ def run_queries(graph, cqs, label, key="query"):
             print(f"{'PASS' if ok else 'FAIL'} [{label}] {cq_id}: {len(results)} result(s), no expected_result")
             failures += not ok
             continue
-        missing, extra = _diff(_rows(expected), results)
+        missing, extra = _diff(_rows(expected), results, aliases)
         if not missing and not extra:
             print(f"PASS [{label}] {cq_id}: {len(results)} result(s) match expected_result")
             continue
@@ -139,4 +145,5 @@ if __name__ == "__main__":
     assert _diff(_rows([":a, x", ":isCitedBy, z"]), rows)[0] == [[":a", "x"]]
     assert _diff(_rows([[":a", "x, y"], [":isCitedBy", "z"]]), rows) == ([], [])
     assert _diff(_rows([":isCitedBy, z"]), rows)[1] == [rows[0]]
+    assert _diff(_rows([":a, x, y", ":cites, z"]), rows, {"cites": "iscitedby"})[0] == [[":a", "x", "y"]]
     print("ok")

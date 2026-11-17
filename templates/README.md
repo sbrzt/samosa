@@ -14,13 +14,13 @@ Templates used by the SAMOSA CLI. The scripts load them with paths relative to t
 
 `requirements.yaml` is the skeleton that you fill in for each iteration:
 
-- `metadata`: `id` (set by `new`) and `status`.
+- `metadata`: `id` (set by `new`) and `status` (`merge` sets it to `merged`; merged iterations form the bag of test cases).
 - `scenario`: `title`, `description` and `examples`.
 - `glossary`: one entry per term, with:
   - `term`: label of the term.
   - `definition`: becomes the `rdfs:comment`.
   - `type`: `Class`, `Object Property`, `Datatype Property` or `Named Individual`. Case, spaces and underscores are ignored.
-  - `align_to`: optional existing vocabulary term (`prefix:term` or full IRI) that `align` uses to replace the local term.
+  - `align_to`: optional existing vocabulary term (`prefix:term` or full IRI) that `align` uses to replace the local term. `:Term` reuses a term of the current model (`project/tbox.ttl`). `rename` sets it for you.
   - `rules`: optional `domain`, `range` and `subproperty_of` for properties, `subclass_of` for classes, and `member_of` for named individuals (the class they belong to). Each value is a glossary term name, a CURIE with a prefix from `prefixes.yaml` (e.g. `foaf:Person`) or a full IRI. A bare `range` of a datatype property is an XSD datatype (`date` becomes `xsd:date`).
 - `abox`: example individuals, each with `individual`, `type` (left empty for `owl:Thing`) and `properties` (`property` and `value` pairs). A value that names another individual or a glossary term becomes an IRI. Any other value becomes a literal, typed with the property's XSD `range` if it has one. `draft-abox` can fill this block for you.
 - `competency_questions`: one entry per CQ, with:

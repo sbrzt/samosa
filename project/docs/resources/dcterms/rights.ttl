@@ -1,0 +1,16 @@
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcam: <http://purl.org/dc/dcam/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+dcterms:rights a rdf:Property ;
+    rdfs:label "Rights"@en ;
+    dcam:rangeIncludes dcterms:RightsStatement ;
+    dcterms:description "Typically, rights information includes a statement about various property rights associated with the resource, including intellectual property rights.  Recommended practice is to refer to a rights statement with a URI.  If this is not possible or feasible, a literal value (name, label, or short text) may be provided."@en ;
+    dcterms:issued "2008-01-14"^^xsd:date ;
+    rdfs:comment "Information about rights held in and over the resource."@en ;
+    rdfs:isDefinedBy dcterms: ;
+    rdfs:subPropertyOf dc:rights .
+

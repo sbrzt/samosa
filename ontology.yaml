@@ -1,0 +1,15 @@
+# Metadata of the ontology, written by `samosa merge` as the owl:Ontology
+# header of project/tbox.ttl and shown by `samosa docs` (LODE). Empty fields
+# are left out. Local terms get `rdfs:isDefinedBy <iri>`.
+
+iri: https://www.example.org/ex/
+version: 0.1.0
+version_iri: https://www.example.org/ex/0-1-0
+title: Example ontology
+description: |
+  This is an example ontology.
+creators: [
+  "John Doe",
+  "Jane Doe"
+]
+license: https://creativecommons.org/licenses/by/4.0/

@@ -4,8 +4,9 @@ import re
 import sys
 from pathlib import Path
 from rdflib import Graph, Literal, URIRef
-from rdflib.namespace import OWL, RDF
+from rdflib.namespace import OWL, RDF, RDFS
 from scripts import check_consistency
+from scripts.align import aliases, load_prefixes
 from scripts.common import EX, load_yaml, resolve_iteration
 from scripts.generate_tbox import BASE_PREFIXES, local_name
 from scripts.verify_cqs import run_queries
@@ -30,7 +31,8 @@ def undeclared(tbox, abox):
     declared = set(tbox.subjects())
     used = {(p, "abox") for p in abox.predicates() if p != RDF.type}
     used |= {(c, "abox") for c in abox.objects(None, RDF.type)}
-    used |= {(o, "tbox") for o in tbox.objects() if isinstance(o, URIRef) and o.startswith(EX)}
+    used |= {(o, "tbox") for _, p, o in tbox
+             if p != RDFS.isDefinedBy and isinstance(o, URIRef) and o.startswith(EX)}
     return sorted((t, w) for t, w in used if not str(t).startswith(BUILTIN) and t not in declared)
 
 
@@ -80,14 +82,47 @@ def uncovered(data, abox):
     return missing
 
 
+def run_tests(tbox, abox, cqs, label, key="query", reason=False, aliases=None):
+    """Run the formal data and query tests of one test case and print the results.
+
+    Fails on terms the TBox does not describe (`undeclared`), ABox values of
+    the wrong kind (`misused`), OWL 2 RL inconsistencies of TBox+ABox, and
+    failing competency question queries.
+
+    Args:
+        tbox: TBox graph, the iteration's own or the current model.
+        abox: ABox graph of the test case.
+        cqs: Competency questions from `requirements.yaml`, or None.
+        label: Name shown in each printed line, e.g. the iteration name.
+        key: Field holding the SPARQL query, `"query"` or `"refactored_query"`.
+        reason: If true, run the queries on the OWL 2 RL closure of TBox+ABox.
+        aliases: See `verify_cqs._match`.
+
+    Returns:
+        A `(checked, failures)` pair: the number of queries run and the number
+        of failed tests.
+    """
+    failures = 0
+    for term, where in undeclared(tbox, abox):
+        print(f"FAIL [{label}] {where}: <{term}> is not described in the TBox")
+        failures += 1
+    for s, p, o in misused(tbox, abox):
+        print(f"FAIL [{label}] abox: <{s}> <{p}> has the wrong kind of value: {o.n3()}")
+        failures += 1
+    graph = tbox + abox
+    closure = check_consistency.reason(graph)
+    for message in check_consistency.inconsistencies(closure):
+        print(f"FAIL [{label}] inconsistent (OWL 2 RL): {message}")
+        failures += 1
+    checked, failed = run_queries(closure if reason else graph, cqs, label, key, aliases)
+    return checked, failures + failed
+
+
 def main(iteration: str, refactored: bool = False, reason: bool = False):
     """Run the data and query tests of an iteration on its TBox and ABox.
 
-    Fails if the ABox or TBox uses terms the TBox does not describe, if an
-    ABox value has the wrong kind for its property, if TBox+ABox is
-    inconsistent under OWL 2 RL, or if a competency question query fails.
-    Warns (without failing) about glossary terms unused by the queries or
-    the ABox.
+    Runs `run_tests` and, on the first version only, warns (without failing)
+    about glossary terms unused by the queries or the ABox.
 
     Args:
         iteration: Iteration path or name, resolved with `resolve_iteration`.
@@ -110,31 +145,19 @@ def main(iteration: str, refactored: bool = False, reason: bool = False):
             print(f"Error: {base / name}.ttl not found. Run the previous step first.")
             sys.exit(1)
         graphs[name] = Graph().parse(base / f"{name}.ttl", format="turtle")
-    tbox, abox = graphs["tbox"], graphs["abox"]
-    graph = tbox + abox
     data = load_yaml(it / "requirements.yaml")
 
-    failures = 0
-    for term, where in undeclared(tbox, abox):
-        print(f"FAIL [{it.name}] {where}: <{term}> is not described in the TBox")
-        failures += 1
-    for s, p, o in misused(tbox, abox):
-        print(f"FAIL [{it.name}] abox: <{s}> <{p}> has the wrong kind of value: {o.n3()}")
-        failures += 1
-    closure = check_consistency.reason(graph)
-    for message in check_consistency.inconsistencies(closure):
-        print(f"FAIL [{it.name}] inconsistent (OWL 2 RL): {message}")
-        failures += 1
     if not refactored:
-        for name, where in uncovered(data, abox):
+        for name, where in uncovered(data, graphs["abox"]):
             print(f"WARN [{it.name}] glossary term '{name}' is not used by the {where}")
-
     key = "refactored_query" if refactored else "query"
-    checked, failed = run_queries(closure if reason else graph, data.get("competency_questions"), it.name, key)
+    names = aliases(data, load_prefixes()) if refactored else None
+    checked, failures = run_tests(graphs["tbox"], graphs["abox"], data.get("competency_questions"),
+                                  it.name, key, reason, names)
     if checked == 0:
         print("No competency questions with a query found.")
         sys.exit(1)
-    sys.exit(1 if failures or failed else 0)
+    sys.exit(1 if failures else 0)
 
 
 if __name__ == "__main__":

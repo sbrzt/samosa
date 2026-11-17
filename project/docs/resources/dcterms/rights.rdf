@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rdf:RDF
+   xmlns:dcam="http://purl.org/dc/dcam/"
+   xmlns:dcterms="http://purl.org/dc/terms/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+>
+  <rdf:Description rdf:about="http://purl.org/dc/terms/rights">
+    <rdfs:comment xml:lang="en">Information about rights held in and over the resource.</rdfs:comment>
+    <dcterms:description xml:lang="en">Typically, rights information includes a statement about various property rights associated with the resource, including intellectual property rights.  Recommended practice is to refer to a rights statement with a URI.  If this is not possible or feasible, a literal value (name, label, or short text) may be provided.</dcterms:description>
+    <rdfs:isDefinedBy rdf:resource="http://purl.org/dc/terms/"/>
+    <rdfs:subPropertyOf rdf:resource="http://purl.org/dc/elements/1.1/rights"/>
+    <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"/>
+    <dcam:rangeIncludes rdf:resource="http://purl.org/dc/terms/RightsStatement"/>
+    <dcterms:issued rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2008-01-14</dcterms:issued>
+    <rdfs:label xml:lang="en">Rights</rdfs:label>
+  </rdf:Description>
+</rdf:RDF>

@@ -1,0 +1,871 @@
+[
+  {
+    "@id": "http://purl.org/dc/terms/RightsStatement",
+    "@type": [
+      "http://www.w3.org/2000/01/rdf-schema#Class"
+    ],
+    "http://purl.org/dc/terms/issued": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#date",
+        "@value": "2008-01-14"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "A statement about the intellectual property rights (IPR) held in or over a resource, a legal document giving official permission to do something with a resource, or a statement about access rights."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/dc/terms/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "Rights Statement"
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/spar/datacite/Identifier",
+    "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+      {
+        "@id": "http://www.essepuntato.it/2010/06/literalreification/Literal"
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/dc/terms/rights",
+    "@type": [
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"
+    ],
+    "http://purl.org/dc/dcam/rangeIncludes": [
+      {
+        "@id": "http://purl.org/dc/terms/RightsStatement"
+      }
+    ],
+    "http://purl.org/dc/terms/description": [
+      {
+        "@language": "en",
+        "@value": "Typically, rights information includes a statement about various property rights associated with the resource, including intellectual property rights.  Recommended practice is to refer to a rights statement with a URI.  If this is not possible or feasible, a literal value (name, label, or short text) may be provided."
+      }
+    ],
+    "http://purl.org/dc/terms/issued": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#date",
+        "@value": "2008-01-14"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "Information about rights held in and over the resource."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/dc/terms/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "Rights"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#subPropertyOf": [
+      {
+        "@id": "http://purl.org/dc/elements/1.1/rights"
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/spar/fabio/hasURL",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#DatatypeProperty"
+    ],
+    "http://purl.org/vocab/vann/example": [
+      {
+        "@value": "\n        :my-journal-article a fabio:JournalArticle ;\n            fabio:hasURL 'https://www.example.org/articles/intro-semantic-web'^^xsd:anyURI .\n    "
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "An identifier, in form of an HTTP Universal Resource Locator (URL), for a particular resource on the World Wide Web."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#domain": [
+      {
+        "@id": "http://purl.org/vocab/frbr/core#Endeavour"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/spar/fabio/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "has URL"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#range": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#anyURI"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#subPropertyOf": [
+      {
+        "@id": "http://purl.org/dc/terms/identifier"
+      }
+    ],
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#term_status": [
+      {
+        "@id": "http://purl.org/linked-data/registry#statusStable"
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/spar/cito/isCitedBy",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#ObjectProperty"
+    ],
+    "http://purl.org/vocab/vann/example": [
+      {
+        "@value": "\n    :paper-a a fabio:JournalArticle ;\n        cito:isCitedBy :paper-b .\n    "
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "A relation according to which the cited entity is cited by the citing entity."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/spar/cito/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "is cited by"
+      }
+    ],
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#term_status": [
+      {
+        "@id": "http://purl.org/linked-data/registry#statusStable"
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/spar/datacite/hasRelationObject",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#ObjectProperty"
+    ],
+    "http://purl.org/vocab/vann/example": [
+      {
+        "@value": "\n        :relation-dataset-article a datacite:QualifiedRelation ;\n                datacite:hasRelationObject :my-article .\n        "
+      }
+    ],
+    "http://www.linkedmodel.org/schema/vaem#rationale": [
+      {
+        "@language": "en",
+        "@value": "\nThis is used to specify the object of a qualified relation (modelled via the class `datacite:QualifiedRelation`) between two resources.\n        "
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "The resource that is the object of a reified relation."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#domain": [
+      {
+        "@id": "http://purl.org/spar/datacite/QualifiedRelation"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/spar/datacite/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "has relation object"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#subPropertyOf": [
+      {
+        "@id": "http://www.ontologydesignpatterns.org/cp/owl/situation.owl#isSettingFor"
+      }
+    ],
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#term_status": [
+      {
+        "@id": "http://purl.org/linked-data/registry#statusStable"
+      }
+    ]
+  },
+  {
+    "@id": "https://www.example.org/ex/",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#Ontology"
+    ],
+    "http://purl.org/dc/terms/creator": [
+      {
+        "@value": "Jane Doe"
+      },
+      {
+        "@value": "John Doe"
+      }
+    ],
+    "http://purl.org/dc/terms/description": [
+      {
+        "@language": "en",
+        "@value": "This is an example ontology."
+      }
+    ],
+    "http://purl.org/dc/terms/license": [
+      {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      }
+    ],
+    "http://purl.org/dc/terms/title": [
+      {
+        "@language": "en",
+        "@value": "Example ontology"
+      }
+    ],
+    "http://www.w3.org/2002/07/owl#versionIRI": [
+      {
+        "@id": "https://www.example.org/ex/0-1-0"
+      }
+    ],
+    "http://www.w3.org/2002/07/owl#versionInfo": [
+      {
+        "@value": "0.1.0"
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/spar/datacite/usesIdentifierScheme",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#ObjectProperty"
+    ],
+    "http://purl.org/vocab/vann/example": [
+      {
+        "@value": "\n        :my-resource-id a datacite:Identifier ;\n                datacite:usesIdentifierScheme datacite:doi .\n        "
+      }
+    ],
+    "http://www.linkedmodel.org/schema/vaem#rationale": [
+      {
+        "@language": "en",
+        "@value": "\nThis is used to specify the scheme followed by a certain identifier. \nIts value should be a named individual belonging to either `datacite:ResourceIdentifierScheme`, `datacite:AgentIdentifierScheme` (or its sub-classes) or `datacite:RightsIdentifierScheme`.\n        "
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "The identifier scheme used to provide the identifier for an entity (either a funder, a person, a license or a resource)."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#domain": [
+      {
+        "@id": "http://purl.org/spar/datacite/Identifier"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/spar/datacite/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "uses identifier scheme"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#range": [
+      {
+        "@id": "http://purl.org/spar/datacite/IdentifierScheme"
+      }
+    ],
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#term_status": [
+      {
+        "@id": "http://purl.org/linked-data/registry#statusStable"
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/spar/datacite/RightsIdentifierScheme",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#Class"
+    ],
+    "http://purl.org/vocab/vann/example": [
+      {
+        "@value": "\n        :my-resource-rights \n                datacite:hasIdentifier :my-resource-rights-id .\n\n        :my-resource-rights-id a datacite:RightsIdentifier ;\n                datacite:usesIdentifierScheme datacite:spdx .\n\n        datacite:spdx a datacite:RightsIdentifierScheme .\n        "
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "The identifier scheme used to identify a license."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/spar/datacite/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "rights identifier scheme"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+      {
+        "@id": "http://purl.org/spar/datacite/IdentifierScheme"
+      }
+    ],
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#term_status": [
+      {
+        "@id": "http://purl.org/linked-data/registry#statusStable"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#note": [
+      {
+        "@language": "en",
+        "@value": "\nThis is used to specify the identifier scheme used by a rights identifier.\n\nIndividual schemes are defined as members of this class.\n        "
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/spar/datacite/hasIdentifier",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#InverseFunctionalProperty",
+      "http://www.w3.org/2002/07/owl#ObjectProperty"
+    ],
+    "http://purl.org/vocab/vann/example": [
+      {
+        "@value": "\n        :my-resource\n                datacite:hasIdentifier :my-resource-identifier .\n        \n        :my-resource-identifier a datacite:Identifier .\n        "
+      }
+    ],
+    "http://www.linkedmodel.org/schema/vaem#rationale": [
+      {
+        "@language": "en",
+        "@value": "\nThis is used to specify an instance of `datacite:Identifier` that provides a unique identifier for some entity.\n        "
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "A unique identifier for the entity (either a funder, a person, a license or a resource)."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/spar/datacite/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "has identifier"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#range": [
+      {
+        "@id": "http://purl.org/spar/datacite/Identifier"
+      }
+    ],
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#term_status": [
+      {
+        "@id": "http://purl.org/linked-data/registry#statusStable"
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/spar/datacite/spdx",
+    "@type": [
+      "http://purl.org/spar/datacite/RightsIdentifierScheme",
+      "http://www.w3.org/2002/07/owl#NamedIndividual"
+    ],
+    "http://purl.org/spar/fabio/hasURL": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#anyURI",
+        "@value": "https://spdx.org/licenses/"
+      }
+    ],
+    "http://purl.org/vocab/vann/example": [
+      {
+        "@value": "\n        :my-resource-rights-id \n                datacite:usesIdentifierScheme datacite:spdx ;\n                literal:hasLiteralValue \"CC-BY-1.0\" .\n        "
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "The SPDX License List is a list of commonly found licenses and exceptions used in free and open source and other collaborative software or documentation."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/spar/datacite/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "spdx"
+      }
+    ],
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#term_status": [
+      {
+        "@id": "http://purl.org/linked-data/registry#statusStable"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#note": [
+      {
+        "@language": "en",
+        "@value": "A SPDX identifier is resolvable from the following URL: https://spdx.org/licenses/<identifier>."
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/spar/datacite/RightsIdentifier",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#Class"
+    ],
+    "http://purl.org/vocab/vann/example": [
+      {
+        "@value": "\n        :my-resource-rights \n                datacite:hasIdentifier :my-resource-rights-id .\n\n        :my-resource-rights-id a datacite:RightsIdentifier ;\n                literal:hasLiteralValue \"CC-BY-1.0\" .\n        "
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "An identifier that uniquely identifies a license."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/spar/datacite/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "rights identifier"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#subClassOf": [
+      {
+        "@id": "http://purl.org/spar/datacite/Identifier"
+      }
+    ],
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#term_status": [
+      {
+        "@id": "http://purl.org/linked-data/registry#statusStable"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#note": [
+      {
+        "@language": "en",
+        "@value": "\nThis is used to represent identifiers associated with rights.\n\nA rights identifier belongs to a particular scheme, such as SPDX, specified by an individual within the class `datacite:RightsIdentifierScheme`.\n        "
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/spar/datacite/hasRelationCharacterization",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#ObjectProperty"
+    ],
+    "http://purl.org/vocab/vann/example": [
+      {
+        "@value": "\n        :relation-dataset-article a datacite:QualifiedRelation ;\n                datacite:hasRelationCharacterization cito:isCitedBy .\n        "
+      }
+    ],
+    "http://www.linkedmodel.org/schema/vaem#rationale": [
+      {
+        "@language": "en",
+        "@value": "\nAll DataCite-required relation type terms can be specified by object properties that exist within the following ontologies: [CiTO](http://purl.org/spar/cito), [DCTerms](http://purl.org/dc/terms), [FRBR](http://purl.org/vocab/frbr/core#) and [PRISM](http://prismstandard.org/namespaces/basic/2.0/). \nThe following list specifies all the allowed values but one (i.e., “IsIdenticalTo”) for the DataCite Controlled List of relation types (given within parentheses) and provides ontology object properties for each term: \n\n- `cito:isCitedBy` (IsCitedBy);\n- `cito:cites` (Cites);\n- `frbr:supplementOf` (IsSupplementTo);\n- `frbr:supplement` (IsSupplementedBy);\n- `frbr:successor` (IsContinuedBy);\n- `frbr:successorOf` (Continues);\n- `cito:isDescribedBy` (IsDescribedBy);\n- `cito:describes` (Describes);\n- `cito:citesAsMetadataDocument` (HasMetadata);\n- `cito:isCitedAsMetadataDocumentBy` (IsMetadataFor);\n- `dcterms:hasVersion` (HasVersion);\n- `dcterms:isVersionOf` (IsVersionOf);\n- `frbr:revision` (IsPreviousVersionOf);\n- `frbr:revisionOf` (IsNewVersionOf);\n- `dcterms:isPartOf` (IsPartOf);\n- `dcterms:hasPart` (HasPart);\n- `frbr:partOf` (IsPublishedIn);\n- `cito:isCitedForInformationBy` (IsReferencedBy);\n- `cito:citesForInformation` (References);\n- `cito:isDocumentedBy` (IsDocumentedBy);\n- `cito:documents` (Documents);\n- `cito:isCompiledBy` (IsCompiledBy);\n- `cito:compiles` (Compiles);\n- `frbr:arrangementOf` (IsVariantFormOf);\n- `frbr:arrangement` (IsOriginalFormOf);\n- `cito:isReviewedBy` (IsReviewedBy);\n- `cito:reviews` (Reviews);\n- `cito:citesAsDataSource` (IsDerivedFrom);\n- `cito:isCitedAsDataSourceBy` (IsSourceOf);\n- `dcterms:isRequiredBy` (IsRequiredBy);\n- `dcterms:requires` (Requires);\n- `dcterms:isReplacedBy` (IsObsoletedBy);\n- `dcterms:replaces` (Obsoletes);\n- `cito:providesDataFor` (IsCollectedBy);\n- `cito:usesDataFrom` (Collects);\n- `frbr:translationOf` (IsTranslationOf);\n- `frbr:translation` (HasTranslation);\n- `dcterms:relation` (Other);\n\nThe value “IsIdenticalTo” has a different semantics from the above object properties. \nIt is used to specify that the related identifier is actually another, non-primary, identifier for the first resource under consideration. \nIt should be linked through the `datacite:hasIdentifier` property, and neither `dcterms:relation` nor any of the other above ones should be specified.\n        "
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "The specific nature or type of the reified relation."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#domain": [
+      {
+        "@id": "http://purl.org/spar/datacite/QualifiedRelation"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/spar/datacite/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "has relation characterization"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#seeAlso": [
+      {
+        "@id": "http://purl.org/dc/terms/hasPart"
+      },
+      {
+        "@id": "http://purl.org/dc/terms/hasVersion"
+      },
+      {
+        "@id": "http://purl.org/dc/terms/isPartOf"
+      },
+      {
+        "@id": "http://purl.org/dc/terms/isReplacedBy"
+      },
+      {
+        "@id": "http://purl.org/dc/terms/isRequiredBy"
+      },
+      {
+        "@id": "http://purl.org/dc/terms/isVersionOf"
+      },
+      {
+        "@id": "http://purl.org/dc/terms/relation"
+      },
+      {
+        "@id": "http://purl.org/dc/terms/replaces"
+      },
+      {
+        "@id": "http://purl.org/dc/terms/requires"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/cites"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/citesAsDataSource"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/citesAsMetadataDocument"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/citesForInformation"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/compiles"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/describes"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/documents"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/isCitedAsDataSourceBy"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/isCitedAsMetadataDocumentBy"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/isCitedBy"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/isCitedForInformationBy"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/isCompiledBy"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/isDescribedBy"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/isDocumentedBy"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/isReviewedBy"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/providesDataFor"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/reviews"
+      },
+      {
+        "@id": "http://purl.org/spar/cito/usesDataFrom"
+      },
+      {
+        "@id": "http://purl.org/vocab/frbr/core#arrangement"
+      },
+      {
+        "@id": "http://purl.org/vocab/frbr/core#arrangementOf"
+      },
+      {
+        "@id": "http://purl.org/vocab/frbr/core#partOf"
+      },
+      {
+        "@id": "http://purl.org/vocab/frbr/core#revision"
+      },
+      {
+        "@id": "http://purl.org/vocab/frbr/core#revisionOf"
+      },
+      {
+        "@id": "http://purl.org/vocab/frbr/core#successor"
+      },
+      {
+        "@id": "http://purl.org/vocab/frbr/core#successorOf"
+      },
+      {
+        "@id": "http://purl.org/vocab/frbr/core#supplement"
+      },
+      {
+        "@id": "http://purl.org/vocab/frbr/core#supplementOf"
+      },
+      {
+        "@id": "http://purl.org/vocab/frbr/core#translation"
+      },
+      {
+        "@id": "http://purl.org/vocab/frbr/core#translationOf"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#subPropertyOf": [
+      {
+        "@id": "http://www.ontologydesignpatterns.org/cp/owl/situation.owl#isSettingFor"
+      }
+    ],
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#term_status": [
+      {
+        "@id": "http://purl.org/linked-data/registry#statusStable"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#note": [
+      {
+        "@language": "en",
+        "@value": "\nThis property uses as range an existing property via [OWL2 punning](http://www.w3.org/TR/2009/WD-owl2-new-features-20090611/#F12:_Punning), according to which it becomes possible to use an object property as the object of an OWL assertion. \nIn such cases, the object properties are simultaneously considered both as normal object properties and also as proper named individuals of the class `owl:Thing`.\n        "
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/spar/datacite/hasRelationSubject",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#ObjectProperty"
+    ],
+    "http://purl.org/vocab/vann/example": [
+      {
+        "@value": "\n        :relation-dataset-article a datacite:QualifiedRelation ;\n                datacite:hasRelationSubject :my-dataset .\n        "
+      }
+    ],
+    "http://www.linkedmodel.org/schema/vaem#rationale": [
+      {
+        "@language": "en",
+        "@value": "\nThis is used to specify the subject of a qualified relation (modelled via the class `datacite:QualifiedRelation`) between two resources.\n        "
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "The resource that is the subject of a reified relation."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#domain": [
+      {
+        "@id": "http://purl.org/spar/datacite/QualifiedRelation"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/spar/datacite/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "has relation subject"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#subPropertyOf": [
+      {
+        "@id": "http://www.ontologydesignpatterns.org/cp/owl/situation.owl#isSettingFor"
+      }
+    ],
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#term_status": [
+      {
+        "@id": "http://purl.org/linked-data/registry#statusStable"
+      }
+    ]
+  },
+  {
+    "@id": "http://www.essepuntato.it/2010/06/literalreification/hasLiteralValue",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#DatatypeProperty",
+      "http://www.w3.org/2002/07/owl#FunctionalProperty"
+    ],
+    "http://purl.org/vocab/vann/example": [
+      {
+        "@value": "\n    :my-literal a literal:Literal ;\n        literal:hasLiteralValue \"My Resource\" .\n    "
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "The literal value that a reified literal represents."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#domain": [
+      {
+        "@id": "http://www.essepuntato.it/2010/06/literalreification/Literal"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/spar/literal/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "has literal value"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#range": [
+      {
+        "@id": "http://www.w3.org/2000/01/rdf-schema#Literal"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#subPropertyOf": [
+      {
+        "@id": "http://www.ontologydesignpatterns.org/cp/owl/region.owl#hasRegionDataValue"
+      }
+    ],
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#term_status": [
+      {
+        "@id": "http://purl.org/linked-data/registry#statusStable"
+      }
+    ]
+  },
+  {
+    "@id": "http://purl.org/spar/datacite/QualifiedRelation",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#Class"
+    ],
+    "http://purl.org/vocab/vann/example": [
+      {
+        "@value": "\n        :relation-dataset-article a datacite:QualifiedRelation ;\n                datacite:hasRelationSubject :my-resource ;\n                datacite:hasRelationObject :my-article ;\n                datacite:hasRelationCharacterization cito:isCitedBy .\n        "
+      }
+    ],
+    "http://www.linkedmodel.org/schema/vaem#rationale": [
+      {
+        "@language": "en",
+        "@value": "\nThis is used to represent qualified relations between two resources, which can be described using various properties (e.g., `dcterms:description`).\n        "
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#comment": [
+      {
+        "@language": "en",
+        "@value": "A class representing a reified relation between two resources, allowing the assignment of a specific role or type to the relationship."
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#isDefinedBy": [
+      {
+        "@id": "http://purl.org/spar/datacite/"
+      }
+    ],
+    "http://www.w3.org/2000/01/rdf-schema#label": [
+      {
+        "@language": "en",
+        "@value": "qualified relation"
+      }
+    ],
+    "http://www.w3.org/2002/07/owl#equivalentClass": [
+      {
+        "@id": "_:n7b3dd3331a874afb921c9bf4504db412b1"
+      }
+    ],
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#term_status": [
+      {
+        "@id": "http://purl.org/linked-data/registry#statusStable"
+      }
+    ]
+  },
+  {
+    "@id": "_:n7b3dd3331a874afb921c9bf4504db412b1",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#Class"
+    ],
+    "http://www.w3.org/2002/07/owl#intersectionOf": [
+      {
+        "@list": [
+          {
+            "@id": "http://www.ontologydesignpatterns.org/cp/owl/situation.owl#Situation"
+          },
+          {
+            "@id": "_:n7b3dd3331a874afb921c9bf4504db412b2"
+          },
+          {
+            "@id": "_:n7b3dd3331a874afb921c9bf4504db412b3"
+          },
+          {
+            "@id": "_:n7b3dd3331a874afb921c9bf4504db412b4"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "@id": "_:n7b3dd3331a874afb921c9bf4504db412b2",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#Restriction"
+    ],
+    "http://www.w3.org/2002/07/owl#cardinality": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
+        "@value": "1"
+      }
+    ],
+    "http://www.w3.org/2002/07/owl#onProperty": [
+      {
+        "@id": "http://purl.org/spar/datacite/hasRelationCharacterization"
+      }
+    ]
+  },
+  {
+    "@id": "_:n7b3dd3331a874afb921c9bf4504db412b3",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#Restriction"
+    ],
+    "http://www.w3.org/2002/07/owl#cardinality": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
+        "@value": "1"
+      }
+    ],
+    "http://www.w3.org/2002/07/owl#onProperty": [
+      {
+        "@id": "http://purl.org/spar/datacite/hasRelationObject"
+      }
+    ]
+  },
+  {
+    "@id": "_:n7b3dd3331a874afb921c9bf4504db412b4",
+    "@type": [
+      "http://www.w3.org/2002/07/owl#Restriction"
+    ],
+    "http://www.w3.org/2002/07/owl#cardinality": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
+        "@value": "1"
+      }
+    ],
+    "http://www.w3.org/2002/07/owl#onProperty": [
+      {
+        "@id": "http://purl.org/spar/datacite/hasRelationSubject"
+      }
+    ]
+  }
+]

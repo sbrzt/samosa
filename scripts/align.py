@@ -18,7 +18,8 @@ def expand(value, prefixes):
     """Expand a `prefix:term` CURIE to a full IRI.
 
     Args:
-        value: CURIE such as `fabio:hasURL`, or a full IRI.
+        value: CURIE such as `fabio:hasURL`, `:Person` for a term of the
+            current model, or a full IRI.
         prefixes: Mapping of prefix name to namespace IRI.
 
     Returns:
@@ -27,9 +28,12 @@ def expand(value, prefixes):
     Raises:
         SystemExit: If the prefix is not in `prefixes`.
     """
+    value = value.strip()
     if "://" in value:
         return value
     prefix, _, local = value.partition(":")
+    if prefix == "":
+        return EX + local
     if prefix not in prefixes:
         print(f"Error: unknown prefix '{prefix}' in align_to '{value}'. Add it to prefixes.yaml.")
         sys.exit(1)
@@ -42,9 +46,10 @@ _vocabularies = {}
 def vocabulary(iri, prefixes):
     """Load the ontology that owns `iri`.
 
-    The owning namespace is the longest one in `prefixes` that `iri` starts with.
-    The graph is read from `vocabularies/<prefix>.ttl` if present, otherwise
-    fetched from the namespace IRI and saved there. Results are memoized.
+    Local (`:`) terms are owned by the current model, `project/tbox.ttl`.
+    Otherwise the owning namespace is the longest one in `prefixes` that `iri`
+    starts with. The graph is read from `vocabularies/<prefix>.ttl` if present,
+    otherwise fetched from the namespace IRI and saved there. Results are memoized.
 
     Args:
         iri: Term IRI to look up.
@@ -54,6 +59,11 @@ def vocabulary(iri, prefixes):
         The vocabulary graph (empty if loading failed), or None if no known
         namespace matches `iri`.
     """
+    if iri.startswith(EX):
+        if "" not in _vocabularies:
+            model = Path("project") / "tbox.ttl"
+            _vocabularies[""] = Graph().parse(model, format="turtle") if model.exists() else Graph()
+        return _vocabularies[""]
     prefix, ns = max(((p, n) for p, n in prefixes.items() if iri.startswith(n)),
                      key=lambda x: len(x[1]), default=(None, None))
     if prefix is None:
@@ -72,6 +82,34 @@ def vocabulary(iri, prefixes):
             print(f"Warning: cannot load vocabulary '{prefix}' ({ns}): {e}")
         _vocabularies[prefix] = g
     return _vocabularies[prefix]
+
+
+def aliases(data, prefixes):
+    """Map each aligned glossary term's local name to its target's local name.
+
+    Used to match `:name` cells of `expected_result` after align or rename.
+
+    Args:
+        data: Parsed `requirements.yaml` content.
+        prefixes: Mapping of prefix name to namespace IRI.
+
+    Returns:
+        Mapping of casefolded local name to casefolded target local name.
+    """
+    out = {}
+    for t in data.get("glossary") or []:
+        if t.get("term") and t.get("type") and t.get("align_to"):
+            iri = expand(t["align_to"], prefixes)
+            try:
+                out[local_name(t).casefold()] = split_uri(iri)[1].casefold()
+            except ValueError:
+                pass
+    return out
+
+
+def load_prefixes():
+    """Load the project-wide `prefixes.yaml`, or an empty mapping if absent."""
+    return load_yaml(Path("prefixes.yaml")) if Path("prefixes.yaml").exists() else {}
 
 
 def describe(g, term):
@@ -190,8 +228,9 @@ def main(iteration: str):
     """
     it = resolve_iteration(iteration)
     data = load_yaml(it / "requirements.yaml")
+    _vocabularies.pop("", None)  # the current model may have changed since the last call
 
-    prefixes = load_yaml(Path("prefixes.yaml")) if Path("prefixes.yaml").exists() else {}
+    prefixes = load_prefixes()
     names = {local_name(t): expand(t["align_to"], prefixes) for t in data["glossary"] if t.get("align_to")}
     by_lower = {n.lower(): URIRef(iri) for n, iri in names.items()}
 

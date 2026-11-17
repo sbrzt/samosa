@@ -57,8 +57,12 @@
         font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; max-height: 40vh; overflow: auto; }
   pre.ok { border-color: var(--ok); background: var(--ok-bg); }
   pre.fail { border-color: var(--fail); background: var(--fail-bg); }
-  .diagrams { grid-column: 1 / -1; display: grid; gap: 20px; grid-template-columns: 1fr 1fr; }
-  .diagrams img { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .diagrams { grid-column: 1 / -1; display: grid; gap: 20px; grid-template-columns: 1fr; }
+  .diagrams .mmd { border: 1px solid var(--line); border-radius: 6px; background: #fff; color: #1b1f24; padding: 8px; overflow: auto; min-height: 60px; }
+  .diagrams .mmd svg { max-width: 100%; height: auto; }
+  .diagrams figcaption a { color: var(--accent); }
+  .check { display: flex; flex-direction: row; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; color: var(--muted); }
+  .check input { flex: none; width: auto; }
   .diagrams figure { margin: 0; }
   .diagrams figcaption { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
   [hidden] { display: none !important; }
@@ -82,8 +86,11 @@
   <div>
     <h2>Project</h2>
     <ul>
-      <li><button data-cmd="merge">Merge all iterations</button></li>
-      <li><button data-cmd="check">Check consistency</button></li>
+      <li><button data-cmd="merge" data-project>Re-test current model</button></li>
+      <li><button data-cmd="check" data-project>Check consistency</button></li>
+      <li><button data-cmd="docs" data-project>Documentation (LODE, local)</button></li>
+      <li><button data-cmd="docs" data-project data-online title="Uploads project/tbox.ttl to lode.opencitations.net">Documentation (LODE online)</button></li>
+      <li><a id="docs-link" href="/project/docs/index.html" target="_blank" hidden>Open documentation</a></li>
     </ul>
   </div>
 </nav>
@@ -109,20 +116,24 @@
         <li><button data-cmd="align"><span class="step-num">6</span>Align to vocabularies</button></li>
         <li><button data-cmd="diagram" data-refactored><span class="step-num">7</span>Draw refactored diagram</button></li>
         <li><button data-cmd="test" data-refactored><span class="step-num">8</span>Test refactored CQs</button></li>
+        <li><button data-cmd="merge"><span class="step-num">9</span>Merge into current model</button></li>
       </ol>
+      <label class="check"><input type="checkbox" id="graffoo"> Diagrams: also write Graffoo for yEd (.graphml, and .png if Graphviz is installed)</label>
     </div>
     <h2 style="margin-top:20px">Output</h2>
     <pre id="out" aria-live="polite">Select or create an iteration.</pre>
   </section>
 
   <section class="diagrams" id="diagrams" hidden>
-    <figure><figcaption>TBox (click to open)</figcaption><a id="a-tbox" target="_blank"><img id="img-tbox" alt="TBox diagram" hidden></a></figure>
-    <figure><figcaption>Refactored TBox (click to open)</figcaption><a id="a-refactored" target="_blank"><img id="img-refactored" alt="Refactored TBox diagram" hidden></a></figure>
+    <figure><figcaption>TBox <span id="links-tbox"></span></figcaption><div class="mmd" id="mmd-tbox" role="img" aria-label="TBox diagram"></div></figure>
+    <figure><figcaption>Refactored TBox <span id="links-refactored"></span></figcaption><div class="mmd" id="mmd-refactored" role="img" aria-label="Refactored TBox diagram"></div></figure>
   </section>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
+window.mermaid?.initialize({ startOnLoad: false, securityLevel: "strict", theme: "default" });  // white panel, Graffoo colours
 let current = null, data = {}, clean = "{}";
 
 // Shape of requirements.yaml: a string is a field kind, [x] is a list of x, {...} is a group of fields.
@@ -212,16 +223,33 @@ async function select(name) {
   clean = JSON.stringify(data);
   $("status").textContent = "";
   if ($("out").textContent.startsWith("Select")) show(null, "Fill in the requirements, then run the steps in order.");
-  refreshImages();
+  refreshDiagrams();
   listIterations();
 }
 
-function refreshImages() {
+const refreshDocs = async () => ($("docs-link").hidden = !(await exists("/project/docs/index.html")));
+let renders = 0;
+const exists = async (url) => (await fetch(url, { method: "HEAD", cache: "no-store" })).ok;
+
+// Draw tbox.mmd with Mermaid, and link the source and any Graffoo files written with the checkbox on.
+async function refreshDiagrams() {
+  const name = current;
   for (const [id, dir] of [["tbox", "iterations"], ["refactored", "refactoring"]]) {
-    const img = $(`img-${id}`);
-    img.hidden = true;
-    img.onload = () => (img.hidden = false);
-    $(`a-${id}`).href = img.src = `/${dir}/${current}/tbox.png?${Date.now()}`;
+    const box = $(`mmd-${id}`), base = `/${dir}/${name}/tbox`;
+    const r = await fetch(`${base}.mmd`, { cache: "no-store" });
+    const links = [];
+    for (const [ext, text] of [["mmd", "Mermaid source"], ["graphml", "Graffoo (yEd)"], ["png", "Graffoo PNG"]])
+      if (ext === "mmd" ? r.ok : await exists(`${base}.${ext}`))
+        links.push(el("a", { href: `${base}.${ext}?${Date.now()}`, target: "_blank", textContent: text }));
+    if (name !== current) return;  // another iteration was selected meanwhile
+    $(`links-${id}`).replaceChildren(...links.flatMap((a) => [" · ", a]));
+    if (!r.ok) { box.textContent = "Not drawn yet: run the diagram step."; continue; }
+    if (!window.mermaid) { box.textContent = "Mermaid could not be loaded (offline?). Open the source instead."; continue; }
+    try {
+      box.innerHTML = (await mermaid.render(`mmd${++renders}`, await r.text())).svg;
+    } catch (e) {
+      box.textContent = `Cannot render diagram: ${e.message ?? e}`;
+    }
   }
 }
 
@@ -244,6 +272,7 @@ async function run(cmd, params) {
       const body = await r.json();
       show(r.ok && body.ok, r.ok ? body.output || "(no output)" : JSON.stringify(body.detail));
       if (current) await select(current);  // draft-abox and align rewrite requirements.yaml
+      refreshDocs();
     }
   } catch (e) {
     show(false, String(e));
@@ -258,8 +287,10 @@ document.addEventListener("click", (e) => {
   if (b.dataset.select) select(b.dataset.select);
   else if (b.dataset.cmd) {
     const params = {};
-    if (!["merge", "check"].includes(b.dataset.cmd)) params.iteration = current;
+    if (!("project" in b.dataset)) params.iteration = current;
     if ("refactored" in b.dataset) params.refactored = true;
+    if ("online" in b.dataset) params.online = true;
+    if (b.dataset.cmd === "diagram" && $("graffoo").checked) params.graffoo = true;
     run(b.dataset.cmd, params);
   }
 });
@@ -272,6 +303,7 @@ $("new-form").onsubmit = async (e) => {
   if (names.length) select(names[names.length - 1]);
 };
 window.onbeforeunload = () => (JSON.stringify(data) !== clean ? true : undefined);
+refreshDocs();
 location.hash.length > 1 ? select(decodeURIComponent(location.hash.slice(1))) : listIterations();
 </script>
 </body>

@@ -6,6 +6,7 @@ from scripts import (
     draft_abox,
     align,
     diagram,
+    docs,
     generate_abox,
     generate_iteration,
     generate_tbox,
@@ -22,7 +23,9 @@ COMMANDS = {
     "diagram": diagram.main,
     "align": align.main,
     "merge": merge.main,
+    "rename": merge.rename,
     "check": check_consistency.main,
+    "docs": docs.main,
 }
 
 
@@ -38,6 +41,8 @@ def main():
         for p in inspect.signature(fn).parameters.values():
             if p.default is inspect.Parameter.empty:
                 sub.add_argument(p.name)
+            elif p.default is None:
+                sub.add_argument(p.name, nargs="?")
             else:
                 sub.add_argument(f"--{p.name}", action="store_true")
     args = vars(parser.parse_args())

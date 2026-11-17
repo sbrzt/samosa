@@ -27,6 +27,12 @@ DOT_EDGE = {"object": 'color="#000080" fontcolor="#000080" dir=both arrowtail=do
             "data": 'color="#008000" fontcolor="#008000" dir=both arrowtail=odot arrowhead=empty',
             "subclass": "", "type": ""}
 DOT_EDGE["object-use"] = DOT_EDGE["object"] + " style=dashed"
+
+# Mermaid shapes and Graffoo colours. Mermaid cannot draw Graffoo's dot at the
+# start of property edges, so properties are told apart by colour only.
+MERMAID_NODE = {"class": '("{}"):::owlClass', "datatype": '[/"{}"/]:::datatype', "individual": '(("{}")):::individual'}
+MERMAID_STYLE = {"owlClass": "#FFFF00", "datatype": "#CCFFCC", "individual": "#FF99CC"}
+MERMAID_EDGE = {"object": "#000080", "data": "#008000"}
 DOT_EDGE["data-use"] = DOT_EDGE["data"] + " style=dashed"
 
 
@@ -135,6 +141,33 @@ def graphml(nodes, edges, name):
     return ET.tostring(tree.getroot(), encoding="unicode", xml_declaration=True)
 
 
+def mermaid(nodes, edges, name):
+    """Render nodes and edges as a Mermaid flowchart in Graffoo colours.
+
+    Args:
+        nodes: Node dict from `extract`.
+        edges: Edge list from `extract`.
+        name: Function mapping an IRI to its display label.
+
+    Returns:
+        The Mermaid source as a string.
+    """
+    q = lambda s: s.replace('"', "#quot;")
+    ids = {n: f"n{i}" for i, n in enumerate(nodes)}
+    out = ["flowchart LR"]
+    out += [f"  {ids[n]}{MERMAID_NODE[kind].format(q(name(n)))}" for n, kind in nodes.items()]
+    colored = {}
+    for i, (s, t, p, kind) in enumerate(edges):
+        label = {"subclass": "rdfs:subClassOf", "type": "rdf:type"}.get(kind) or name(p)
+        arrow = "-.->" if kind.endswith("-use") else "-->"
+        out.append(f'  {ids[s]} {arrow}|"{q(label)}"| {ids[t]}')
+        if kind.removesuffix("-use") in MERMAID_EDGE:
+            colored.setdefault(MERMAID_EDGE[kind.removesuffix("-use")], []).append(str(i))
+    out += [f"  classDef {c} fill:{fill},stroke:#000,color:#000" for c, fill in MERMAID_STYLE.items()]
+    out += [f"  linkStyle {','.join(ix)} stroke:{color},color:{color}" for color, ix in colored.items()]
+    return "\n".join(out) + "\n"
+
+
 def dot(nodes, edges, name):
     """Render nodes and edges as a Graphviz DOT graph in Graffoo style.
 
@@ -157,12 +190,16 @@ def dot(nodes, edges, name):
     return "\n".join(out)
 
 
-def main(iteration: str, refactored: bool = False):
-    """Write `tbox.graphml` and, if Graphviz is installed, `tbox.png` for an iteration.
+def main(iteration: str, refactored: bool = False, graffoo: bool = False):
+    """Write a Mermaid diagram `tbox.mmd` of an iteration's TBox.
+
+    Property usages found in the ABox, if any, are drawn as dashed edges.
 
     Args:
         iteration: Iteration path or name, resolved with `resolve_iteration`.
         refactored: If true, read from `refactoring/<iteration>/` instead.
+        graffoo: If true, also write a Graffoo diagram for yEd, `tbox.graphml`,
+            and, if Graphviz is installed, a Graffoo-style `tbox.png`.
 
     Raises:
         SystemExit: If `tbox.ttl` does not exist.
@@ -179,13 +216,17 @@ def main(iteration: str, refactored: bool = False):
     if (base / "abox.ttl").exists():
         usage(g, Graph().parse(base / "abox.ttl", format="turtle"), nodes, edges)
 
+    (base / "tbox.mmd").write_text(mermaid(nodes, edges, name), encoding="utf-8")
+    if not graffoo:
+        print(f"Wrote {base / 'tbox.mmd'}")
+        return
     (base / "tbox.graphml").write_text(graphml(nodes, edges, name), encoding="utf-8")
     if shutil.which("dot") is None:
-        print(f"Wrote {base / 'tbox.graphml'}. PNG skipped: install Graphviz (`sudo apt install graphviz`).")
+        print(f"Wrote {base / 'tbox.mmd'} and {base / 'tbox.graphml'}. PNG skipped: install Graphviz (`sudo apt install graphviz`).")
         return
     subprocess.run(["dot", "-Tpng", "-o", str(base / "tbox.png")], input=dot(nodes, edges, name), text=True, check=True)
-    print(f"Wrote {base / 'tbox.graphml'} and {base / 'tbox.png'}")
+    print(f"Wrote {base / 'tbox.mmd'}, {base / 'tbox.graphml'} and {base / 'tbox.png'}")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], "--refactored" in sys.argv[2:])
+    main(sys.argv[1], "--refactored" in sys.argv[2:], "--graffoo" in sys.argv[2:])
