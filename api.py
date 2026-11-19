@@ -61,4 +61,5 @@ def put_requirements(name: str, data: dict):
 
 for d in ("iterations", "refactoring", "project"):  # generated files (tbox.ttl, tbox.png, ...)
     app.mount(f"/{d}", StaticFiles(directory=d, check_dir=False))
-app.mount("/", StaticFiles(directory="ui", html=True))  # the web interface, must be mounted last
+# the web interface, shipped with the code (project files above are relative to the working directory); must be mounted last
+app.mount("/", StaticFiles(directory=Path(__file__).with_name("ui"), html=True))

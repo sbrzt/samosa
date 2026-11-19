@@ -11,10 +11,11 @@ flowchart LR
   n1 -->|":hasLiteralValue"| n4
   n3 -->|":hasURL"| n4
   n5 -->|"rdf:type"| n2
-  n2 -.->|":hasURL"| n4
   n0 -.->|":hasURL"| n4
+  n2 -.->|":hasURL"| n4
   classDef owlClass fill:#FFFF00,stroke:#000,color:#000
   classDef datatype fill:#CCFFCC,stroke:#000,color:#000
   classDef individual fill:#FF99CC,stroke:#000,color:#000
+  classDef literal fill:none,stroke:none,color:#000
   linkStyle 0,1,2 stroke:#000080,color:#000080
   linkStyle 3,4,6,7 stroke:#008000,color:#008000

@@ -1,0 +1,28 @@
+flowchart LR
+  n0((":paper1")):::individual
+  n1((":rightsstatement1")):::individual
+  n2("owl:Thing"):::owlClass
+  n3((":rightsidentifier1")):::individual
+  n4((":rightsidentifierscheme1")):::individual
+  n5["#quot;CC-BY-1.0#quot;"]:::literal
+  n6("datacite:RightsIdentifier"):::owlClass
+  n7["#quot;https://spdx.org/licenses/#quot;^^xsd:anyURI"]:::literal
+  n8("datacite:RightsIdentifierScheme"):::owlClass
+  n9["#quot;https://creativecommons.org/licenses/by/1.0/legalcode#quot;^^xsd:anyURI"]:::literal
+  n10("dcterms:RightsStatement"):::owlClass
+  n0 -->|"dcterms:rights"| n1
+  n0 -->|"rdf:type"| n2
+  n3 -->|"datacite:usesIdentifierScheme"| n4
+  n3 -->|"literal:hasLiteralValue"| n5
+  n3 -->|"rdf:type"| n6
+  n4 -->|"fabio:hasURL"| n7
+  n4 -->|"rdf:type"| n8
+  n1 -->|"datacite:hasIdentifier"| n3
+  n1 -->|"fabio:hasURL"| n9
+  n1 -->|"rdf:type"| n10
+  classDef owlClass fill:#FFFF00,stroke:#000,color:#000
+  classDef datatype fill:#CCFFCC,stroke:#000,color:#000
+  classDef individual fill:#FF99CC,stroke:#000,color:#000
+  classDef literal fill:none,stroke:none,color:#000
+  linkStyle 0,2,7 stroke:#000080,color:#000080
+  linkStyle 3,5,8 stroke:#008000,color:#008000

@@ -14,7 +14,7 @@ Templates used by the SAMOSA CLI. The scripts load them with paths relative to t
 
 `requirements.yaml` is the skeleton that you fill in for each iteration:
 
-- `metadata`: `id` (set by `new`) and `status` (`merge` sets it to `merged`; merged iterations form the bag of test cases).
+- `metadata`: `id` (set by `new`) and `status`, raised by the tools as the iteration passes `test` (`tested`), `test --refactored` (`aligned`) and `merge` (`merged`). Merged iterations form the bag of test cases.
 - `scenario`: `title`, `description` and `examples`.
 - `glossary`: one entry per term, with:
   - `term`: label of the term.

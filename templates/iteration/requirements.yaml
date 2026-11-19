@@ -9,7 +9,7 @@
 
 metadata:
   id: ""
-  status: "draft"
+  status: "draft"  # set by the tools: draft -> tested -> aligned -> merged
 
 scenario:
   title: ""

@@ -137,13 +137,3 @@ def run_queries(graph, cqs, label, key="query", aliases=None):
             print(f"    unexpected: {', '.join(_cell(t)[0] for t in row)}")
     return checked, failures
 
-
-if __name__ == "__main__":
-    from rdflib import Graph, Literal
-    EX = "https://www.example.org/"
-    rows = [(URIRef(EX + "a"), Literal("x, y")), (URIRef("http://purl.org/spar/cito/isCitedBy"), Literal("z"))]
-    assert _diff(_rows([":a, x", ":isCitedBy, z"]), rows)[0] == [[":a", "x"]]
-    assert _diff(_rows([[":a", "x, y"], [":isCitedBy", "z"]]), rows) == ([], [])
-    assert _diff(_rows([":isCitedBy, z"]), rows)[1] == [rows[0]]
-    assert _diff(_rows([":a, x, y", ":cites, z"]), rows, {"cites": "iscitedby"})[0] == [[":a", "x", "y"]]
-    print("ok")

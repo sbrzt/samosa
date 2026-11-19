@@ -8,6 +8,7 @@ from rdflib.namespace import OWL, RDF, RDFS
 from scripts import check_consistency
 from scripts.align import aliases, load_prefixes
 from scripts.common import EX, load_yaml, resolve_iteration
+from scripts.milestone import promote
 from scripts.generate_tbox import BASE_PREFIXES, local_name
 from scripts.verify_cqs import run_queries
 
@@ -122,7 +123,9 @@ def main(iteration: str, refactored: bool = False, reason: bool = False):
     """Run the data and query tests of an iteration on its TBox and ABox.
 
     Runs `run_tests` and, on the first version only, warns (without failing)
-    about glossary terms unused by the queries or the ABox.
+    about glossary terms unused by the queries or the ABox. If everything
+    passes, raises the iteration's status to `tested` (first version) or
+    `aligned` (refactored), see `milestone.promote`.
 
     Args:
         iteration: Iteration path or name, resolved with `resolve_iteration`.
@@ -157,7 +160,10 @@ def main(iteration: str, refactored: bool = False, reason: bool = False):
     if checked == 0:
         print("No competency questions with a query found.")
         sys.exit(1)
-    sys.exit(1 if failures else 0)
+    if failures:
+        sys.exit(1)
+    promote(it, "aligned" if refactored else "tested")
+    sys.exit(0)
 
 
 if __name__ == "__main__":

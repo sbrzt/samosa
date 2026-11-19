@@ -6,7 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 import xml.etree.ElementTree as ET
-from rdflib import Graph, URIRef
+from rdflib import BNode, Graph, Literal, URIRef
 from rdflib.namespace import OWL, RDF, RDFS, XSD
 from scripts.common import resolve_iteration
 
@@ -16,13 +16,14 @@ for prefix, uri in (("", NS["g"]), ("y", NS["y"]), ("yed", "http://www.yworks.co
                     ("xsi", "http://www.w3.org/2001/XMLSchema-instance")):
     ET.register_namespace(prefix, uri)
 
-NODE_PROTO = {"class": "Class", "datatype": "Datatype", "individual": "instance"}
+NODE_PROTO = {"class": "Class", "datatype": "Datatype", "individual": "instance", "literal": '"value"^^datatype'}
 EDGE_PROTO = {"object": "objectProperty", "data": "dataProperty", "subclass": "predicate", "type": "predicate",
               "object-use": "objectProperty", "data-use": "dataProperty"}
 
 DOT_NODE = {"class": 'shape=box style="rounded,filled" fillcolor="#FFFF00"',
             "datatype": 'shape=parallelogram style=filled fillcolor="#CCFFCC"',
-            "individual": 'shape=circle style=filled fillcolor="#FF99CC" penwidth=3 width=0.25 fixedsize=true xlabel={label} label=""'}
+            "individual": 'shape=circle style=filled fillcolor="#FF99CC" penwidth=3 width=0.25 fixedsize=true xlabel={label} label=""',
+            "literal": "shape=plaintext"}
 DOT_EDGE = {"object": 'color="#000080" fontcolor="#000080" dir=both arrowtail=dot arrowhead=normal',
             "data": 'color="#008000" fontcolor="#008000" dir=both arrowtail=odot arrowhead=empty',
             "subclass": "", "type": ""}
@@ -30,8 +31,10 @@ DOT_EDGE["object-use"] = DOT_EDGE["object"] + " style=dashed"
 
 # Mermaid shapes and Graffoo colours. Mermaid cannot draw Graffoo's dot at the
 # start of property edges, so properties are told apart by colour only.
-MERMAID_NODE = {"class": '("{}"):::owlClass', "datatype": '[/"{}"/]:::datatype', "individual": '(("{}")):::individual'}
-MERMAID_STYLE = {"owlClass": "#FFFF00", "datatype": "#CCFFCC", "individual": "#FF99CC"}
+MERMAID_NODE = {"class": '("{}"):::owlClass', "datatype": '[/"{}"/]:::datatype',
+                "individual": '(("{}")):::individual', "literal": '["{}"]:::literal'}
+MERMAID_STYLE = {"owlClass": "fill:#FFFF00,stroke:#000", "datatype": "fill:#CCFFCC,stroke:#000",
+                 "individual": "fill:#FF99CC,stroke:#000", "literal": "fill:none,stroke:none"}
 MERMAID_EDGE = {"object": "#000080", "data": "#008000"}
 DOT_EDGE["data-use"] = DOT_EDGE["data"] + " style=dashed"
 
@@ -74,6 +77,82 @@ def extract(g):
                 nodes.setdefault(t, "class")
                 edges.append((i, t, "rdf:type", "type"))
     return nodes, edges
+
+
+def extract_abox(abox):
+    """Collect ABox nodes and edges to draw: individuals, their classes and assertions.
+
+    Args:
+        abox: Graph holding the ABox.
+
+    Returns:
+        A `(nodes, edges)` pair, as for `extract`. Individuals are named or
+        blank nodes, kind `"individual"`; their `rdf:type` objects are kind
+        `"class"` (`owl:NamedIndividual` is left out). Each literal value is its
+        own node of kind `"literal"`, keyed by the `(subject, property, value)`
+        triple, so equal values of different assertions are drawn apart.
+        Edges have kind `"type"`, `"object"` or `"data"`.
+    """
+    nodes, edges = {}, []
+    for s, p, o in sorted(abox):
+        if not isinstance(s, (URIRef, BNode)) or o == OWL.NamedIndividual:
+            continue
+        nodes.setdefault(s, "individual")
+        if p == RDF.type:
+            nodes[o] = "class"
+            edges.append((s, o, "rdf:type", "type"))
+        elif isinstance(o, Literal):
+            nodes[(s, p, o)] = "literal"
+            edges.append((s, (s, p, o), p, "data"))
+        else:
+            nodes.setdefault(o, "individual")
+            edges.append((s, o, p, "object"))
+    return nodes, edges
+
+
+def labeler(g):
+    """Return a function giving the display label of a node or property.
+
+    IRIs are shortened with the prefixes bound in `g`, literal nodes (see
+    `extract_abox`) are shown as Turtle (`"4"^^xsd:integer`), blank nodes as
+    `_:id`.
+
+    Args:
+        g: Graph whose prefix bindings are used.
+    """
+    def name(n):
+        if isinstance(n, tuple):
+            return n[2].n3(g.namespace_manager)
+        if isinstance(n, URIRef):
+            return g.namespace_manager.normalizeUri(n).strip("<>")
+        return n.n3() if isinstance(n, BNode) else str(n)
+    return name
+
+
+def write(base, stem, nodes, edges, name, graffoo):
+    """Write `<stem>.mmd` and, with `graffoo`, `<stem>.graphml` and `<stem>.png`.
+
+    Args:
+        base: Output directory.
+        stem: File name stem, `"tbox"` or `"abox"`.
+        nodes: Node dict from `extract` or `extract_abox`.
+        edges: Edge list from `extract` or `extract_abox`.
+        name: Function mapping a node or property to its display label.
+        graffoo: If true, also write the Graffoo files. The PNG needs Graphviz.
+
+    Returns:
+        The list of written paths.
+    """
+    (base / f"{stem}.mmd").write_text(mermaid(nodes, edges, name), encoding="utf-8")
+    written = [base / f"{stem}.mmd"]
+    if graffoo:
+        (base / f"{stem}.graphml").write_text(graphml(nodes, edges, name), encoding="utf-8")
+        written.append(base / f"{stem}.graphml")
+        if shutil.which("dot"):
+            subprocess.run(["dot", "-Tpng", "-o", str(base / f"{stem}.png")],
+                           input=dot(nodes, edges, name), text=True, check=True)
+            written.append(base / f"{stem}.png")
+    return written
 
 
 def usage(g, abox, nodes, edges):
@@ -163,7 +242,7 @@ def mermaid(nodes, edges, name):
         out.append(f'  {ids[s]} {arrow}|"{q(label)}"| {ids[t]}')
         if kind.removesuffix("-use") in MERMAID_EDGE:
             colored.setdefault(MERMAID_EDGE[kind.removesuffix("-use")], []).append(str(i))
-    out += [f"  classDef {c} fill:{fill},stroke:#000,color:#000" for c, fill in MERMAID_STYLE.items()]
+    out += [f"  classDef {c} {style},color:#000" for c, style in MERMAID_STYLE.items()]
     out += [f"  linkStyle {','.join(ix)} stroke:{color},color:{color}" for color, ix in colored.items()]
     return "\n".join(out) + "\n"
 
@@ -191,15 +270,16 @@ def dot(nodes, edges, name):
 
 
 def main(iteration: str, refactored: bool = False, graffoo: bool = False):
-    """Write a Mermaid diagram `tbox.mmd` of an iteration's TBox.
+    """Write Mermaid diagrams of an iteration's TBox (`tbox.mmd`) and ABox (`abox.mmd`).
 
-    Property usages found in the ABox, if any, are drawn as dashed edges.
+    In the TBox diagram, property usages found in the ABox, if any, are drawn
+    as dashed edges. The ABox diagram is written only if `abox.ttl` exists.
 
     Args:
         iteration: Iteration path or name, resolved with `resolve_iteration`.
         refactored: If true, read from `refactoring/<iteration>/` instead.
-        graffoo: If true, also write a Graffoo diagram for yEd, `tbox.graphml`,
-            and, if Graphviz is installed, a Graffoo-style `tbox.png`.
+        graffoo: If true, also write Graffoo diagrams for yEd (`tbox.graphml`,
+            `abox.graphml`) and, if Graphviz is installed, Graffoo-style PNGs.
 
     Raises:
         SystemExit: If `tbox.ttl` does not exist.
@@ -211,22 +291,16 @@ def main(iteration: str, refactored: bool = False, graffoo: bool = False):
         print(f"Error: {tbox} not found. Run the previous step first.")
         sys.exit(1)
     g = Graph().parse(tbox, format="turtle")
-    name = lambda iri: g.namespace_manager.normalizeUri(iri).strip("<>")
+    abox = Graph().parse(base / "abox.ttl", format="turtle") if (base / "abox.ttl").exists() else None
     nodes, edges = extract(g)
-    if (base / "abox.ttl").exists():
-        usage(g, Graph().parse(base / "abox.ttl", format="turtle"), nodes, edges)
-
-    (base / "tbox.mmd").write_text(mermaid(nodes, edges, name), encoding="utf-8")
-    if not graffoo:
-        print(f"Wrote {base / 'tbox.mmd'}")
-        return
-    (base / "tbox.graphml").write_text(graphml(nodes, edges, name), encoding="utf-8")
-    if shutil.which("dot") is None:
-        print(f"Wrote {base / 'tbox.mmd'} and {base / 'tbox.graphml'}. PNG skipped: install Graphviz (`sudo apt install graphviz`).")
-        return
-    subprocess.run(["dot", "-Tpng", "-o", str(base / "tbox.png")], input=dot(nodes, edges, name), text=True, check=True)
-    print(f"Wrote {base / 'tbox.mmd'}, {base / 'tbox.graphml'} and {base / 'tbox.png'}")
-
+    if abox is not None:
+        usage(g, abox, nodes, edges)
+    written = write(base, "tbox", nodes, edges, labeler(g), graffoo)
+    if abox is not None:
+        written += write(base, "abox", *extract_abox(abox), labeler(abox), graffoo)
+    print(f"Wrote {', '.join(map(str, written))}")
+    if graffoo and shutil.which("dot") is None:
+        print("PNG skipped: install Graphviz (`sudo apt install graphviz`).")
 
 if __name__ == "__main__":
     main(sys.argv[1], "--refactored" in sys.argv[2:], "--graffoo" in sys.argv[2:])

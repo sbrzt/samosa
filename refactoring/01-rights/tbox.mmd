@@ -20,11 +20,12 @@ flowchart LR
   n9 -->|"rdf:type"| n1
   n10 -.->|"datacite:hasIdentifier"| n0
   n1 -.->|"fabio:hasURL"| n7
-  n0 -.->|"datacite:usesIdentifierScheme"| n1
   n0 -.->|"literal:hasLiteralValue"| n8
+  n0 -.->|"datacite:usesIdentifierScheme"| n1
   n10 -.->|"fabio:hasURL"| n7
   classDef owlClass fill:#FFFF00,stroke:#000,color:#000
   classDef datatype fill:#CCFFCC,stroke:#000,color:#000
   classDef individual fill:#FF99CC,stroke:#000,color:#000
-  linkStyle 3,4,8,10 stroke:#000080,color:#000080
-  linkStyle 5,6,9,11,12 stroke:#008000,color:#008000
+  classDef literal fill:none,stroke:none,color:#000
+  linkStyle 3,4,8,11 stroke:#000080,color:#000080
+  linkStyle 5,6,9,10,12 stroke:#008000,color:#008000

@@ -1,0 +1,18 @@
+flowchart LR
+  n0((":article1")):::individual
+  n1("owl:Thing"):::owlClass
+  n2((":dataset1")):::individual
+  n3((":qualifiedrelation1")):::individual
+  n4(":QualifiedRelation"):::owlClass
+  n5((":isCitedBy")):::individual
+  n0 -->|"rdf:type"| n1
+  n2 -->|"rdf:type"| n1
+  n3 -->|"rdf:type"| n4
+  n3 -->|":hasRelationCharacterization"| n5
+  n3 -->|":hasRelationObject"| n0
+  n3 -->|":hasRelationSubject"| n2
+  classDef owlClass fill:#FFFF00,stroke:#000,color:#000
+  classDef datatype fill:#CCFFCC,stroke:#000,color:#000
+  classDef individual fill:#FF99CC,stroke:#000,color:#000
+  classDef literal fill:none,stroke:none,color:#000
+  linkStyle 3,4,5 stroke:#000080,color:#000080

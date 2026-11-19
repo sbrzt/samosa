@@ -11,6 +11,7 @@ from scripts import (
     generate_iteration,
     generate_tbox,
     merge,
+    milestone,
     test_iteration,
 )
 
@@ -26,6 +27,7 @@ COMMANDS = {
     "rename": merge.rename,
     "check": check_consistency.main,
     "docs": docs.main,
+    "restore": milestone.main,
 }
 
 

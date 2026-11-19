@@ -88,6 +88,7 @@
     <ul>
       <li><button data-cmd="merge" data-project>Re-test current model</button></li>
       <li><button data-cmd="check" data-project>Check consistency</button></li>
+      <li><button data-cmd="restore" data-project title="Restore one with: samosa restore &lt;name&gt;">List milestones</button></li>
       <li><button data-cmd="docs" data-project>Documentation (LODE, local)</button></li>
       <li><button data-cmd="docs" data-project data-online title="Uploads project/tbox.ttl to lode.opencitations.net">Documentation (LODE online)</button></li>
       <li><a id="docs-link" href="/project/docs/index.html" target="_blank" hidden>Open documentation</a></li>
@@ -109,12 +110,12 @@
       <h2>Steps</h2>
       <ol>
         <li><button data-cmd="tbox"><span class="step-num">1</span>Generate TBox</button></li>
-        <li><button data-cmd="diagram"><span class="step-num">2</span>Draw diagram</button></li>
+        <li><button data-cmd="diagram"><span class="step-num">2</span>Draw diagrams</button></li>
         <li><button data-cmd="draft-abox"><span class="step-num">3</span>Draft ABox (LLM)</button></li>
         <li><button data-cmd="abox"><span class="step-num">4</span>Generate ABox</button></li>
         <li><button data-cmd="test"><span class="step-num">5</span>Test CQs</button></li>
         <li><button data-cmd="align"><span class="step-num">6</span>Align to vocabularies</button></li>
-        <li><button data-cmd="diagram" data-refactored><span class="step-num">7</span>Draw refactored diagram</button></li>
+        <li><button data-cmd="diagram" data-refactored><span class="step-num">7</span>Draw refactored diagrams</button></li>
         <li><button data-cmd="test" data-refactored><span class="step-num">8</span>Test refactored CQs</button></li>
         <li><button data-cmd="merge"><span class="step-num">9</span>Merge into current model</button></li>
       </ol>
@@ -126,7 +127,9 @@
 
   <section class="diagrams" id="diagrams" hidden>
     <figure><figcaption>TBox <span id="links-tbox"></span></figcaption><div class="mmd" id="mmd-tbox" role="img" aria-label="TBox diagram"></div></figure>
+    <figure><figcaption>ABox <span id="links-abox"></span></figcaption><div class="mmd" id="mmd-abox" role="img" aria-label="ABox diagram"></div></figure>
     <figure><figcaption>Refactored TBox <span id="links-refactored"></span></figcaption><div class="mmd" id="mmd-refactored" role="img" aria-label="Refactored TBox diagram"></div></figure>
+    <figure><figcaption>Refactored ABox <span id="links-refactored-abox"></span></figcaption><div class="mmd" id="mmd-refactored-abox" role="img" aria-label="Refactored ABox diagram"></div></figure>
   </section>
 </main>
 
@@ -234,8 +237,10 @@ const exists = async (url) => (await fetch(url, { method: "HEAD", cache: "no-sto
 // Draw tbox.mmd with Mermaid, and link the source and any Graffoo files written with the checkbox on.
 async function refreshDiagrams() {
   const name = current;
-  for (const [id, dir] of [["tbox", "iterations"], ["refactored", "refactoring"]]) {
-    const box = $(`mmd-${id}`), base = `/${dir}/${name}/tbox`;
+  const panels = [["tbox", "iterations", "tbox"], ["abox", "iterations", "abox"],
+                  ["refactored", "refactoring", "tbox"], ["refactored-abox", "refactoring", "abox"]];
+  for (const [id, dir, stem] of panels) {
+    const box = $(`mmd-${id}`), base = `/${dir}/${name}/${stem}`;
     const r = await fetch(`${base}.mmd`, { cache: "no-store" });
     const links = [];
     for (const [ext, text] of [["mmd", "Mermaid source"], ["graphml", "Graffoo (yEd)"], ["png", "Graffoo PNG"]])
@@ -243,7 +248,11 @@ async function refreshDiagrams() {
         links.push(el("a", { href: `${base}.${ext}?${Date.now()}`, target: "_blank", textContent: text }));
     if (name !== current) return;  // another iteration was selected meanwhile
     $(`links-${id}`).replaceChildren(...links.flatMap((a) => [" · ", a]));
-    if (!r.ok) { box.textContent = "Not drawn yet: run the diagram step."; continue; }
+    if (!r.ok) {
+      const step = dir === "refactoring" ? "Draw refactored diagrams" : "Draw diagrams";
+      box.textContent = `Not drawn yet: run "${step}"${stem === "abox" ? " once the ABox exists" : ""}.`;
+      continue;
+    }
     if (!window.mermaid) { box.textContent = "Mermaid could not be loaded (offline?). Open the source instead."; continue; }
     try {
       box.innerHTML = (await mermaid.render(`mmd${++renders}`, await r.text())).svg;

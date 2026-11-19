@@ -21,7 +21,7 @@ Each iteration lives under `iterations/<NN>-<name>/requirements.yaml` and declar
 | `samosa new <name>`             | scaffold a new iteration            |
 | `samosa tbox <iter>`            | glossary -> tbox.ttl                |
 | `samosa draft-abox <iter>`      | (optional) draft the abox: block    |
-| `samosa diagram <iter> [--graffoo]` | tbox.mmd (Mermaid, Graffoo colours); with `--graffoo` also tbox.graphml (yEd) and tbox.png (needs Graphviz) |
+| `samosa diagram <iter> [--graffoo]` | tbox.mmd and, once abox.ttl exists, abox.mmd (Mermaid, Graffoo colours); with `--graffoo` also tbox/abox.graphml (yEd) and tbox/abox.png (needs Graphviz) |
 | `samosa abox <iter>`            | abox: block -> abox.ttl             |
 | `samosa test <iter> [--reason]` | data and query tests on tbox.ttl + abox.ttl, see below |
 | `samosa align <iter>`           | refactoring/\<iter\>/{tbox,abox}.ttl, refactored_query in requirements.yaml |
@@ -30,6 +30,7 @@ Each iteration lives under `iterations/<NN>-<name>/requirements.yaml` and declar
 | `samosa merge [<iter>] [--reason]` | merge an iteration into the current model `project/`, re-test all merged iterations, see below |
 | `samosa rename <old> <new>`     | replace a term in every iteration (collapse duplicates), re-align, re-merge |
 | `samosa check`                  | OWL 2 RL consistency check (owlrl, pure Python) on project/ |
+| `samosa restore [<milestone>]`  | list the milestones, or restore the project to one |
 | `samosa docs [--online]`        | HTML documentation of project/tbox.ttl with LODE 2.0, into project/docs/ |
 
 `align` also fills the refactored TBox: for each aligned term it fetches the term's vocabulary (content negotiation on the prefix namespace, cached as `vocabularies/<prefix>.ttl`) and copies every triple describing the term (blank nodes followed). Every namespace used by the refactored TBox/ABox but missing from `prefixes.yaml` is appended to it. The prefix name comes from, in order: bindings in the loaded vocabularies/rdflib, the namespace's own RDF (fetched), prefix.cc, or the namespace IRI itself. If a namespace does not serve RDF, drop the vocabulary's Turtle file into `vocabularies/<prefix>.ttl` by hand.
@@ -50,7 +51,7 @@ Per iteration:
 2. fill in `requirements.yaml`
 3. `tbox`
 4. `diagram`
-5. `draft-abox`, then `abox`
+5. `draft-abox`, then `abox`, then `diagram` again to draw the ABox too
 6. `test`
 7. add `align_to` to glossary terms
 8. `align`
@@ -105,6 +106,21 @@ expected_result:
 The model defaults to `qwen3:4b`; override with `DRAFT_MODEL`, and the server
 with `OLLAMA_URL` (default `http://localhost:11434`).
 
+### Status and milestones
+
+`metadata.status` records how far an iteration got, and only goes up:
+
+| Status | Set when |
+| ------ | -------- |
+| `draft` | `new` |
+| `tested` | `test` passes: the test case is complete (SAMOD step 1) |
+| `aligned` | `test --refactored` passes |
+| `merged` | `merge <iter>` passes: the iteration is in the current model (SAMOD step 2) |
+
+`merge <iter>` refuses an iteration that is still `draft`. Each time a status goes up, the project state (`iterations/`, `refactoring/`, `project/` without `docs/`, `prefixes.yaml`, `ontology.yaml`) is copied to `milestones/<timestamp>-<iter>-<status>/`.
+
+After a serious failure, go back to a milestone: `restore` lists them, `restore <name>` (or a unique part of it, e.g. `restore 03-holder-tested`) replaces the current state with it. The current state is first saved as a `before-restore` milestone, so a restore can be undone. Run `docs` again afterwards. `milestones/` is in `.gitignore`; delete old milestones by hand.
+
 ### Documentation (SAMOD step 3)
 
 `merge` writes the metadata in `ontology.yaml` (`iri`, `version`, `version_iri`, `title`, `description`, `creators`, `license`; empty fields are left out) as the `owl:Ontology` header of `project/tbox.ttl`. It also adds `rdfs:isDefinedBy <iri>` to every local term. Labels and comments come from the glossary.
@@ -113,6 +129,14 @@ with `OLLAMA_URL` (default `http://localhost:11434`).
 
 - by default with the local [`oc-lode`](https://pypi.org/project/oc-lode/) package: `uv sync --extra docs`;
 - with `--online`, by uploading `project/tbox.ttl` to the LODE 2.0 web service (`POST https://lode.opencitations.net/build`). Nothing needs to be installed, but the ontology leaves your machine.
+
+## Tests
+
+```
+uv run pytest
+```
+
+The suite in `tests/` runs every command in a temporary project, with the network blocked (LODE, Ollama, prefix.cc and vocabulary downloads are faked). The test that builds real documentation runs only if `oc-lode` is installed (`uv sync --extra docs`), and the API tests only if FastAPI is (`uv sync --extra api`).
 
 ## Setup
 

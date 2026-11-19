@@ -7,6 +7,7 @@ from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, split_uri
 from scripts import align
 from scripts.common import EX, dump_yaml, load_yaml, resolve_iteration
+from scripts.milestone import promote, rank, status
 from scripts.generate_tbox import local_name
 from scripts.test_iteration import run_tests
 
@@ -129,8 +130,7 @@ def header(tbox):
 def bag(extra=None):
     """Return the iterations in the bag of test cases: the merged ones, plus `extra`."""
     dirs = sorted(d for d in Path("iterations").glob("*") if d.is_dir())
-    return [d for d in dirs if (extra and d.name == extra.name)
-            or (load_yaml(d / "requirements.yaml").get("metadata") or {}).get("status") == MERGED]
+    return [d for d in dirs if (extra and d.name == extra.name) or status(d) == MERGED]
 
 
 def main(iteration: str = None, reason: bool = False):
@@ -147,10 +147,11 @@ def main(iteration: str = None, reason: bool = False):
     2. every test case runs `test --refactored` with the new current model as
        its TBox and its own refactored ABox.
 
-    Only if everything passes, writes the current model, with the ontology
+    `iteration` must have passed `test` (status `tested` or later). Only if
+    everything passes, writes the current model, with the ontology
     header from `ontology.yaml` (see `header`), to `project/tbox.ttl`,
-    the union of the ABoxes to `project/abox.ttl`, and sets the status of
-    `iteration` to `merged`.
+    the union of the ABoxes to `project/abox.ttl`, and raises the status of
+    `iteration` to `merged`, recording a milestone (see `milestone.promote`).
 
     Args:
         iteration: Iteration to merge, resolved with `resolve_iteration`. If
@@ -163,6 +164,9 @@ def main(iteration: str = None, reason: bool = False):
             ABox, there are conflicts, or any test fails.
     """
     new = resolve_iteration(iteration) if iteration else None
+    if new and rank(status(new)) < rank("tested"):
+        print(f"Error: {new.name} is '{status(new)}': its test case is not complete. Run test first.")
+        sys.exit(1)
     dirs = bag(new)
     new = next((d for d in dirs if new and d.name == new.name), None)
     if not dirs:
@@ -214,11 +218,9 @@ def main(iteration: str = None, reason: bool = False):
     out.mkdir(exist_ok=True)
     tbox.serialize(destination=out / "tbox.ttl", format="turtle")
     abox.serialize(destination=out / "abox.ttl", format="turtle")
-    if new:
-        data = load_yaml(new / "requirements.yaml")
-        data.setdefault("metadata", {})["status"] = MERGED
-        dump_yaml(data, new / "requirements.yaml")
     print(f"Current model: {len(dirs)} iteration(s) ({', '.join(d.name for d in dirs)}) in {out}/")
+    if new:
+        promote(new, MERGED)
 
 
 def rename(old: str, new: str):

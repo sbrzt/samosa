@@ -29,3 +29,13 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 py-modules = ["main", "api"]
 packages = ["scripts"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# pytest probes module attributes during collection; rdflib's closed namespaces (XSD) warn about it
+filterwarnings = ["ignore:Code. _mock_name is not defined in namespace:UserWarning"]
