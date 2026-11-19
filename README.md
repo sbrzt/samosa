@@ -23,13 +23,13 @@ Each iteration lives under `iterations/<NN>-<name>/requirements.yaml` and declar
 | `samosa draft-abox <iter>`      | (optional) draft the abox: block    |
 | `samosa diagram <iter> [--graffoo]` | tbox.mmd and, once abox.ttl exists, abox.mmd (Mermaid, Graffoo colours); with `--graffoo` also tbox/abox.graphml (yEd) and tbox/abox.png (needs Graphviz) |
 | `samosa abox <iter>`            | abox: block -> abox.ttl             |
-| `samosa test <iter> [--reason]` | data and query tests on tbox.ttl + abox.ttl, see below |
+| `samosa test <iter> [--reason]` | model, data and query tests on tbox.ttl + abox.ttl, see below |
 | `samosa align <iter>`           | refactoring/\<iter\>/{tbox,abox}.ttl, refactored_query in requirements.yaml |
 | `samosa diagram <iter> --refactored` | same, into refactoring/\<iter\>/ |
 | `samosa test <iter> --refactored` | run refactored queries on refactored TBox+ABox |
 | `samosa merge [<iter>] [--reason]` | merge an iteration into the current model `project/`, re-test all merged iterations, see below |
 | `samosa rename <old> <new>`     | replace a term in every iteration (collapse duplicates), re-align, re-merge |
-| `samosa check`                  | OWL 2 RL consistency check (owlrl, pure Python) on project/ |
+| `samosa check`                  | data test (consistency, HermiT via owlready2) on project/ |
 | `samosa restore [<milestone>]`  | list the milestones, or restore the project to one |
 | `samosa docs [--online]`        | HTML documentation of project/tbox.ttl with LODE 2.0, into project/docs/ |
 
@@ -44,7 +44,7 @@ uv sync --extra api
 uv run fastapi dev api.py   # from the repository root
 ```
 
-Open http://127.0.0.1:8000/ for the web interface (`ui/index.html`): pick or create an iteration, fill in its `requirements.yaml` through a form, run the steps in order and see the output and diagrams (Mermaid, drawn in the browser with mermaid.js from a CDN; tick the Graffoo box to also write yEd files). http://127.0.0.1:8000/docs lists the raw API. Each command is `POST /<command>` with the CLI arguments as query parameters (e.g. `POST /test?iteration=01-rights&refactored=true`) and returns `{"ok": bool, "output": str}`. `GET /iterations/<iter>/requirements` returns `requirements.yaml` as JSON, `PUT` on the same path overwrites it with a JSON body, and all iteration files are served under `/iterations/`, `/refactoring/` and `/project/`.
+Open http://127.0.0.1:8000/ for the web interface (`ui/index.html`): pick or create an iteration, fill in its `requirements.yaml` through a form, run the steps in order and see the output and diagrams (Mermaid, drawn in the browser with mermaid.js from a CDN; tick the Graffoo box to also write yEd files). The "Test results" panel reads the `results.json` files (see [Results file](#results-file)): a table of each iteration's model, data, query, coverage and merge results per phase (select a result to list its messages), and a table of every CQ's result per phase, with missing and unexpected rows. http://127.0.0.1:8000/docs lists the raw API. Each command is `POST /<command>` with the CLI arguments as query parameters (e.g. `POST /test?iteration=01-rights&refactored=true`) and returns `{"ok": bool, "output": str}`. `GET /iterations/<iter>/requirements` returns `requirements.yaml` as JSON, `PUT` on the same path overwrites it with a JSON body, and all iteration files are served under `/iterations/`, `/refactoring/` and `/project/`.
 
 Per iteration: 
 1. `new`
@@ -67,7 +67,7 @@ The bag of test cases is every iteration whose `metadata.status` is `merged`. `m
 
 1. rebuilds the current model as the union of the refactored TBoxes of the bag plus `<iter>` (rebuilt, not accumulated, so edits and renames replace old definitions);
 2. compares `<iter>`'s refactored TBox with each merged iteration's: the same term declared with clashing kinds (class vs property) or different `rdfs:domain`/`rdfs:range` fails the merge; different terms of the same kind sharing a local name, label or definition are printed as possible duplicates;
-3. runs `test --refactored` on every test case, with the current model as TBox and the iteration's own refactored ABox.
+3. runs the model test on the current model, and `test --refactored` on every test case, with the current model as TBox and the iteration's own refactored ABox.
 
 Only if everything passes does it write `project/tbox.ttl` (current model) and `project/abox.ttl` (all ABoxes), and set `<iter>`'s status to `merged`. `merge` without an iteration rebuilds and re-tests the bag as is.
 
@@ -75,14 +75,49 @@ To collapse a duplicate, run `rename <old> <new>` (e.g. `rename :HumanBeing :Per
 
 ### Tests
 
-`test` fails if:
+`test` runs the three SAMOD tests: model, data and query.
+
+The model test checks the TBox alone. It fails if:
+
+- a local (`:`) class, property or individual has no `rdfs:label` or no non-empty `rdfs:comment` (usually an empty glossary `definition`);
+- a local term breaks an OWL 2 DL declaration rule: declared as two kinds of property, or as both a class and a datatype; typed only with `rdfs:Class`/`rdf:Property`; an object property with a datatype range, or a datatype property with a class range;
+- HermiT (OWL 2 DL, run through [owlready2](https://owlready2.readthedocs.io/), needs Java) finds the TBox inconsistent, finds an unsatisfiable class, or rejects it (e.g. a transitive property in a cardinality restriction).
+
+The same problems on reused terms (e.g. `dcterms:rights`, typed only `rdf:Property`) are warnings: their vocabulary cannot be edited here. Datatypes outside the OWL 2 datatype map (e.g. `xsd:date`) are always warnings: they are not OWL 2 DL, but HermiT ignores them. Without Java, HermiT is skipped with a warning. `merge` runs the model test on the current model.
+
+The data and query tests fail if:
 
 - the ABox uses a property or class, or the TBox refers to a local (`:`) term, that the TBox does not describe (usually a typo);
 - an object property has a literal value (usually a misspelled individual name) or a datatype property has an IRI value;
-- TBox+ABox is inconsistent under OWL 2 RL (owlrl), e.g. `"four"^^xsd:integer`;
+- a literal does not fit its datatype, e.g. `"four"^^xsd:integer`;
+- HermiT (OWL 2 DL) finds TBox+ABox inconsistent or rejects it. Without Java, owlrl (OWL 2 RL, pure Python) is used instead, with a warning: it misses DL-only clashes;
 - a CQ query fails (see below).
 
 It also warns, without failing, about glossary terms that no CQ query or no ABox triple uses. Queries run on the asserted triples; with `--reason` they run on the OWL 2 RL closure, so CQs that rely on inference (e.g. `?x a :Animal` for an individual typed `:Mammal`) pass.
+
+### Results file
+
+Each run also writes its results, passing or not, as JSON for reporting: `test <iter>` to `iterations/<iter>/results.json`, `test <iter> --refactored` to `refactoring/<iter>/results.json`, `merge` to `project/results.json`. Milestones copy them, so each status change keeps the results that caused it.
+
+```json
+{
+  "iteration": "01-zoo", "phase": "first-version", "reason": false,
+  "timestamp": "2026-11-19T17:42:33", "passed": false,
+  "results": [
+    {"status": "PASS", "case": "01-zoo", "test": "model", "message": "all checks pass"},
+    {"status": "FAIL", "case": "01-zoo", "test": "query", "message": "CQ 1: results differ from expected_result",
+     "cq": "1", "question": "Who eats whom?", "results": 1,
+     "expected": [[":rex", ":tom"]], "missing": [[":rex", ":tom"]], "unexpected": [["https://www.example.org/rex", "https://www.example.org/jerry"]]}
+  ]
+}
+```
+
+- `phase`: `first-version`, `refactored` or `merge`. A merge file also has `cases`, the iterations in the bag (its `iteration` is null when `merge` runs without one).
+- `test`: `model`, `data`, `query`, `coverage` (glossary terms unused by the queries or the ABox) or `merge` (conflicts and possible duplicates). In a merge file, model results have `case: "current model"`.
+- `status`: `PASS`, `FAIL` or `WARN`. Model and data tests write one `PASS` when they find nothing to report.
+- Extra fields: `term` (the IRI or glossary term concerned), `other` (the iteration a merge result compares with), `missing_from` (coverage), and for queries `cq`, `question`, `results` (row count), `expected`, `missing`, `unexpected` or `error`.
+
+The printed lines follow the same shape: `STATUS [case] test: message`.
 
 ### Expected results
 

@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from rdflib import URIRef
 
@@ -58,8 +60,13 @@ def test_main_passes_and_promotes(iteration, capsys):
     it = iteration(build=True)
     assert run(main, it.name) == 0
     out = capsys.readouterr().out
-    assert "PASS [01-zoo] 1" in out and "Status of 01-zoo: tested" in out
+    assert "PASS [01-zoo] query: CQ 1" in out and "Status of 01-zoo: tested" in out
     assert load_yaml(it / "requirements.yaml")["metadata"]["status"] == "tested"
+    results = json.loads((it / "results.json").read_text())
+    assert results["passed"] and results["phase"] == "first-version" and results["iteration"] == "01-zoo"
+    assert {(r["test"], r["status"]) for r in results["results"]} >= {("model", "PASS"), ("data", "PASS"), ("query", "PASS")}
+    cq = next(r for r in results["results"] if r["test"] == "query")
+    assert cq["cq"] == "1" and cq["results"] == 1 and cq["missing"] == cq["unexpected"] == []
 
 
 def test_main_warns_about_uncovered_terms(iteration, capsys):
@@ -68,14 +75,17 @@ def test_main_warns_about_uncovered_terms(iteration, capsys):
     it = iteration(data=data, build=True)
     assert run(main, it.name) == 0
     out = capsys.readouterr().out
-    assert "WARN [01-zoo] glossary term 'Plant' is not used by the queries" in out
-    assert "WARN [01-zoo] glossary term 'Plant' is not used by the abox" in out
+    assert "WARN [01-zoo] coverage: glossary term 'Plant' is not used by the queries" in out
+    assert "WARN [01-zoo] coverage: glossary term 'Plant' is not used by the abox" in out
 
 
 def test_main_fails_without_promoting(iteration):
     it = iteration(data=zoo(abox=[{"individual": "rex", "type": "Animal"}]), build=True)
     assert run(main, it.name) == 1
     assert load_yaml(it / "requirements.yaml")["metadata"]["status"] == "draft"
+    results = json.loads((it / "results.json").read_text())
+    cq = next(r for r in results["results"] if r["test"] == "query")
+    assert not results["passed"] and cq["status"] == "FAIL" and cq["missing"] == [[":rex", ":tom"]]
 
 
 def test_main_reason_flag(iteration):

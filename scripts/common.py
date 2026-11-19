@@ -1,10 +1,58 @@
 # scripts/common.py
 
+import json
 import sys
 import yaml
+from datetime import datetime
 from pathlib import Path
+from rdflib import URIRef
+from rdflib.namespace import OWL, RDF, RDFS
 
 EX = "https://www.example.org/"
+KINDS = {OWL.Class: "class", RDFS.Class: "class", OWL.ObjectProperty: "property",
+         OWL.DatatypeProperty: "property", RDF.Property: "property", OWL.NamedIndividual: "individual"}
+
+
+def kind(g, term):
+    """Return the kinds (`class`, `property`, `individual`) a TBox declares for a term."""
+    return {KINDS[t] for t in g.objects(term, RDF.type) if t in KINDS}
+
+
+def entities(g):
+    """Return the named terms a TBox declares as a class, property or individual."""
+    return {s for s in g.subjects(RDF.type, None) if isinstance(s, URIRef) and kind(g, s)}
+
+
+RESULTS = []  # test results recorded by `report`, written by `write_results`
+
+
+def report(status, case, test, message, **details):
+    """Print a test result and record it for `write_results`.
+
+    Args:
+        status: `"PASS"`, `"FAIL"` or `"WARN"`.
+        case: Test case, e.g. the iteration name, or `"current model"`.
+        test: Kind of test: `"model"`, `"data"`, `"query"`, `"coverage"` or `"merge"`.
+        message: Human-readable result.
+        **details: Extra JSON-serializable fields, e.g. `term` or `cq`.
+    """
+    print(f"{status} [{case}] {test}: {message}")
+    RESULTS.append({"status": status, "case": case, "test": test, "message": message, **details})
+
+
+def write_results(path, passed, **meta):
+    """Write the results recorded by `report` to a JSON file, then clear them.
+
+    Args:
+        path: JSON file to write, e.g. `iterations/<iter>/results.json`.
+        passed: Whether the whole command passed.
+        **meta: Extra top-level fields, e.g. `phase` and `iteration`.
+    """
+    data = {**meta, "timestamp": datetime.now().isoformat(timespec="seconds"), "passed": passed,
+            "results": list(RESULTS)}
+    RESULTS.clear()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 def individual_id(name):

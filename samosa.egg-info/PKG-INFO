@@ -6,6 +6,7 @@ Requires-Python: >=3.11
 Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: jinja2>=3.1.6
+Requires-Dist: owlready2>=0.51
 Requires-Dist: owlrl>=7.6.2
 Requires-Dist: pyyaml>=6.0.3
 Requires-Dist: rdflib>=7.5.0
@@ -38,7 +39,7 @@ Each iteration lives under `iterations/<NN>-<name>/requirements.yaml` and declar
 | `samosa new <name>`             | scaffold a new iteration            |
 | `samosa tbox <iter>`            | glossary -> tbox.ttl                |
 | `samosa draft-abox <iter>`      | (optional) draft the abox: block    |
-| `samosa diagram <iter> [--graffoo]` | tbox.mmd (Mermaid, Graffoo colours); with `--graffoo` also tbox.graphml (yEd) and tbox.png (needs Graphviz) |
+| `samosa diagram <iter> [--graffoo]` | tbox.mmd and, once abox.ttl exists, abox.mmd (Mermaid, Graffoo colours); with `--graffoo` also tbox/abox.graphml (yEd) and tbox/abox.png (needs Graphviz) |
 | `samosa abox <iter>`            | abox: block -> abox.ttl             |
 | `samosa test <iter> [--reason]` | data and query tests on tbox.ttl + abox.ttl, see below |
 | `samosa align <iter>`           | refactoring/\<iter\>/{tbox,abox}.ttl, refactored_query in requirements.yaml |
@@ -68,7 +69,7 @@ Per iteration:
 2. fill in `requirements.yaml`
 3. `tbox`
 4. `diagram`
-5. `draft-abox`, then `abox`
+5. `draft-abox`, then `abox`, then `diagram` again to draw the ABox too
 6. `test`
 7. add `align_to` to glossary terms
 8. `align`
@@ -146,6 +147,14 @@ After a serious failure, go back to a milestone: `restore` lists them, `restore 
 
 - by default with the local [`oc-lode`](https://pypi.org/project/oc-lode/) package: `uv sync --extra docs`;
 - with `--online`, by uploading `project/tbox.ttl` to the LODE 2.0 web service (`POST https://lode.opencitations.net/build`). Nothing needs to be installed, but the ontology leaves your machine.
+
+## Tests
+
+```
+uv run pytest
+```
+
+The suite in `tests/` runs every command in a temporary project, with the network blocked (LODE, Ollama, prefix.cc and vocabulary downloads are faked). The test that builds real documentation runs only if `oc-lode` is installed (`uv sync --extra docs`), and the API tests only if FastAPI is (`uv sync --extra api`).
 
 ## Setup
 

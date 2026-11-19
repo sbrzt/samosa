@@ -7,8 +7,9 @@ from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import OWL, RDF, RDFS
 from scripts import check_consistency
 from scripts.align import aliases, load_prefixes
-from scripts.common import EX, load_yaml, resolve_iteration
+from scripts.common import EX, RESULTS, load_yaml, report, resolve_iteration, write_results
 from scripts.milestone import promote
+from scripts.model_test import run_model_test
 from scripts.generate_tbox import BASE_PREFIXES, local_name
 from scripts.verify_cqs import run_queries
 
@@ -87,7 +88,8 @@ def run_tests(tbox, abox, cqs, label, key="query", reason=False, aliases=None):
     """Run the formal data and query tests of one test case and print the results.
 
     Fails on terms the TBox does not describe (`undeclared`), ABox values of
-    the wrong kind (`misused`), OWL 2 RL inconsistencies of TBox+ABox, and
+    the wrong kind (`misused`), inconsistencies of TBox+ABox (OWL 2 DL with
+    HermiT, see `check_consistency.problems`), and
     failing competency question queries.
 
     Args:
@@ -105,27 +107,31 @@ def run_tests(tbox, abox, cqs, label, key="query", reason=False, aliases=None):
     """
     failures = 0
     for term, where in undeclared(tbox, abox):
-        print(f"FAIL [{label}] {where}: <{term}> is not described in the TBox")
+        report("FAIL", label, "data", f"<{term}> is not described in the TBox (used in the {where})", term=str(term))
         failures += 1
     for s, p, o in misused(tbox, abox):
-        print(f"FAIL [{label}] abox: <{s}> <{p}> has the wrong kind of value: {o.n3()}")
+        report("FAIL", label, "data", f"<{s}> <{p}> has the wrong kind of value: {o.n3()}", term=str(p))
         failures += 1
     graph = tbox + abox
-    closure = check_consistency.reason(graph)
-    for message in check_consistency.inconsistencies(closure):
-        print(f"FAIL [{label}] inconsistent (OWL 2 RL): {message}")
-        failures += 1
-    checked, failed = run_queries(closure if reason else graph, cqs, label, key, aliases)
+    for level, message in check_consistency.problems(graph):
+        report(level, label, "data", message)
+        failures += level == "FAIL"
+    if not failures:
+        report("PASS", label, "data", "all checks pass")
+    checked, failed = run_queries(check_consistency.reason(graph) if reason else graph, cqs, label, key, aliases)
     return checked, failures + failed
 
 
 def main(iteration: str, refactored: bool = False, reason: bool = False):
-    """Run the data and query tests of an iteration on its TBox and ABox.
+    """Run the model, data and query tests of an iteration on its TBox and ABox.
 
-    Runs `run_tests` and, on the first version only, warns (without failing)
+    Runs the model test on the TBox (`model_test.run_model_test`), then
+    `run_tests` and, on the first version only, warns (without failing)
     about glossary terms unused by the queries or the ABox. If everything
     passes, raises the iteration's status to `tested` (first version) or
-    `aligned` (refactored), see `milestone.promote`.
+    `aligned` (refactored), see `milestone.promote`. Writes every result,
+    passing or not, to `results.json` next to the tested TBox (see
+    `common.write_results`).
 
     Args:
         iteration: Iteration path or name, resolved with `resolve_iteration`.
@@ -141,6 +147,7 @@ def main(iteration: str, refactored: bool = False, reason: bool = False):
     """
     it = resolve_iteration(iteration)
     base = Path("refactoring") / it.name if refactored else it
+    RESULTS.clear()
 
     graphs = {}
     for name in ("tbox", "abox"):
@@ -152,11 +159,16 @@ def main(iteration: str, refactored: bool = False, reason: bool = False):
 
     if not refactored:
         for name, where in uncovered(data, graphs["abox"]):
-            print(f"WARN [{it.name}] glossary term '{name}' is not used by the {where}")
+            report("WARN", it.name, "coverage", f"glossary term '{name}' is not used by the {where}", term=name,
+                   missing_from=where)
     key = "refactored_query" if refactored else "query"
     names = aliases(data, load_prefixes()) if refactored else None
+    model_failures = run_model_test(graphs["tbox"], it.name)
     checked, failures = run_tests(graphs["tbox"], graphs["abox"], data.get("competency_questions"),
                                   it.name, key, reason, names)
+    failures += model_failures
+    write_results(base / "results.json", checked > 0 and not failures, iteration=it.name,
+                  phase="refactored" if refactored else "first-version", reason=reason)
     if checked == 0:
         print("No competency questions with a query found.")
         sys.exit(1)

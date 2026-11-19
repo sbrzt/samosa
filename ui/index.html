@@ -8,11 +8,13 @@
   :root {
     --bg: #fff; --fg: #1b1f24; --muted: #5c6670; --line: #d8dde3; --panel: #f4f6f8;
     --accent: #1d4ed8; --ok: #15803d; --fail: #b91c1c; --ok-bg: #ecfdf3; --fail-bg: #fef2f2;
+    --warn: #a16207; --warn-bg: #fefce8;
     color-scheme: light dark;
   }
   @media (prefers-color-scheme: dark) {
     :root { --bg: #0f1215; --fg: #e6e8eb; --muted: #9aa4ae; --line: #2a3037; --panel: #171b20;
-            --accent: #7aa2ff; --ok: #4ade80; --fail: #f87171; --ok-bg: #10261a; --fail-bg: #2b1515; }
+            --accent: #7aa2ff; --ok: #4ade80; --fail: #f87171; --ok-bg: #10261a; --fail-bg: #2b1515;
+            --warn: #facc15; --warn-bg: #2a2410; }
   }
   * { box-sizing: border-box; }
   body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--fg);
@@ -65,6 +67,23 @@
   .check input { flex: none; width: auto; }
   .diagrams figure { margin: 0; }
   .diagrams figcaption { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+  .results { grid-column: 1 / -1; display: grid; gap: 12px; }
+  .results h3 { font-size: 14px; margin: 8px 0 0; }
+  .results p { margin: 0; font-size: 13px; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; font-size: 13px; width: 100%; }
+  th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+  thead th { background: var(--panel); font-weight: 600; white-space: nowrap; }
+  td ul, #cell-detail { margin: 4px 0 0; padding-left: 18px; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+  .muted { color: var(--muted); }
+  th[scope="row"], .nowrap { white-space: nowrap; }
+  #cqs td:nth-child(3) { min-width: 16em; }
+  #cqs td:nth-child(n+4) { min-width: 12em; }
+  .badge { display: inline-block; padding: 1px 6px; border: 1px solid transparent; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .badge.pass, .badge.pass:hover:not(:disabled) { color: var(--ok); background: var(--ok-bg); }
+  .badge.warn, .badge.warn:hover:not(:disabled) { color: var(--warn); background: var(--warn-bg); }
+  .badge.fail, .badge.fail:hover:not(:disabled) { color: var(--fail); background: var(--fail-bg); }
+  button.badge:hover:not(:disabled), button.badge[aria-pressed="true"] { border-color: currentColor; }
   [hidden] { display: none !important; }
   @media (max-width: 900px) { body { grid-template-columns: 1fr; } nav { border-right: 0; border-bottom: 1px solid var(--line); }
                               main, .diagrams { grid-template-columns: 1fr; } }
@@ -123,6 +142,17 @@
     </div>
     <h2 style="margin-top:20px">Output</h2>
     <pre id="out" aria-live="polite">Select or create an iteration.</pre>
+  </section>
+
+  <section class="results" aria-labelledby="results-title">
+    <h2 id="results-title">Test results</h2>
+    <p id="current-model" class="muted"></p>
+    <h3>Tests per iteration</h3>
+    <p class="muted">Worst result of each test, with how many results have that status. Select a result to list its messages.</p>
+    <div class="table-wrap"><table id="matrix"></table></div>
+    <ul id="cell-detail" aria-live="polite" hidden></ul>
+    <h3>Competency questions</h3>
+    <div class="table-wrap"><table id="cqs"></table></div>
   </section>
 
   <section class="diagrams" id="diagrams" hidden>
@@ -262,6 +292,90 @@ async function refreshDiagrams() {
   }
 }
 
+// Test results, read from the results.json files written by `test` and `merge`.
+const PHASES = [  // [phase, heading, tests shown for it]
+  ["first-version", "First version", ["model", "data", "query", "coverage"]],
+  ["refactored", "Refactored", ["model", "data", "query"]],
+  ["merge", "Merge", ["merge", "data", "query"]],
+];
+const IMPLICIT = ["coverage", "merge"];  // these tests record only problems: no record means pass
+const RANK = { PASS: 0, WARN: 1, FAIL: 2 };
+const getJSON = async (url) => { const r = await fetch(url, { cache: "no-store" }); return r.ok ? r.json() : null; };
+const when = (file) => file.timestamp.replace("T", " ");
+
+// One clickable badge for a list of records: the worst status, and how many records have it.
+function badge(records, title) {
+  const worst = records.reduce((w, r) => (RANK[r.status] > RANK[w] ? r.status : w), "PASS");
+  const n = records.filter((r) => r.status === worst).length;
+  const b = el("button", { type: "button", className: `badge ${worst.toLowerCase()}`, title,
+                           textContent: worst === "PASS" ? "PASS" : `${worst} ${n}` });
+  b.onclick = () => {
+    document.querySelectorAll("#matrix button.badge, #current-model button.badge").forEach((x) => x.setAttribute("aria-pressed", x === b));
+    $("cell-detail").hidden = false;
+    $("cell-detail").replaceChildren(...(records.length ? records : [{ status: "PASS", message: "nothing to report" }])
+      .map((r) => el("li", {}, el("span", { className: `badge ${r.status.toLowerCase()}`, textContent: r.status }), " ", r.message)));
+  };
+  b.setAttribute("aria-pressed", "false");
+  return b;
+}
+
+function matrixCell(file, name, test) {
+  if (!file) return el("td", { className: "muted", textContent: "not run" });
+  const records = file.results.filter((r) => r.case === name && r.test === test);
+  if (!records.length && !IMPLICIT.includes(test)) return el("td", { className: "muted", textContent: "—" });
+  return el("td", {}, badge(records, `${test}, ${when(file)}`));
+}
+
+function cqCell(file, record) {
+  if (!file) return el("td", { className: "muted", textContent: "not run" });
+  if (!record) return el("td", { className: "muted", textContent: "—" });
+  const lines = [...(record.missing || []).map((row) => `missing: ${row.join(", ")}`),
+                 ...(record.unexpected || []).map((row) => `unexpected: ${row.join(", ")}`),
+                 ...(record.error ? [`error: ${record.error}`] : [])];
+  return el("td", { title: when(file) },
+    el("span", { className: "nowrap" }, el("span", { className: `badge ${record.status.toLowerCase()}`, textContent: record.status }),
+       record.results == null ? "" : ` ${record.results} row(s)`),
+    lines.length ? el("ul", {}, ...lines.map((t) => el("li", { textContent: t }))) : "");
+}
+
+async function refreshResults() {
+  const names = await (await fetch("/iterations")).json();
+  const merge = await getJSON("/project/results.json");
+  const files = Object.fromEntries(await Promise.all(names.map(async (n) => [n, {
+    "first-version": await getJSON(`/iterations/${n}/results.json`),
+    refactored: await getJSON(`/refactoring/${n}/results.json`),
+    merge: merge?.cases?.includes(n) ? merge : null,
+  }])));
+
+  const model = merge?.results.filter((r) => r.case === "current model" && r.test === "model");
+  $("current-model").replaceChildren(...(merge
+    ? [`Last merge${merge.iteration ? ` (${merge.iteration})` : ""}: ${when(merge)}, `,
+       el("span", { className: `badge ${merge.passed ? "pass" : "fail"}`, textContent: merge.passed ? "PASSED" : "FAILED" }),
+       ". Model test on the current model: ", badge(model, `model, ${when(merge)}`)]
+    : ["No merge yet."]));
+  $("cell-detail").hidden = true;
+
+  $("matrix").replaceChildren(
+    el("thead", {},
+      el("tr", {}, el("th", { rowSpan: 2, textContent: "Iteration" }),
+        ...PHASES.map(([, heading, tests]) => el("th", { colSpan: tests.length, scope: "colgroup", textContent: heading }))),
+      el("tr", {}, ...PHASES.flatMap(([, , tests]) => tests.map((t) => el("th", { scope: "col", textContent: t }))))),
+    el("tbody", {}, ...names.map((n) => el("tr", {}, el("th", { scope: "row", textContent: n }),
+      ...PHASES.flatMap(([phase, , tests]) => tests.map((t) => matrixCell(files[n][phase], n, t)))))));
+
+  const rows = names.flatMap((n) => {
+    const byCq = new Map();
+    for (const [phase] of PHASES)
+      for (const r of files[n][phase]?.results || [])
+        if (r.case === n && r.test === "query") (byCq.get(r.cq) || byCq.set(r.cq, { question: r.question }).get(r.cq))[phase] = r;
+    return [...byCq].map(([cq, recs]) => el("tr", {}, el("th", { scope: "row", textContent: n }), el("td", { textContent: cq }),
+      el("td", { textContent: recs.question || "" }), ...PHASES.map(([phase]) => cqCell(files[n][phase], recs[phase]))));
+  });
+  $("cqs").replaceChildren(
+    el("thead", {}, el("tr", {}, ...["Iteration", "CQ", "Question", ...PHASES.map(([, h]) => h)].map((h) => el("th", { scope: "col", textContent: h })))),
+    el("tbody", {}, ...(rows.length ? rows : [el("tr", {}, el("td", { colSpan: 3 + PHASES.length, className: "muted", textContent: "No CQ results yet: run a test." }))])));
+}
+
 async function save() {
   const body = JSON.stringify(data);
   if (!current || body === clean) return true;
@@ -282,6 +396,7 @@ async function run(cmd, params) {
       show(r.ok && body.ok, r.ok ? body.output || "(no output)" : JSON.stringify(body.detail));
       if (current) await select(current);  // draft-abox and align rewrite requirements.yaml
       refreshDocs();
+      refreshResults();
     }
   } catch (e) {
     show(false, String(e));
@@ -313,6 +428,7 @@ $("new-form").onsubmit = async (e) => {
 };
 window.onbeforeunload = () => (JSON.stringify(data) !== clean ? true : undefined);
 refreshDocs();
+refreshResults();
 location.hash.length > 1 ? select(decodeURIComponent(location.hash.slice(1))) : listIterations();
 </script>
 </body>

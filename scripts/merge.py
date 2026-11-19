@@ -6,24 +6,13 @@ from pathlib import Path
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS, split_uri
 from scripts import align
-from scripts.common import EX, dump_yaml, load_yaml, resolve_iteration
+from scripts.common import EX, RESULTS, dump_yaml, entities, kind, load_yaml, report, resolve_iteration, write_results
 from scripts.milestone import promote, rank, status
 from scripts.generate_tbox import local_name
+from scripts.model_test import run_model_test
 from scripts.test_iteration import run_tests
 
 MERGED = "merged"
-KINDS = {OWL.Class: "class", RDFS.Class: "class", OWL.ObjectProperty: "property",
-         OWL.DatatypeProperty: "property", RDF.Property: "property", OWL.NamedIndividual: "individual"}
-
-
-def kind(g, term):
-    """Return the kinds (`class`, `property`, `individual`) a TBox declares for a term."""
-    return {KINDS[t] for t in g.objects(term, RDF.type) if t in KINDS}
-
-
-def entities(g):
-    """Return the named terms a TBox declares as a class, property or individual."""
-    return {s for s in g.subjects(RDF.type, None) if isinstance(s, URIRef) and kind(g, s)}
 
 
 def conflicts(new, old):
@@ -144,7 +133,8 @@ def main(iteration: str = None, reason: bool = False):
     1. the refactored TBox of `iteration` is compared with those of the other
        merged iterations: conflicting definitions of the same term fail the
        merge, likely duplicate entities are printed as warnings;
-    2. every test case runs `test --refactored` with the new current model as
+    2. the model test runs on the new current model (`model_test.run_model_test`);
+    3. every test case runs `test --refactored` with the new current model as
        its TBox and its own refactored ABox.
 
     `iteration` must have passed `test` (status `tested` or later). Only if
@@ -152,6 +142,7 @@ def main(iteration: str = None, reason: bool = False):
     header from `ontology.yaml` (see `header`), to `project/tbox.ttl`,
     the union of the ABoxes to `project/abox.ttl`, and raises the status of
     `iteration` to `merged`, recording a milestone (see `milestone.promote`).
+    Every result, passing or not, is written to `project/results.json`.
 
     Args:
         iteration: Iteration to merge, resolved with `resolve_iteration`. If
@@ -178,6 +169,7 @@ def main(iteration: str = None, reason: bool = False):
         print(f"Error: no refactoring/ output for: {', '.join(missing)}. Run align first.")
         sys.exit(1)
 
+    RESULTS.clear()
     tboxes = {d: Graph().parse(Path("refactoring") / d.name / "tbox.ttl", format="turtle") for d in dirs}
     aboxes = {d: Graph().parse(Path("refactoring") / d.name / "abox.ttl", format="turtle") for d in dirs}
     tbox, abox = Graph(), Graph()
@@ -194,12 +186,14 @@ def main(iteration: str = None, reason: bool = False):
         if d == new:
             continue
         for t, what, a, b in conflicts(tboxes[new], tboxes[d]):
-            print(f"FAIL [{new.name}] conflict with {d.name}: {_short(t)} {what} is {_short(a)} here, {_short(b)} there")
+            report("FAIL", new.name, "merge", f"conflict with {d.name}: {_short(t)} {what} is {_short(a)} here, "
+                   f"{_short(b)} there", term=str(t), other=d.name)
             failures += 1
         for a, b, why in duplicates(tboxes[new], tboxes[d]):
-            print(f"WARN [{new.name}] possible duplicate: {_short(a)} here and {_short(b)} in {d.name} "
-                  f"(same {', '.join(why)}). If they are the same entity, run rename.")
+            report("WARN", new.name, "merge", f"possible duplicate: {_short(a)} here and {_short(b)} in {d.name} "
+                   f"(same {', '.join(why)}). If they are the same entity, run rename.", term=str(a), other=d.name)
 
+    failures += run_model_test(tbox, "current model")
     prefixes = align.load_prefixes()
     checked = 0
     for d in dirs:
@@ -208,6 +202,8 @@ def main(iteration: str = None, reason: bool = False):
                          "refactored_query", reason, align.aliases(data, prefixes))
         checked += c
         failures += f
+    write_results(Path("project") / "results.json", checked > 0 and not failures, phase="merge",
+                  iteration=new.name if new else None, cases=[d.name for d in dirs], reason=reason)
     if checked == 0 or failures:
         print("Merge failed: current model not updated." if failures
               else "No queries found: current model not updated.")

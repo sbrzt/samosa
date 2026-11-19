@@ -66,9 +66,9 @@ def test_run_queries_counts_passes_and_failures(capsys):
     ]
     assert run_queries(G, cqs, "it") == (5, 3)
     out = capsys.readouterr().out
-    assert "PASS [it] ok" in out and "PASS [it] any" in out
-    assert "FAIL [it] wrong" in out and "missing:    :tom" in out and "unexpected: " + EX + "rex" in out
-    assert "FAIL [it] empty" in out and "FAIL [it] broken: query error" in out
+    assert "PASS [it] query: CQ ok" in out and "PASS [it] query: CQ any" in out
+    assert "FAIL [it] query: CQ wrong" in out and "missing:    :tom" in out and "unexpected: " + EX + "rex" in out
+    assert "FAIL [it] query: CQ empty" in out and "FAIL [it] query: CQ broken: query error" in out
     assert "skipped" not in out
 
 

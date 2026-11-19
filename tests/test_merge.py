@@ -1,3 +1,4 @@
+import json
 import pytest
 from rdflib import Graph, Literal, URIRef
 from rdflib.namespace import DCTERMS, OWL, RDF, RDFS
@@ -96,8 +97,11 @@ def test_merge_builds_the_current_model_step_by_step(iteration, project, capsys)
     second = ready(iteration, "02-keeper", data)
     assert run(merge.main, second.name) == 0
     out = capsys.readouterr().out
-    assert "PASS [01-zoo] 1" in out and "PASS [02-keeper] 1" in out and "2 iteration(s)" in out
+    assert "PASS [01-zoo] query: CQ 1" in out and "PASS [02-keeper] query: CQ 1" in out and "2 iteration(s)" in out
     assert (E("kim"), E("feeds"), E("tom")) in Graph().parse(project / "project" / "abox.ttl")
+    results = json.loads((project / "project" / "results.json").read_text())
+    assert results["passed"] and results["phase"] == "merge" and results["cases"] == ["01-zoo", "02-keeper"]
+    assert {r["case"] for r in results["results"]} == {"current model", "01-zoo", "02-keeper"}
 
 
 def test_merge_refuses_untested_iterations(iteration, capsys):
@@ -122,7 +126,7 @@ def test_merge_fails_on_conflicts_and_keeps_the_current_model(iteration, project
     second = ready(iteration, "02-clash", data)
     assert run(merge.main, second.name) == 1
     out = capsys.readouterr().out
-    assert "FAIL [02-clash] conflict with 01-zoo: <https://www.example.org/eats> domain" in out
+    assert "FAIL [02-clash] merge: conflict with 01-zoo: <https://www.example.org/eats> domain" in out
     assert "current model not updated" in out
     assert (project / "project" / "tbox.ttl").read_text() == before
     assert load_yaml(second / "requirements.yaml")["metadata"]["status"] == "tested"
@@ -153,7 +157,7 @@ def test_rename_collapses_a_duplicate_and_re_merges(iteration, project, capsys):
     assert E("Beast") not in set(tbox.subjects())
     out = capsys.readouterr().out
     assert "02-beast: align_to :Animal" in out
-    assert "PASS [02-beast] 1" in out and "2 iteration(s)" in out  # :beast still matches through the alias
+    assert "PASS [02-beast] query: CQ 1" in out and "2 iteration(s)" in out  # :beast still matches through the alias
 
 
 def test_rename_back_to_the_own_term_clears_align_to(iteration):

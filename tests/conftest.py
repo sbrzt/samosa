@@ -8,7 +8,7 @@ import pytest
 from rdflib import Graph
 
 from scripts import align, generate_abox, generate_tbox
-from scripts.common import dump_yaml
+from scripts.common import RESULTS, dump_yaml
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -72,6 +72,12 @@ def no_network(monkeypatch):
         raise OSError("network disabled in tests")
     monkeypatch.setattr(socket.socket, "connect", blocked)
     monkeypatch.setattr(socket, "create_connection", blocked)
+
+
+@pytest.fixture(autouse=True)
+def fresh_results():
+    """Clear the test results recorded by `common.report` before each test."""
+    RESULTS.clear()
 
 
 @pytest.fixture(autouse=True)

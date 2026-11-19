@@ -2,6 +2,7 @@
 
 from rdflib import URIRef
 from rdflib.namespace import split_uri
+from scripts.common import report
 
 
 def _cell(term):
@@ -113,27 +114,32 @@ def run_queries(graph, cqs, label, key="query", aliases=None):
             continue
         checked += 1
         cq_id = cq.get("id") or cq.get("question", "?")
+        info = {"cq": str(cq_id), "question": cq.get("question")}
         try:
             results = list(graph.query(query))
         except Exception as e:
-            print(f"FAIL [{label}] {cq_id}: query error: {e}")
+            report("FAIL", label, "query", f"CQ {cq_id}: query error: {e}", **info, error=str(e))
             failures += 1
             continue
+        info["results"] = len(results)
         expected = cq.get("expected_result")
         if not expected:
             ok = bool(results)
-            print(f"{'PASS' if ok else 'FAIL'} [{label}] {cq_id}: {len(results)} result(s), no expected_result")
+            report("PASS" if ok else "FAIL", label, "query", f"CQ {cq_id}: {len(results)} result(s), no expected_result",
+                   **info)
             failures += not ok
             continue
         missing, extra = _diff(_rows(expected), results, aliases)
+        missing = [[str(c) for c in row] for row in missing]
+        extra = [[_cell(t)[0] for t in row] for row in extra]
+        info.update(expected=[[str(c) for c in row] for row in _rows(expected)], missing=missing, unexpected=extra)
         if not missing and not extra:
-            print(f"PASS [{label}] {cq_id}: {len(results)} result(s) match expected_result")
+            report("PASS", label, "query", f"CQ {cq_id}: {len(results)} result(s) match expected_result", **info)
             continue
         failures += 1
-        print(f"FAIL [{label}] {cq_id}: results differ from expected_result")
+        report("FAIL", label, "query", f"CQ {cq_id}: results differ from expected_result", **info)
         for row in missing:
-            print(f"    missing:    {', '.join(map(str, row))}")
+            print(f"    missing:    {', '.join(row)}")
         for row in extra:
-            print(f"    unexpected: {', '.join(_cell(t)[0] for t in row)}")
+            print(f"    unexpected: {', '.join(row)}")
     return checked, failures
-

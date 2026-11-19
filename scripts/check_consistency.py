@@ -1,15 +1,18 @@
 # scripts/check_consistency.py
 
+import io
 import logging
 import sys
 from pathlib import Path
+from owlready2 import OwlReadyInconsistentOntologyError, OwlReadyJavaError, World, sync_reasoner_hermit
 from owlrl import DeductiveClosure, OWLRL_Semantics
-from rdflib import Graph, Namespace
+from rdflib import Graph, Literal, Namespace
+from rdflib.namespace import OWL
 
 ERR = Namespace("http://www.daml.org/2002/03/agents/agent-ont#")
 
 # rdflib logs a traceback for each ill-typed literal (e.g. "four"^^xsd:integer)
-# while parsing; `inconsistencies` reports the same problem as one line.
+# while parsing; `ill_typed` reports the same problem as one line.
 logging.getLogger("rdflib.term").setLevel(logging.ERROR)
 
 
@@ -45,11 +48,82 @@ def inconsistencies(closure):
     return sorted(str(m) for m in closure.objects(None, ERR.error))
 
 
-def main():
-    """Check the merged ontology for consistency under OWL 2 RL.
+def hermit(graph, unsatisfiable=True):
+    """Check a graph with HermiT (OWL 2 DL), through owlready2.
 
-    Loads `project/tbox.ttl` and `project/abox.ttl`, computes the OWL 2 RL
-    deductive closure, and reports any inconsistencies owlrl records.
+    Needs Java. Datatypes outside the OWL 2 datatype map (e.g. `xsd:date`) are
+    ignored. Ill-typed literals must be removed first, see `ill_typed`.
+
+    Args:
+        graph: TBox, or TBox+ABox.
+        unsatisfiable: If true, also list the unsatisfiable classes.
+
+    Returns:
+        List of problems: the graph is inconsistent, HermiT rejects it (e.g. a
+        transitive property in a cardinality restriction, a malformed literal),
+        or classes are unsatisfiable. Empty if none, None if Java is not installed.
+    """
+    world = World()
+    data = graph.serialize(format="nt", encoding="utf-8")
+    world.get_ontology("http://samosa.local/test#").load(fileobj=io.BytesIO(data), format="ntriples")
+    try:
+        sync_reasoner_hermit(world, infer_property_values=False, ignore_unsupported_datatypes=True, debug=0)
+        return [f"<{c.iri}> is unsatisfiable (OWL 2 DL, HermiT)"
+                for c in world.inconsistent_classes() if unsatisfiable and c.iri != str(OWL.Nothing)]
+    except FileNotFoundError:
+        return None
+    except OwlReadyInconsistentOntologyError:
+        return ["inconsistent (OWL 2 DL, HermiT)"]
+    except OwlReadyJavaError as e:
+        line = next((l for l in str(e).splitlines() if "Exception" in l), str(e).strip())
+        return [f"rejected by HermiT: {line.split(': ', 1)[-1]}"]
+    finally:
+        world.close()
+
+
+def ill_typed(graph):
+    """Find literals whose value does not fit their datatype, e.g. `"four"^^xsd:integer`.
+
+    Args:
+        graph: Graph to check.
+
+    Returns:
+        Sorted list of the triples with an ill-typed literal.
+    """
+    return sorted(t for t in graph if isinstance(t[2], Literal) and t[2].ill_typed)
+
+
+def problems(graph):
+    """Run the SAMOD data test: check TBox+ABox for consistency.
+
+    Ill-typed literals fail, then HermiT (OWL 2 DL, see `hermit`) checks the
+    rest. Without Java, falls back to owlrl (OWL 2 RL), which is sound but
+    misses DL-only clashes.
+
+    Args:
+        graph: TBox+ABox graph. Left unchanged.
+
+    Returns:
+        List of `(level, message)` pairs, `level` being `"FAIL"` or `"WARN"`.
+        Empty if the graph is consistent.
+    """
+    bad = ill_typed(graph)
+    out = [("FAIL", f"{s.n3()} {p.n3()} {o.n3()}: the value does not fit its datatype") for s, p, o in bad]
+    clean = Graph()
+    clean += graph
+    for t in bad:
+        clean.remove(t)
+    found = hermit(clean, unsatisfiable=False)
+    if found is None:
+        out.append(("WARN", "Java not found, OWL 2 RL (owlrl) used instead of HermiT (OWL 2 DL)"))
+        found = [f"inconsistent (OWL 2 RL): {m}" for m in inconsistencies(reason(clean))]
+    return out + [("FAIL", m) for m in found]
+
+
+def main():
+    """Check the merged ontology for consistency (SAMOD data test).
+
+    Loads `project/tbox.ttl` and `project/abox.ttl` and runs `problems` on them.
 
     Raises:
         SystemExit: If an input file is missing or the graph is inconsistent.
@@ -62,14 +136,13 @@ def main():
             sys.exit(1)
         graph.parse(project_dir / name, format="turtle")
 
-    closure = reason(graph)
-    errors = inconsistencies(closure)
-    if errors:
-        print("Inconsistent (OWL 2 RL):")
-        for m in errors:
-            print(f"  {m}")
+    found = problems(graph)
+    for level, m in found:
+        print(f"{level} {m}")
+    if any(level == "FAIL" for level, _ in found):
+        print("Inconsistent.")
         sys.exit(1)
-    print(f"Consistent (OWL 2 RL): {len(graph)} triples, {len(closure) - len(graph)} inferred.")
+    print(f"Consistent: {len(graph)} triples.")
 
 
 if __name__ == "__main__":
