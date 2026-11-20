@@ -7,9 +7,10 @@ from pathlib import Path
 from owlready2 import OwlReadyInconsistentOntologyError, OwlReadyJavaError, World, sync_reasoner_hermit
 from owlrl import DeductiveClosure, OWLRL_Semantics
 from rdflib import Graph, Literal, Namespace
-from rdflib.namespace import OWL
+from rdflib.namespace import OWL, RDF, RDFS, XSD
 
 ERR = Namespace("http://www.daml.org/2002/03/agents/agent-ont#")
+BUILTIN = tuple(str(ns) for ns in (RDF, RDFS, OWL, XSD))
 
 # rdflib logs a traceback for each ill-typed literal (e.g. "four"^^xsd:integer)
 # while parsing; `ill_typed` reports the same problem as one line.
@@ -93,31 +94,96 @@ def ill_typed(graph):
     return sorted(t for t in graph if isinstance(t[2], Literal) and t[2].ill_typed)
 
 
+def individuals(graph):
+    """List the individuals of a graph.
+
+    Args:
+        graph: TBox+ABox graph.
+
+    Returns:
+        Sorted list of the subjects typed `owl:NamedIndividual` or with a class
+        outside the RDF, RDFS, OWL and XSD namespaces.
+    """
+    return sorted({s for s, t in graph.subject_objects(RDF.type)
+                   if t == OWL.NamedIndividual or not str(t).startswith(BUILTIN)})
+
+
+def culprits(graph, inds):
+    """Find the individuals whose own assertions make a graph inconsistent (HermiT).
+
+    Each individual is checked alone: its assertions, plus the graph without
+    any individual's assertions. Clashes that need several individuals (e.g. a
+    functional property with two different values) are not found.
+
+    Args:
+        graph: Inconsistent TBox+ABox graph.
+        inds: Individuals of `graph`, see `individuals`.
+
+    Returns:
+        Sorted list of the individuals inconsistent on their own.
+    """
+    # ponytail: one HermiT run (~0.5 s) per individual, only on failure; bisect if ABoxes grow large
+    base = Graph()
+    base += graph
+    for i in inds:
+        base.remove((i, None, None))
+    out = []
+    for i in inds:
+        g = Graph()
+        g += base
+        g += graph.triples((i, None, None))
+        if hermit(g, unsatisfiable=False):
+            out.append(i)
+    return out
+
+
 def problems(graph):
-    """Run the SAMOD data test: check TBox+ABox for consistency.
+    """Run the SAMOD consistency test on TBox+ABox.
 
     Ill-typed literals fail, then HermiT (OWL 2 DL, see `hermit`) checks the
     rest. Without Java, falls back to owlrl (OWL 2 RL), which is sound but
-    misses DL-only clashes.
+    misses DL-only clashes. If HermiT finds the graph inconsistent, the
+    explanation comes from owlrl or, for DL-only clashes, from `culprits`.
 
     Args:
         graph: TBox+ABox graph. Left unchanged.
 
     Returns:
-        List of `(level, message)` pairs, `level` being `"FAIL"` or `"WARN"`.
-        Empty if the graph is consistent.
+        List of `(level, message, details)` triples, `level` being `"PASS"`,
+        `"FAIL"` or `"WARN"` and `details` a dict of extra JSON fields:
+        `reasoner`, `triples` and `individuals` (counts) on the `PASS`,
+        `explanation` (list of strings) on an inconsistency, and `term`,
+        `subject`, `value`, `datatype` on an ill-typed literal. A consistent
+        graph gives exactly one `PASS`.
     """
     bad = ill_typed(graph)
-    out = [("FAIL", f"{s.n3()} {p.n3()} {o.n3()}: the value does not fit its datatype") for s, p, o in bad]
+    out = [("FAIL", f"{s.n3()} {p.n3()} {o.n3()}: the value does not fit its datatype",
+            {"term": str(p), "subject": str(s), "value": str(o), "datatype": str(o.datatype)}) for s, p, o in bad]
     clean = Graph()
     clean += graph
     for t in bad:
         clean.remove(t)
+    inds = individuals(clean)
     found = hermit(clean, unsatisfiable=False)
     if found is None:
-        out.append(("WARN", "Java not found, OWL 2 RL (owlrl) used instead of HermiT (OWL 2 DL)"))
-        found = [f"inconsistent (OWL 2 RL): {m}" for m in inconsistencies(reason(clean))]
-    return out + [("FAIL", m) for m in found]
+        reasoner = "owlrl (OWL 2 RL)"
+        out.append(("WARN", "Java not found, OWL 2 RL (owlrl) used instead of HermiT (OWL 2 DL)", {"reasoner": reasoner}))
+        out += [("FAIL", f"inconsistent (OWL 2 RL): {m}", {"reasoner": reasoner, "explanation": [m]})
+                for m in inconsistencies(reason(clean))]
+    else:
+        reasoner = "HermiT (OWL 2 DL)"
+        for m in found:
+            details = {"reasoner": reasoner}
+            if m.startswith("inconsistent"):
+                details["explanation"] = (inconsistencies(reason(clean))
+                                          or [f"the assertions on <{i}> clash with the TBox" for i in culprits(clean, inds)]
+                                          or ["no single individual causes it: look at assertions linking several "
+                                              "individuals, or at the TBox"])
+            out.append(("FAIL", m, details))
+    if not any(level == "FAIL" for level, _, _ in out):
+        out.append(("PASS", f"consistent according to {reasoner}: {len(graph)} triples, {len(inds)} individuals",
+                    {"reasoner": reasoner, "triples": len(graph), "individuals": len(inds)}))
+    return out
 
 
 def main():
@@ -137,12 +203,13 @@ def main():
         graph.parse(project_dir / name, format="turtle")
 
     found = problems(graph)
-    for level, m in found:
+    for level, m, details in found:
         print(f"{level} {m}")
-    if any(level == "FAIL" for level, _ in found):
+        for line in details.get("explanation", []):
+            print(f"  {line}")
+    if any(level == "FAIL" for level, _, _ in found):
         print("Inconsistent.")
         sys.exit(1)
-    print(f"Consistent: {len(graph)} triples.")
 
 
 if __name__ == "__main__":

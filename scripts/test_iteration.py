@@ -85,12 +85,12 @@ def uncovered(data, abox):
 
 
 def run_tests(tbox, abox, cqs, label, key="query", reason=False, aliases=None):
-    """Run the formal data and query tests of one test case and print the results.
+    """Run the formal data, consistency and query tests of one test case and print the results.
 
     Fails on terms the TBox does not describe (`undeclared`), ABox values of
-    the wrong kind (`misused`), inconsistencies of TBox+ABox (OWL 2 DL with
-    HermiT, see `check_consistency.problems`), and
-    failing competency question queries.
+    the wrong kind (`misused`) (data test), inconsistencies of TBox+ABox
+    (OWL 2 DL with HermiT, see `check_consistency.problems`) (consistency
+    test), and failing competency question queries (query test).
 
     Args:
         tbox: TBox graph, the iteration's own or the current model.
@@ -112,18 +112,20 @@ def run_tests(tbox, abox, cqs, label, key="query", reason=False, aliases=None):
     for s, p, o in misused(tbox, abox):
         report("FAIL", label, "data", f"<{s}> <{p}> has the wrong kind of value: {o.n3()}", term=str(p))
         failures += 1
-    graph = tbox + abox
-    for level, message in check_consistency.problems(graph):
-        report(level, label, "data", message)
-        failures += level == "FAIL"
     if not failures:
         report("PASS", label, "data", "all checks pass")
+    graph = tbox + abox
+    for level, message, details in check_consistency.problems(graph):
+        report(level, label, "consistency", message, **details)
+        for line in details.get("explanation", []):
+            print(f"  {line}")
+        failures += level == "FAIL"
     checked, failed = run_queries(check_consistency.reason(graph) if reason else graph, cqs, label, key, aliases)
     return checked, failures + failed
 
 
 def main(iteration: str, refactored: bool = False, reason: bool = False):
-    """Run the model, data and query tests of an iteration on its TBox and ABox.
+    """Run the model, data, consistency and query tests of an iteration on its TBox and ABox.
 
     Runs the model test on the TBox (`model_test.run_model_test`), then
     `run_tests` and, on the first version only, warns (without failing)

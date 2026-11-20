@@ -64,7 +64,7 @@ def test_main_passes_and_promotes(iteration, capsys):
     assert load_yaml(it / "requirements.yaml")["metadata"]["status"] == "tested"
     results = json.loads((it / "results.json").read_text())
     assert results["passed"] and results["phase"] == "first-version" and results["iteration"] == "01-zoo"
-    assert {(r["test"], r["status"]) for r in results["results"]} >= {("model", "PASS"), ("data", "PASS"), ("query", "PASS")}
+    assert {(r["test"], r["status"]) for r in results["results"]} >= {("model", "PASS"), ("data", "PASS"), ("consistency", "PASS"), ("query", "PASS")}
     cq = next(r for r in results["results"] if r["test"] == "query")
     assert cq["cq"] == "1" and cq["results"] == 1 and cq["missing"] == cq["unexpected"] == []
 

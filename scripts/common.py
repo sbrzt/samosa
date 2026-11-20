@@ -32,7 +32,7 @@ def report(status, case, test, message, **details):
     Args:
         status: `"PASS"`, `"FAIL"` or `"WARN"`.
         case: Test case, e.g. the iteration name, or `"current model"`.
-        test: Kind of test: `"model"`, `"data"`, `"query"`, `"coverage"` or `"merge"`.
+        test: Kind of test: `"model"`, `"data"`, `"consistency"`, `"query"`, `"coverage"` or `"merge"`.
         message: Human-readable result.
         **details: Extra JSON-serializable fields, e.g. `term` or `cq`.
     """

@@ -40,18 +40,31 @@ DL_ONLY = """:p a owl:ObjectProperty . :C a owl:Class ;
 @java
 def test_problems_finds_dl_only_clashes_and_ill_typed_literals():
     assert inconsistencies(reason(graph(DL_ONLY))) == []
-    assert problems(graph(DL_ONLY)) == [("FAIL", "inconsistent (OWL 2 DL, HermiT)")]
+    assert problems(graph(DL_ONLY)) == [("FAIL", "inconsistent (OWL 2 DL, HermiT)", {
+        "reasoner": "HermiT (OWL 2 DL)", "explanation": [f"the assertions on <{EX}x> clash with the TBox"]})]
     found = problems(graph(TBOX + ':rex :legs "four"^^xsd:integer .'))
-    assert found == [("FAIL", f'<{EX}rex> <{EX}legs> "four"^^<http://www.w3.org/2001/XMLSchema#integer>: '
-                              "the value does not fit its datatype")]
-    assert problems(graph(TBOX + ":rex a :Mammal .")) == []
+    assert found[0] == ("FAIL", f'<{EX}rex> <{EX}legs> "four"^^<http://www.w3.org/2001/XMLSchema#integer>: '
+                                "the value does not fit its datatype",
+                        {"term": f"{EX}legs", "subject": f"{EX}rex", "value": "four",
+                         "datatype": "http://www.w3.org/2001/XMLSchema#integer"})
+    assert len(found) == 1
+    assert problems(graph(TBOX + ":rex a :Mammal .")) == [("PASS", "consistent according to HermiT (OWL 2 DL): "
+        "4 triples, 1 individuals", {"reasoner": "HermiT (OWL 2 DL)", "triples": 4, "individuals": 1})]
+
+
+@java
+def test_problems_explains_owl_2_rl_clashes():
+    found = problems(graph(TBOX + ":rex a :Cat , :Dog ."))
+    assert found == [("FAIL", "inconsistent (OWL 2 DL, HermiT)", {"reasoner": "HermiT (OWL 2 DL)", "explanation": [
+        f"Disjoint classes {EX}Cat and {EX}Dog have a common individual {EX}rex"]})]
 
 
 def test_problems_falls_back_to_owl_2_rl_without_java(monkeypatch):
     monkeypatch.setattr("owlready2.JAVA_EXE", "no-such-java")
     found = problems(graph(TBOX + ":rex a :Cat , :Dog ."))
-    assert found[0] == ("WARN", "Java not found, OWL 2 RL (owlrl) used instead of HermiT (OWL 2 DL)")
+    assert found[0][:2] == ("WARN", "Java not found, OWL 2 RL (owlrl) used instead of HermiT (OWL 2 DL)")
     assert found[1][0] == "FAIL" and found[1][1].startswith("inconsistent (OWL 2 RL)")
+    assert found[1][2]["reasoner"] == "owlrl (OWL 2 RL)" and found[1][2]["explanation"]
 
 
 def write_project(project, abox):
@@ -63,7 +76,7 @@ def write_project(project, abox):
 def test_main_reports_a_consistent_project(project, capsys):
     write_project(project, ":rex a :Mammal .")
     main()
-    assert "Consistent: " in capsys.readouterr().out
+    assert "PASS consistent according to " in capsys.readouterr().out
 
 
 def test_main_fails_on_inconsistency(project, capsys):

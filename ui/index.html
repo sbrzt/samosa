@@ -18,27 +18,38 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--fg);
-         display: grid; grid-template-columns: 260px 1fr; grid-template-rows: auto 1fr; min-height: 100vh; }
+         display: grid; grid-template-columns: 260px minmax(0, 1fr); grid-template-rows: auto 1fr; min-height: 100vh; }
   header { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--line); }
   header h1 { font-size: 18px; margin: 0; }
   header span { color: var(--muted); font-size: 13px; }
+  .skip { position: absolute; left: 8px; top: -48px; z-index: 10; padding: 8px 12px; background: var(--accent); color: #fff; border-radius: 6px; }
+  .skip:focus { top: 8px; }
+  .visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+                     clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
   nav { border-right: 1px solid var(--line); background: var(--panel); padding: 16px; display: flex; flex-direction: column; gap: 16px; }
-  nav h2, main h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+  nav h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
   nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
   nav li button { width: 100%; text-align: left; }
-  nav li button[aria-current="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
-  main { padding: 20px; display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-content: start; }
-  section { min-width: 0; }
-  .steps ol { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
-  .steps li { display: contents; }
+  nav li button[aria-current="page"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  main { padding: 20px; min-width: 0; }
+  main:focus { outline: none; }
+  main h2 { font-size: 22px; margin: 0; }
+  main h2:focus { outline: none; }
+  main h3 { font-size: 16px; margin: 8px 0 0; }
+  main h4 { font-size: 15px; margin: 0; }
+  main p { margin: 0; }
+  .lead { color: var(--muted); max-width: 70ch; }
+  .small { font-size: 13px; }
+  .muted { color: var(--muted); }
   button, input, select, textarea { font: inherit; }
   button { padding: 7px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); cursor: pointer; }
-  button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  button:disabled { opacity: .5; cursor: progress; }
+  button:hover:not([aria-disabled="true"]) { border-color: var(--accent); color: var(--accent); }
+  :is(a, button, input, select, textarea, summary, pre, [tabindex]):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button[aria-disabled="true"] { opacity: .5; cursor: progress; }
   button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .step-num { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 6px; }
-  form { display: flex; gap: 6px; }
+  button.primary:hover:not([aria-disabled="true"]) { color: #fff; text-decoration: underline; }
+  a { color: var(--accent); }
+  #new-form { display: flex; gap: 6px; }
   input, select, textarea { flex: 1; width: 100%; min-width: 0; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); }
   textarea { resize: vertical; field-sizing: content; max-height: 60vh; }
   textarea.code { font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; tab-size: 2; white-space: pre; }
@@ -52,122 +63,176 @@
   .body { margin-top: 8px; }
   .row { display: flex; gap: 6px; align-items: end; }
   .list > button, .body > button { justify-self: start; }
-  .editor-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .editor-bar h2 { margin: 0; }
-  #status { color: var(--muted); font-size: 13px; }
-  pre { margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); white-space: pre-wrap;
-        font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; max-height: 40vh; overflow: auto; }
-  pre.ok { border-color: var(--ok); background: var(--ok-bg); }
-  pre.fail { border-color: var(--fail); background: var(--fail-bg); }
-  .diagrams { grid-column: 1 / -1; display: grid; gap: 20px; grid-template-columns: 1fr; }
-  .diagrams .mmd { border: 1px solid var(--line); border-radius: 6px; background: #fff; color: #1b1f24; padding: 8px; overflow: auto; min-height: 60px; }
-  .diagrams .mmd svg { max-width: 100%; height: auto; }
-  .diagrams figcaption a { color: var(--accent); }
-  .check { display: flex; flex-direction: row; align-items: center; gap: 6px; margin-top: 8px; font-size: 13px; color: var(--muted); }
+  .check { display: flex; flex-direction: row; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
   .check input { flex: none; width: auto; }
+
+  /* Tabs: one per phase of the iteration (WAI-ARIA tabs pattern, automatic activation). */
+  [role="tablist"] { display: flex; gap: 2px; margin-top: 16px; box-shadow: inset 0 -1px 0 var(--line); overflow-x: auto; overflow-y: hidden; }
+  [role="tab"] { border: 1px solid transparent; border-bottom: 0; border-radius: 6px 6px 0 0; padding: 8px 14px;
+                 background: none; color: var(--muted); white-space: nowrap; }
+  [role="tab"]:focus-visible { outline-offset: -3px; }  /* inside the tab: the tablist clips anything outside */
+  [role="tab"][aria-selected="true"] { border-color: var(--line); background: var(--bg); color: var(--fg); font-weight: 600;
+                                       box-shadow: inset 0 3px 0 var(--accent); }
+  .note { margin-left: 6px; padding: 0 6px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+  .note:empty { display: none; }
+  .note.done { color: var(--ok); background: var(--ok-bg); }
+  .note.unsaved { color: var(--warn); background: var(--warn-bg); }
+  [role="tabpanel"] { padding-top: 16px; display: grid; gap: 14px; }
+  [role="tabpanel"]:focus-visible { outline-offset: 4px; }
+  .editor-bar { position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;
+                padding: 8px 0; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .editor-bar > span { display: flex; align-items: center; gap: 10px; }
+
+  /* Steps: one numbered card each, with the output of its last run. */
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: step; }
+  .step { counter-increment: step; display: grid; grid-template-columns: 2rem minmax(0, 1fr) auto; gap: 6px 12px; align-items: start;
+          padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .step::before { content: counter(step); grid-row: span 2; width: 2rem; height: 2rem; display: grid; place-items: center;
+                  border: 1px solid var(--line); border-radius: 50%; background: var(--bg); font-weight: 600; color: var(--muted); }
+  .step-body { display: grid; gap: 4px; max-width: 75ch; }
+  .step-result { grid-column: 2 / -1; display: grid; gap: 6px; }
+  .actions .step { grid-template-columns: minmax(0, 1fr) auto; }  /* independent actions: no order, no number */
+  .actions .step::before { content: none; }
+  .actions .step-result { grid-column: 1 / -1; }
+  code { font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+  pre { margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); white-space: pre-wrap;
+        font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; max-height: 40vh; overflow: auto; }
+  pre.ok { border-color: var(--ok); }
+  pre.fail { border-color: var(--fail); background: var(--fail-bg); }
+  @media (max-width: 600px) { .step { grid-template-columns: 2rem minmax(0, 1fr); } .step > button { grid-column: 2; justify-self: start; }
+                            .actions .step { grid-template-columns: 1fr; } .actions .step > button { grid-column: 1; } }
+
+  .diagrams { display: grid; gap: 16px; }
   .diagrams figure { margin: 0; }
   .diagrams figcaption { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
-  .results { grid-column: 1 / -1; display: grid; gap: 12px; }
-  .results h3 { font-size: 14px; margin: 8px 0 0; }
-  .results p { margin: 0; font-size: 13px; }
+  .mmd { border: 1px solid var(--line); border-radius: 6px; background: #fff; color: #1b1f24; padding: 8px; overflow: auto; min-height: 60px; }
+  .mmd svg { max-width: 100%; height: auto; }
+
+  .results { display: grid; gap: 10px; }
   .table-wrap { overflow-x: auto; }
   table { border-collapse: collapse; font-size: 13px; width: 100%; }
+  caption { text-align: left; font-weight: 600; padding-bottom: 4px; }
   th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
   thead th { background: var(--panel); font-weight: 600; white-space: nowrap; }
-  td ul, #cell-detail { margin: 4px 0 0; padding-left: 18px; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
-  .muted { color: var(--muted); }
+  td ul, #cell-detail, .messages { margin: 0; padding-left: 18px; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+  td ul ul { margin-top: 2px; }
   th[scope="row"], .nowrap { white-space: nowrap; }
-  #cqs td:nth-child(3) { min-width: 16em; }
+  .cq-question { min-width: 16em; }
   #cqs td:nth-child(n+4) { min-width: 12em; }
   .badge { display: inline-block; padding: 1px 6px; border: 1px solid transparent; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-  .badge.pass, .badge.pass:hover:not(:disabled) { color: var(--ok); background: var(--ok-bg); }
-  .badge.warn, .badge.warn:hover:not(:disabled) { color: var(--warn); background: var(--warn-bg); }
-  .badge.fail, .badge.fail:hover:not(:disabled) { color: var(--fail); background: var(--fail-bg); }
-  button.badge:hover:not(:disabled), button.badge[aria-pressed="true"] { border-color: currentColor; }
+  .badge.pass, .badge.pass:hover:not([aria-disabled="true"]) { color: var(--ok); background: var(--ok-bg); }
+  .badge.warn, .badge.warn:hover:not([aria-disabled="true"]) { color: var(--warn); background: var(--warn-bg); }
+  .badge.fail, .badge.fail:hover:not([aria-disabled="true"]) { color: var(--fail); background: var(--fail-bg); }
+  .badge.none { color: var(--muted); background: var(--panel); }
+  button.badge:hover, button.badge[aria-pressed="true"] { border-color: currentColor; }
   [hidden] { display: none !important; }
-  @media (max-width: 900px) { body { grid-template-columns: 1fr; } nav { border-right: 0; border-bottom: 1px solid var(--line); }
-                              main, .diagrams { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { body { grid-template-columns: 1fr; } nav { border-right: 0; border-bottom: 1px solid var(--line); } }
 </style>
 </head>
 <body>
+<a class="skip" href="#main">Skip to main content</a>
 <header><h1>SAMOSA</h1><span>Semi-Automated Modelling of Ontologies with SAMOD</span></header>
 
-<nav aria-label="Iterations">
+<nav aria-label="Iterations and project">
   <div>
-    <h2>Iterations</h2>
-    <ul id="iterations"></ul>
+    <h2 id="iterations-title">Iterations</h2>
+    <ul id="iterations" aria-labelledby="iterations-title"></ul>
   </div>
   <form id="new-form">
-    <label for="new-name" class="visually-hidden" hidden>New iteration name</label>
+    <label for="new-name" class="visually-hidden">New iteration name</label>
     <input id="new-name" placeholder="new iteration name" required pattern="[A-Za-z0-9_-]+" title="letters, digits, - and _">
     <button type="submit">New</button>
   </form>
+  <p id="new-msg" class="small" hidden></p>
   <div>
-    <h2>Project</h2>
-    <ul>
-      <li><button data-cmd="merge" data-project>Re-test current model</button></li>
-      <li><button data-cmd="check" data-project>Check consistency</button></li>
-      <li><button data-cmd="restore" data-project title="Restore one with: samosa restore &lt;name&gt;">List milestones</button></li>
-      <li><button data-cmd="docs" data-project>Documentation (LODE, local)</button></li>
-      <li><button data-cmd="docs" data-project data-online title="Uploads project/tbox.ttl to lode.opencitations.net">Documentation (LODE online)</button></li>
-      <li><a id="docs-link" href="/project/docs/index.html" target="_blank" hidden>Open documentation</a></li>
-    </ul>
+    <h2 id="project-nav-title">Project</h2>
+    <ul aria-labelledby="project-nav-title"><li><button type="button" id="project-link">Current model</button></li></ul>
   </div>
 </nav>
 
-<main>
-  <section id="iteration" hidden>
-    <div class="editor-bar">
-      <h2 id="editor-title">requirements.yaml</h2>
-      <span><span id="status"></span> <a id="raw" target="_blank">saved YAML</a> <button id="save" class="primary">Save</button></span>
+<main id="main" tabindex="-1">
+  <p id="welcome" class="lead">Select or create an iteration, or open the current model.</p>
+
+  <div id="iteration-view" hidden>
+    <h2 id="view-title" tabindex="-1"></h2>
+    <p id="view-status" class="muted small"></p>
+
+    <div role="tablist" aria-label="Phases of the iteration" id="tabs">
+      <button type="button" role="tab" id="tab-requirements" aria-controls="panel-requirements">Requirements<span class="note unsaved" id="note-requirements"></span></button>
+      <button type="button" role="tab" id="tab-first" aria-controls="panel-first">First version<span class="note done" id="note-first"></span></button>
+      <button type="button" role="tab" id="tab-refactoring" aria-controls="panel-refactoring">Refactoring<span class="note done" id="note-refactoring"></span></button>
+      <button type="button" role="tab" id="tab-merge" aria-controls="panel-merge">Merge<span class="note done" id="note-merge"></span></button>
     </div>
-    <div id="form"></div>
-  </section>
 
-  <section>
-    <div class="steps" id="steps" hidden>
-      <h2>Steps</h2>
-      <ol>
-        <li><button data-cmd="tbox"><span class="step-num">1</span>Generate TBox</button></li>
-        <li><button data-cmd="diagram"><span class="step-num">2</span>Draw diagrams</button></li>
-        <li><button data-cmd="draft-abox"><span class="step-num">3</span>Draft ABox (LLM)</button></li>
-        <li><button data-cmd="abox"><span class="step-num">4</span>Generate ABox</button></li>
-        <li><button data-cmd="test"><span class="step-num">5</span>Test CQs</button></li>
-        <li><button data-cmd="align"><span class="step-num">6</span>Align to vocabularies</button></li>
-        <li><button data-cmd="diagram" data-refactored><span class="step-num">7</span>Draw refactored diagrams</button></li>
-        <li><button data-cmd="test" data-refactored><span class="step-num">8</span>Test refactored CQs</button></li>
-        <li><button data-cmd="merge"><span class="step-num">9</span>Merge into current model</button></li>
-      </ol>
-      <label class="check"><input type="checkbox" id="graffoo"> Diagrams: also write Graffoo for yEd (.graphml, and .png if Graphviz is installed)</label>
+    <section role="tabpanel" id="panel-requirements" aria-labelledby="tab-requirements" tabindex="0">
+      <p class="lead">Scenario, glossary, example individuals and competency questions of this iteration. Every step saves unsaved changes before it runs.</p>
+      <div class="editor-bar">
+        <a id="raw" target="_blank">Saved YAML</a>
+        <span><span id="status" class="small muted"></span><button type="button" id="save" class="primary">Save</button></span>
+      </div>
+      <div id="form"></div>
+    </section>
+
+    <section role="tabpanel" id="panel-first" aria-labelledby="tab-first" tabindex="0" hidden>
+      <p class="lead">Model the scenario as a first version of the TBox and ABox, then test it against the competency questions.</p>
+      <h3>Steps</h3>
+      <ol class="steps" id="steps-first"></ol>
+      <h3>Diagrams</h3>
+      <div class="diagrams">
+        <figure><figcaption>TBox <span id="links-tbox"></span></figcaption><div class="mmd" id="mmd-tbox" role="img" aria-label="TBox diagram"></div></figure>
+        <figure><figcaption>ABox <span id="links-abox"></span></figcaption><div class="mmd" id="mmd-abox" role="img" aria-label="ABox diagram"></div></figure>
+      </div>
+      <h3>Test results</h3>
+      <div class="results" id="results-first"></div>
+    </section>
+
+    <section role="tabpanel" id="panel-refactoring" aria-labelledby="tab-refactoring" tabindex="0" hidden>
+      <p class="lead">Replace local terms with terms of existing vocabularies, then test the refactored version again.</p>
+      <h3>Steps</h3>
+      <ol class="steps" id="steps-refactoring"></ol>
+      <h3>Diagrams</h3>
+      <div class="diagrams">
+        <figure><figcaption>Refactored TBox <span id="links-refactored"></span></figcaption><div class="mmd" id="mmd-refactored" role="img" aria-label="Refactored TBox diagram"></div></figure>
+        <figure><figcaption>Refactored ABox <span id="links-refactored-abox"></span></figcaption><div class="mmd" id="mmd-refactored-abox" role="img" aria-label="Refactored ABox diagram"></div></figure>
+      </div>
+      <h3>Test results</h3>
+      <div class="results" id="results-refactoring"></div>
+    </section>
+
+    <section role="tabpanel" id="panel-merge" aria-labelledby="tab-merge" tabindex="0" hidden>
+      <p class="lead">Add the iteration to the current model, then re-test every merged iteration against it.</p>
+      <h3>Steps</h3>
+      <ol class="steps" id="steps-merge"></ol>
+      <h3>Test results</h3>
+      <div class="results" id="results-merge"></div>
+    </section>
+  </div>
+
+  <div id="project-view" hidden>
+    <h2 id="project-title" tabindex="-1">Current model</h2>
+    <p class="lead">The merged ontology in <code>project/</code>: the refactored TBoxes and the ABoxes of every merged iteration.</p>
+    <div style="display:grid;gap:14px;margin-top:16px">
+      <h3>Actions</h3>
+      <ul class="steps actions" id="steps-project"></ul>
+      <p><a id="docs-link" href="/project/docs/index.html" target="_blank" hidden>Open the documentation</a></p>
+      <h3>Test results of all iterations</h3>
+      <div class="results">
+        <p id="current-model" class="small"></p>
+        <p class="muted small">Worst result of each test, with how many results have that status. Select a result to list its messages.</p>
+        <div class="table-wrap"><table id="matrix"><caption class="visually-hidden">Tests per iteration and phase</caption></table></div>
+        <ul id="cell-detail" hidden></ul>
+        <div class="table-wrap"><table id="cqs"></table></div>
+      </div>
     </div>
-    <h2 style="margin-top:20px">Output</h2>
-    <pre id="out" aria-live="polite">Select or create an iteration.</pre>
-  </section>
-
-  <section class="results" aria-labelledby="results-title">
-    <h2 id="results-title">Test results</h2>
-    <p id="current-model" class="muted"></p>
-    <h3>Tests per iteration</h3>
-    <p class="muted">Worst result of each test, with how many results have that status. Select a result to list its messages.</p>
-    <div class="table-wrap"><table id="matrix"></table></div>
-    <ul id="cell-detail" aria-live="polite" hidden></ul>
-    <h3>Competency questions</h3>
-    <div class="table-wrap"><table id="cqs"></table></div>
-  </section>
-
-  <section class="diagrams" id="diagrams" hidden>
-    <figure><figcaption>TBox <span id="links-tbox"></span></figcaption><div class="mmd" id="mmd-tbox" role="img" aria-label="TBox diagram"></div></figure>
-    <figure><figcaption>ABox <span id="links-abox"></span></figcaption><div class="mmd" id="mmd-abox" role="img" aria-label="ABox diagram"></div></figure>
-    <figure><figcaption>Refactored TBox <span id="links-refactored"></span></figcaption><div class="mmd" id="mmd-refactored" role="img" aria-label="Refactored TBox diagram"></div></figure>
-    <figure><figcaption>Refactored ABox <span id="links-refactored-abox"></span></figcaption><div class="mmd" id="mmd-refactored-abox" role="img" aria-label="Refactored ABox diagram"></div></figure>
-  </section>
+  </div>
 </main>
+<div id="announce" role="status" class="visually-hidden"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 window.mermaid?.initialize({ startOnLoad: false, securityLevel: "strict", theme: "default" });  // white panel, Graffoo colours
-let current = null, data = {}, clean = "{}";
+let current = null, data = {}, clean = "{}", currentTab = "requirements", running = false;
 
 // Shape of requirements.yaml: a string is a field kind, [x] is a list of x, {...} is a group of fields.
 const TYPES = ["Class", "ObjectProperty", "DatatypeProperty", "NamedIndividual"];
@@ -179,11 +244,62 @@ const SCHEMA = {
   competency_questions: [{ id: "text", question: "long", expected_result: "rows", query: "code", refactored_query: "code" }],
 };
 
+// Steps of each phase. `writes` uses {it} for the iteration name; `tab` steps only point to another tab.
+const TABS = ["requirements", "first", "refactoring", "merge"];
+const STATUSES = ["draft", "tested", "aligned", "merged"];
+const DONE = { first: "tested", refactoring: "aligned", merge: "merged" };  // status reached when the phase passes
+const STEPS = {
+  first: [
+    { id: "tbox", cmd: "tbox", title: "Generate TBox", does: "Builds the OWL TBox from the glossary.", writes: "iterations/{it}/tbox.ttl" },
+    { id: "draft-abox", cmd: "draft-abox", title: "Draft ABox (optional, LLM)",
+      does: "Drafts example individuals from the scenario and replaces the ABox section of the requirements. Check them under Requirements before the next step.",
+      writes: "iterations/{it}/requirements.yaml" },
+    { id: "abox", cmd: "abox", title: "Generate ABox", does: "Builds the RDF ABox from the ABox section of the requirements.", writes: "iterations/{it}/abox.ttl" },
+    { id: "diagram", cmd: "diagram", graffoo: true, title: "Draw diagrams", does: "Draws the TBox and, once it exists, the ABox. Run it again after changing either.",
+      writes: "iterations/{it}/tbox.mmd, abox.mmd" },
+    { id: "test", cmd: "test", title: "Test", does: "Runs the model, data, consistency and query tests. If all pass, the status becomes tested.",
+      writes: "iterations/{it}/results.json" },
+  ],
+  refactoring: [
+    { id: "align-to", tab: "requirements", title: "Choose vocabulary terms",
+      does: "Under Requirements, set “align to” on each glossary term that a term of an existing vocabulary replaces (e.g. dcterms:rights)." },
+    { id: "align", cmd: "align", title: "Align to vocabularies", does: "Rewrites the TBox, the ABox and the queries with the chosen vocabulary terms.",
+      writes: "refactoring/{it}/tbox.ttl, abox.ttl; refactored queries in requirements.yaml" },
+    { id: "diagram-refactored", cmd: "diagram", refactored: true, graffoo: true, title: "Draw refactored diagrams", does: "Draws the refactored TBox and ABox.",
+      writes: "refactoring/{it}/tbox.mmd, abox.mmd" },
+    { id: "test-refactored", cmd: "test", refactored: true, title: "Test refactored version",
+      does: "Runs the tests on the refactored TBox and ABox with the refactored queries. If all pass, the status becomes aligned.",
+      writes: "refactoring/{it}/results.json" },
+  ],
+  merge: [
+    { id: "merge", cmd: "merge", title: "Merge into current model",
+      does: "Adds the refactored TBox to the current model and re-tests every merged iteration with it. Only if all pass are the project files updated and the status set to merged.",
+      writes: "project/tbox.ttl, abox.ttl, results.json" },
+  ],
+  project: [
+    { id: "retest", cmd: "merge", project: true, title: "Re-test current model", does: "Rebuilds the current model from the merged iterations and re-tests each of them.",
+      writes: "project/results.json" },
+    { id: "check", cmd: "check", project: true, title: "Check consistency", does: "Checks the current TBox and ABox for consistency with HermiT (OWL 2 DL)." },
+    { id: "docs", cmd: "docs", project: true, title: "Write documentation (LODE, local)", does: "Builds HTML documentation of the current TBox with LODE 2.0 on this machine.",
+      writes: "project/docs/" },
+    { id: "docs-online", cmd: "docs", project: true, online: true, title: "Write documentation (LODE online)",
+      does: "Same, but uploads project/tbox.ttl to lode.opencitations.net.", writes: "project/docs/" },
+    { id: "milestones", cmd: "restore", project: true, title: "List milestones",
+      does: "Lists the saved states of the project. Restore one from the command line with: samosa restore <name>." },
+  ],
+};
+const outputs = new Map();  // "<iteration or project>/<step id>" -> last run in this session
+
 const el = (tag, props, ...kids) => { const e = Object.assign(document.createElement(tag), props); e.append(...kids); return e; };
 const label = (key) => String(key).replace(/_/g, " ");
+const announce = (text) => { $("announce").textContent = ""; setTimeout(() => ($("announce").textContent = text), 50); };
 // Empty value with the full shape of a schema node, so new items are saved with every key, in template order.
 const blank = (kind) => typeof kind === "string" ? "" : Array.isArray(kind) ? [] : Object.fromEntries(Object.entries(kind).map(([k, v]) => [k, blank(v)]));
-const dirty = () => ($("status").textContent = JSON.stringify(data) !== clean ? "unsaved changes" : "");
+const dirty = () => {
+  const unsaved = JSON.stringify(data) !== clean;
+  $("status").textContent = unsaved ? "Unsaved changes" : "";
+  $("note-requirements").textContent = unsaved ? "unsaved" : "";
+};
 
 // One input bound to obj[key]. obj[key] changes only when the user edits the input.
 function field(obj, key, kind, text = label(key)) {
@@ -225,27 +341,113 @@ function list(obj, key, kind) {
     const title = () => (summary.textContent = Object.keys(kind).slice(0, 2).map((k) => value[k]).filter(Boolean).join(" · ") || "(empty)");
     title();
     return el("details", { open: i === openAt, oninput: title }, summary, el("div", { className: "body" }, ...fields(value, kind), remove));
-  }), el("button", { type: "button", textContent: "+ Add", onclick: () => { arr.push(blank(kind)); draw(arr.length - 1); dirty(); } }));
+  }), el("button", { type: "button", textContent: `+ Add ${label(key)}`, onclick: () => { arr.push(blank(kind)); draw(arr.length - 1); dirty(); } }));
   draw();
   return el("fieldset", {}, el("legend", { textContent: label(key) }), box);
 }
 
-const show = (ok, text) => { $("out").textContent = text; $("out").className = ok == null ? "" : ok ? "ok" : "fail"; };
-const busy = (on) => document.querySelectorAll("button").forEach((b) => (b.disabled = on));
+// ---- Steps ----------------------------------------------------------------
+
+const scopeOf = (step) => (step.project ? "project" : current);
+
+function stepCard(step) {
+  const body = [el("h4", { textContent: step.title }), el("p", { textContent: step.does })];
+  if (step.writes) body.push(el("p", { className: "small muted" }, "Writes ", el("code", { textContent: step.writes.replaceAll("{it}", current) })));
+  if (step.graffoo) body.push(el("label", { className: "check" }, el("input", { type: "checkbox", id: `graffoo-${step.id}` }),
+    "Also write Graffoo diagrams for yEd (.graphml, and .png if Graphviz is installed)"));
+  const action = step.tab
+    ? el("button", { type: "button", onclick: () => showTab(step.tab, true) }, "Open Requirements")
+    : el("button", { type: "button", className: "run", onclick: () => run(step) }, "Run",
+         el("span", { className: "visually-hidden", textContent: ` ${step.title}` }));
+  const result = el("div", { className: "step-result", id: `result-${step.id}` });
+  if (!step.tab) paint(step, result);
+  return el("li", { className: "step" }, el("div", { className: "step-body" }, ...body), action, result);
+}
+
+function paint(step, box = $(`result-${step.id}`)) {
+  const o = outputs.get(`${scopeOf(step)}/${step.id}`);
+  if (!box) return;
+  if (!o) return box.replaceChildren(el("p", { className: "small muted", textContent: "Not run in this session." }));
+  if (o.running) return box.replaceChildren(el("p", { className: "small", textContent: "Running…" }));
+  box.replaceChildren(
+    el("p", { className: "small" }, el("span", { className: `badge ${o.ok ? "pass" : "fail"}`, textContent: o.ok ? "Done" : "Failed" }), ` at ${o.time}`),
+    el("pre", { className: o.ok ? "ok" : "fail", tabIndex: 0, textContent: o.text }));
+  box.lastChild.setAttribute("aria-label", `Output of ${step.title}`);
+}
+
+function setRunning(on) {
+  running = on;
+  $("main").setAttribute("aria-busy", on);
+  document.querySelectorAll("button.run, #save, #new-form button").forEach((b) => b.setAttribute("aria-disabled", on));
+}
+
+async function command(cmd, params) {
+  const r = await fetch(`/${cmd}?` + new URLSearchParams(params), { method: "POST" });
+  const body = await r.json();
+  return r.ok ? { ok: body.ok, text: body.output || "(no output)" } : { ok: false, text: JSON.stringify(body.detail) };
+}
+
+async function run(step) {
+  if (running) return;
+  const key = `${scopeOf(step)}/${step.id}`, scope = scopeOf(step);
+  const params = step.project ? {} : { iteration: current };
+  if (step.refactored) params.refactored = true;
+  if (step.online) params.online = true;
+  if (step.graffoo && $(`graffoo-${step.id}`)?.checked) params.graffoo = true;
+  setRunning(true);
+  outputs.set(key, { running: true });
+  paint(step);
+  announce(`${step.title}: running`);
+  let o;
+  try {
+    o = (await save()) ? await command(step.cmd, params) : { ok: false, text: "The requirements could not be saved: see the Requirements tab." };
+  } catch (e) {
+    o = { ok: false, text: String(e) };
+  }
+  outputs.set(key, { ...o, time: new Date().toLocaleTimeString() });
+  setRunning(false);
+  if (scope === scopeOf(step)) paint(step);  // still showing the same iteration
+  announce(`${step.title}: ${o.ok ? "done" : "failed"}`);
+  if (current) await select(current);  // draft-abox and align rewrite requirements.yaml; status may have changed
+  refreshDocs();
+  refreshResults();
+}
+
+// ---- Views ----------------------------------------------------------------
 
 async function listIterations() {
   const names = await (await fetch("/iterations")).json();
-  $("iterations").innerHTML = names.map((n) => `<li><button data-select="${n}" aria-current="${n === current}">${n}</button></li>`).join("")
-    || "<li><em>none yet</em></li>";
+  $("iterations").replaceChildren(...(names.length
+    ? names.map((n) => {
+        const b = el("button", { type: "button", textContent: n, onclick: () => go(n) });
+        if (n === current) b.setAttribute("aria-current", "page");
+        return el("li", {}, b);
+      })
+    : [el("li", {}, el("em", { textContent: "none yet" }))]));
+  $("project-link").toggleAttribute("aria-current", false);
+  if (!current && !$("project-view").hidden) $("project-link").setAttribute("aria-current", "page");
+  return names;
 }
 
-async function select(name) {
+function showTab(name, focus) {
+  currentTab = name;
+  for (const t of TABS) {
+    const on = t === name;
+    $(`tab-${t}`).setAttribute("aria-selected", on);
+    $(`tab-${t}`).tabIndex = on ? 0 : -1;
+    $(`panel-${t}`).hidden = !on;
+  }
+  if (focus) $(`tab-${name}`).focus();
+  history.replaceState(null, "", `#${encodeURIComponent(current)}/${name}`);
+}
+
+async function select(name, tab) {
   const same = name === current;
   current = name;
-  location.hash = name;
-  $("editor-title").textContent = `${name}/requirements.yaml`;
+  $("welcome").hidden = $("project-view").hidden = true;
+  $("iteration-view").hidden = false;
+  $("view-title").textContent = name;
   $("raw").href = `/iterations/${name}/requirements.yaml`;
-  $("iteration").hidden = $("steps").hidden = $("diagrams").hidden = false;
   const r = await fetch(`/iterations/${name}/requirements`, { cache: "no-store" });
   const fresh = (r.ok && (await r.json())) || {};
   const nodes = fields(fresh, SCHEMA);  // also fills missing sections in `fresh`
@@ -254,17 +456,51 @@ async function select(name) {
     $("form").replaceChildren(...nodes);
   }
   clean = JSON.stringify(data);
-  $("status").textContent = "";
-  if ($("out").textContent.startsWith("Select")) show(null, "Fill in the requirements, then run the steps in order.");
+  dirty();
+  if (!same) for (const phase of ["first", "refactoring", "merge"]) $(`steps-${phase}`).replaceChildren(...STEPS[phase].map(stepCard));
+  const status = data.metadata?.status || "draft";
+  const rank = Math.max(0, STATUSES.indexOf(status));
+  $("view-status").textContent = `Status: ${status}`;
+  for (const [phase, needed] of Object.entries(DONE)) $(`note-${phase}`).textContent = rank >= STATUSES.indexOf(needed) ? "done" : "";
+  showTab(tab || (same ? currentTab : "requirements"));
   refreshDiagrams();
-  listIterations();
+  refreshResults();
+  return listIterations();
 }
+
+function showProject() {
+  current = null; data = {}; clean = "{}";
+  $("welcome").hidden = $("iteration-view").hidden = true;
+  $("project-view").hidden = false;
+  history.replaceState(null, "", "#project");
+  refreshResults();
+  return listIterations();
+}
+
+// Navigation from the sidebar: save first (no edit is lost), then move focus to the new view's heading.
+async function go(target) {
+  if (running) return;
+  if (!(await save())) return showTab("requirements", true);
+  if (target === "project") { await showProject(); $("project-title").focus(); }
+  else { await select(target, "requirements"); $("view-title").focus(); }
+}
+
+$("tabs").onclick = (e) => { const t = e.target.closest("[role=tab]"); if (t) showTab(t.id.slice(4)); };
+$("tabs").onkeydown = (e) => {
+  const i = TABS.indexOf(currentTab);
+  const j = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: TABS.length - 1 }[e.key];
+  if (j === undefined) return;
+  e.preventDefault();
+  showTab(TABS[(j + TABS.length) % TABS.length], true);
+};
+
+// ---- Diagrams -------------------------------------------------------------
 
 const refreshDocs = async () => ($("docs-link").hidden = !(await exists("/project/docs/index.html")));
 let renders = 0;
 const exists = async (url) => (await fetch(url, { method: "HEAD", cache: "no-store" })).ok;
 
-// Draw tbox.mmd with Mermaid, and link the source and any Graffoo files written with the checkbox on.
+// Draw the .mmd files with Mermaid, and link the source and any Graffoo files written with the checkbox on.
 async function refreshDiagrams() {
   const name = current;
   const panels = [["tbox", "iterations", "tbox"], ["abox", "iterations", "abox"],
@@ -280,7 +516,7 @@ async function refreshDiagrams() {
     $(`links-${id}`).replaceChildren(...links.flatMap((a) => [" · ", a]));
     if (!r.ok) {
       const step = dir === "refactoring" ? "Draw refactored diagrams" : "Draw diagrams";
-      box.textContent = `Not drawn yet: run "${step}"${stem === "abox" ? " once the ABox exists" : ""}.`;
+      box.textContent = `Not drawn yet: run “${step}”${stem === "abox" ? " once the ABox exists" : ""}.`;
       continue;
     }
     if (!window.mermaid) { box.textContent = "Mermaid could not be loaded (offline?). Open the source instead."; continue; }
@@ -292,28 +528,33 @@ async function refreshDiagrams() {
   }
 }
 
-// Test results, read from the results.json files written by `test` and `merge`.
-const PHASES = [  // [phase, heading, tests shown for it]
-  ["first-version", "First version", ["model", "data", "query", "coverage"]],
-  ["refactored", "Refactored", ["model", "data", "query"]],
-  ["merge", "Merge", ["merge", "data", "query"]],
+// ---- Test results -----------------------------------------------------------
+
+const PHASES = [  // [phase, heading, tests shown for it, tab]
+  ["first-version", "First version", ["model", "data", "consistency", "query", "coverage"], "first"],
+  ["refactored", "Refactored", ["model", "data", "consistency", "query"], "refactoring"],
+  ["merge", "Merge", ["merge", "data", "consistency", "query"], "merge"],
 ];
 const IMPLICIT = ["coverage", "merge"];  // these tests record only problems: no record means pass
 const RANK = { PASS: 0, WARN: 1, FAIL: 2 };
 const getJSON = async (url) => { const r = await fetch(url, { cache: "no-store" }); return r.ok ? r.json() : null; };
 const when = (file) => file.timestamp.replace("T", " ");
+const worstOf = (records) => records.reduce((w, r) => (RANK[r.status] > RANK[w] ? r.status : w), "PASS");
+const statusBadge = (status, text = status) => el("span", { className: `badge ${status.toLowerCase()}`, textContent: text });
+const message = (r) => el("li", {}, statusBadge(r.status), " ", r.message,
+  r.explanation ? el("ul", {}, ...r.explanation.map((t) => el("li", { textContent: t }))) : "");
 
 // One clickable badge for a list of records: the worst status, and how many records have it.
 function badge(records, title) {
-  const worst = records.reduce((w, r) => (RANK[r.status] > RANK[w] ? r.status : w), "PASS");
+  const worst = worstOf(records);
   const n = records.filter((r) => r.status === worst).length;
   const b = el("button", { type: "button", className: `badge ${worst.toLowerCase()}`, title,
                            textContent: worst === "PASS" ? "PASS" : `${worst} ${n}` });
+  b.append(el("span", { className: "visually-hidden", textContent: `, ${title}` }));
   b.onclick = () => {
     document.querySelectorAll("#matrix button.badge, #current-model button.badge").forEach((x) => x.setAttribute("aria-pressed", x === b));
     $("cell-detail").hidden = false;
-    $("cell-detail").replaceChildren(...(records.length ? records : [{ status: "PASS", message: "nothing to report" }])
-      .map((r) => el("li", {}, el("span", { className: `badge ${r.status.toLowerCase()}`, textContent: r.status }), " ", r.message)));
+    $("cell-detail").replaceChildren(...(records.length ? records : [{ status: "PASS", message: "nothing to report" }]).map(message));
   };
   b.setAttribute("aria-pressed", "false");
   return b;
@@ -323,7 +564,7 @@ function matrixCell(file, name, test) {
   if (!file) return el("td", { className: "muted", textContent: "not run" });
   const records = file.results.filter((r) => r.case === name && r.test === test);
   if (!records.length && !IMPLICIT.includes(test)) return el("td", { className: "muted", textContent: "—" });
-  return el("td", {}, badge(records, `${test}, ${when(file)}`));
+  return el("td", {}, badge(records, `${name}, ${test}, ${when(file)}`));
 }
 
 function cqCell(file, record) {
@@ -333,9 +574,37 @@ function cqCell(file, record) {
                  ...(record.unexpected || []).map((row) => `unexpected: ${row.join(", ")}`),
                  ...(record.error ? [`error: ${record.error}`] : [])];
   return el("td", { title: when(file) },
-    el("span", { className: "nowrap" }, el("span", { className: `badge ${record.status.toLowerCase()}`, textContent: record.status }),
-       record.results == null ? "" : ` ${record.results} row(s)`),
+    el("span", { className: "nowrap" }, statusBadge(record.status), record.results == null ? "" : ` ${record.results} row(s)`),
     lines.length ? el("ul", {}, ...lines.map((t) => el("li", { textContent: t }))) : "");
+}
+
+// Results of one phase of one iteration: a table of tests with every message, then a table of CQs.
+function phaseResults(file, name, phase, heading, tests) {
+  if (!file) return [el("p", { className: "muted", textContent: phase === "merge" ? "Not merged yet." : "Not tested yet: run the test step." })];
+  const recs = file.results.filter((r) => r.case === name);
+  const queries = recs.filter((r) => r.test === "query");
+  const rows = tests.map((t) => [t, recs.filter((r) => r.test === t)]);
+  if (phase === "merge") rows.unshift(["model (current model)", file.results.filter((r) => r.case === "current model" && r.test === "model")]);
+  const row = ([test, rs]) => {
+    const none = !rs.length && !IMPLICIT.includes(test) && !test.startsWith("model (");
+    const msgs = test === "query"
+      ? [el("li", { textContent: `${queries.filter((r) => r.status === "PASS").length} of ${queries.length} competency questions pass (see below)` })]
+      : rs.length ? rs.map(message) : [el("li", { textContent: none ? "not run" : "nothing to report" })];
+    return el("tr", {}, el("th", { scope: "row", textContent: test }),
+      el("td", {}, none ? statusBadge("none", "—") : statusBadge(worstOf(rs))), el("td", {}, el("ul", { className: "messages" }, ...msgs)));
+  };
+  return [
+    el("p", { className: "small" }, `Last run ${when(file)}${file.reason ? ", queries on the OWL 2 RL closure" : ""}: `,
+       statusBadge(file.passed ? "PASS" : "FAIL", file.passed ? "PASSED" : "FAILED")),
+    el("div", { className: "table-wrap" }, el("table", {}, el("caption", { textContent: `Tests, ${heading.toLowerCase()}` }),
+      el("thead", {}, el("tr", {}, ...["Test", "Result", "Messages"].map((h) => el("th", { scope: "col", textContent: h })))),
+      el("tbody", {}, ...rows.map(row)))),
+    el("div", { className: "table-wrap" }, el("table", {}, el("caption", { textContent: `Competency questions, ${heading.toLowerCase()}` }),
+      el("thead", {}, el("tr", {}, ...["CQ", "Question", "Result"].map((h) => el("th", { scope: "col", textContent: h })))),
+      el("tbody", {}, ...(queries.length
+        ? queries.map((r) => el("tr", {}, el("th", { scope: "row", textContent: r.cq }), el("td", { className: "cq-question", textContent: r.question || "" }), cqCell(file, r)))
+        : [el("tr", {}, el("td", { colSpan: 3, className: "muted", textContent: "No CQ results." }))])))),
+  ];
 }
 
 async function refreshResults() {
@@ -347,17 +616,21 @@ async function refreshResults() {
     merge: merge?.cases?.includes(n) ? merge : null,
   }])));
 
+  if (current && files[current])
+    for (const [phase, heading, tests, tab] of PHASES)
+      $(`results-${tab}`).replaceChildren(...phaseResults(files[current][phase], current, phase, heading, tests));
+
   const model = merge?.results.filter((r) => r.case === "current model" && r.test === "model");
   $("current-model").replaceChildren(...(merge
     ? [`Last merge${merge.iteration ? ` (${merge.iteration})` : ""}: ${when(merge)}, `,
-       el("span", { className: `badge ${merge.passed ? "pass" : "fail"}`, textContent: merge.passed ? "PASSED" : "FAILED" }),
-       ". Model test on the current model: ", badge(model, `model, ${when(merge)}`)]
+       statusBadge(merge.passed ? "PASS" : "FAIL", merge.passed ? "PASSED" : "FAILED"),
+       ". Model test on the current model: ", badge(model, `current model, model, ${when(merge)}`)]
     : ["No merge yet."]));
   $("cell-detail").hidden = true;
 
-  $("matrix").replaceChildren(
+  $("matrix").replaceChildren($("matrix").caption,
     el("thead", {},
-      el("tr", {}, el("th", { rowSpan: 2, textContent: "Iteration" }),
+      el("tr", {}, el("th", { rowSpan: 2, scope: "col", textContent: "Iteration" }),
         ...PHASES.map(([, heading, tests]) => el("th", { colSpan: tests.length, scope: "colgroup", textContent: heading }))),
       el("tr", {}, ...PHASES.flatMap(([, , tests]) => tests.map((t) => el("th", { scope: "col", textContent: t }))))),
     el("tbody", {}, ...names.map((n) => el("tr", {}, el("th", { scope: "row", textContent: n }),
@@ -369,67 +642,56 @@ async function refreshResults() {
       for (const r of files[n][phase]?.results || [])
         if (r.case === n && r.test === "query") (byCq.get(r.cq) || byCq.set(r.cq, { question: r.question }).get(r.cq))[phase] = r;
     return [...byCq].map(([cq, recs]) => el("tr", {}, el("th", { scope: "row", textContent: n }), el("td", { textContent: cq }),
-      el("td", { textContent: recs.question || "" }), ...PHASES.map(([phase]) => cqCell(files[n][phase], recs[phase]))));
+      el("td", { className: "cq-question", textContent: recs.question || "" }), ...PHASES.map(([phase]) => cqCell(files[n][phase], recs[phase]))));
   });
-  $("cqs").replaceChildren(
+  $("cqs").replaceChildren(el("caption", { textContent: "Competency questions of all iterations" }),
     el("thead", {}, el("tr", {}, ...["Iteration", "CQ", "Question", ...PHASES.map(([, h]) => h)].map((h) => el("th", { scope: "col", textContent: h })))),
     el("tbody", {}, ...(rows.length ? rows : [el("tr", {}, el("td", { colSpan: 3 + PHASES.length, className: "muted", textContent: "No CQ results yet: run a test." }))])));
 }
+
+// ---- Saving and startup -----------------------------------------------------
 
 async function save() {
   const body = JSON.stringify(data);
   if (!current || body === clean) return true;
   const r = await fetch(`/iterations/${current}/requirements`, { method: "PUT", body, headers: { "Content-Type": "application/json" } });
-  if (!r.ok) { show(false, JSON.stringify((await r.json()).detail)); return false; }
+  if (!r.ok) {
+    $("status").textContent = `Not saved: ${JSON.stringify((await r.json()).detail)}`;
+    announce($("status").textContent);
+    return false;
+  }
   clean = body;
-  $("status").textContent = "saved";
+  dirty();
+  $("status").textContent = "Saved";
+  announce("Requirements saved");
   return true;
 }
 
-async function run(cmd, params) {
-  busy(true);
-  show(null, `Running ${cmd}…`);
-  try {
-    if (await save()) {
-      const r = await fetch(`/${cmd}?` + new URLSearchParams(params), { method: "POST" });
-      const body = await r.json();
-      show(r.ok && body.ok, r.ok ? body.output || "(no output)" : JSON.stringify(body.detail));
-      if (current) await select(current);  // draft-abox and align rewrite requirements.yaml
-      refreshDocs();
-      refreshResults();
-    }
-  } catch (e) {
-    show(false, String(e));
-  } finally {
-    busy(false);
-  }
-}
-
-document.addEventListener("click", (e) => {
-  const b = e.target.closest("button");
-  if (!b) return;
-  if (b.dataset.select) select(b.dataset.select);
-  else if (b.dataset.cmd) {
-    const params = {};
-    if (!("project" in b.dataset)) params.iteration = current;
-    if ("refactored" in b.dataset) params.refactored = true;
-    if ("online" in b.dataset) params.online = true;
-    if (b.dataset.cmd === "diagram" && $("graffoo").checked) params.graffoo = true;
-    run(b.dataset.cmd, params);
-  }
-});
-$("save").onclick = save;
+$("save").onclick = () => !running && save();
+$("project-link").onclick = () => go("project");
 $("new-form").onsubmit = async (e) => {
   e.preventDefault();
-  await run("new", { iteration_name: $("new-name").value });
-  const names = await (await fetch("/iterations")).json();
+  if (running || !(await save())) return;
+  const name = $("new-name").value;
+  setRunning(true);
+  const o = await command("new", { iteration_name: name }).catch((err) => ({ ok: false, text: String(err) }));
+  setRunning(false);
+  $("new-msg").hidden = o.ok;
+  $("new-msg").textContent = o.ok ? "" : o.text;
+  announce(o.ok ? `Iteration ${name} created` : `Could not create iteration ${name}`);
+  if (!o.ok) return;
   $("new-name").value = "";
-  if (names.length) select(names[names.length - 1]);
+  const names = await (await fetch("/iterations")).json();
+  go(names.find((n) => n.endsWith(name)) || names[names.length - 1]);
 };
 window.onbeforeunload = () => (JSON.stringify(data) !== clean ? true : undefined);
+
+$("steps-project").replaceChildren(...STEPS.project.map(stepCard));
 refreshDocs();
-refreshResults();
-location.hash.length > 1 ? select(decodeURIComponent(location.hash.slice(1))) : listIterations();
+const [hashName, hashTab] = decodeURIComponent(location.hash.slice(1)).split("/");
+if (hashName === "project") showProject();
+else if (hashName) select(hashName, TABS.includes(hashTab) ? hashTab : "requirements");
+else { listIterations(); refreshResults(); }
 </script>
 </body>
 </html>

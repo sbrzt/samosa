@@ -29,7 +29,7 @@ Each iteration lives under `iterations/<NN>-<name>/requirements.yaml` and declar
 | `samosa test <iter> --refactored` | run refactored queries on refactored TBox+ABox |
 | `samosa merge [<iter>] [--reason]` | merge an iteration into the current model `project/`, re-test all merged iterations, see below |
 | `samosa rename <old> <new>`     | replace a term in every iteration (collapse duplicates), re-align, re-merge |
-| `samosa check`                  | data test (consistency, HermiT via owlready2) on project/ |
+| `samosa check`                  | consistency test (HermiT via owlready2) on project/ |
 | `samosa restore [<milestone>]`  | list the milestones, or restore the project to one |
 | `samosa docs [--online]`        | HTML documentation of project/tbox.ttl with LODE 2.0, into project/docs/ |
 
@@ -44,7 +44,7 @@ uv sync --extra api
 uv run fastapi dev api.py   # from the repository root
 ```
 
-Open http://127.0.0.1:8000/ for the web interface (`ui/index.html`): pick or create an iteration, fill in its `requirements.yaml` through a form, run the steps in order and see the output and diagrams (Mermaid, drawn in the browser with mermaid.js from a CDN; tick the Graffoo box to also write yEd files). The "Test results" panel reads the `results.json` files (see [Results file](#results-file)): a table of each iteration's model, data, query, coverage and merge results per phase (select a result to list its messages), and a table of every CQ's result per phase, with missing and unexpected rows. http://127.0.0.1:8000/docs lists the raw API. Each command is `POST /<command>` with the CLI arguments as query parameters (e.g. `POST /test?iteration=01-rights&refactored=true`) and returns `{"ok": bool, "output": str}`. `GET /iterations/<iter>/requirements` returns `requirements.yaml` as JSON, `PUT` on the same path overwrites it with a JSON body, and all iteration files are served under `/iterations/`, `/refactoring/` and `/project/`.
+Open http://127.0.0.1:8000/ for the web interface (`ui/index.html`). Each iteration has four tabs: **Requirements** (a form for `requirements.yaml`), **First version**, **Refactoring** and **Merge**. Each phase tab lists its steps in order, each with what it does, the files it writes, a Run button and the output of its last run, followed by that phase's diagrams (Mermaid, drawn in the browser with mermaid.js from a CDN; tick the Graffoo box on a diagram step to also write yEd files) and test results (every test with its messages, including the explanation of an inconsistency, and every CQ with missing and unexpected rows), read from the `results.json` files (see [Results file](#results-file)). A tab is marked done once the iteration's status reaches the end of that phase. **Current model** holds the project actions (re-test, consistency check, documentation, milestones) and an overview of every iteration's results per phase. Steps save unsaved requirements before they run. The tabs follow the WAI-ARIA tabs pattern (arrow keys, Home and End move between them), and run results are announced to screen readers. http://127.0.0.1:8000/docs lists the raw API. Each command is `POST /<command>` with the CLI arguments as query parameters (e.g. `POST /test?iteration=01-rights&refactored=true`) and returns `{"ok": bool, "output": str}`. `GET /iterations/<iter>/requirements` returns `requirements.yaml` as JSON, `PUT` on the same path overwrites it with a JSON body, and all iteration files are served under `/iterations/`, `/refactoring/` and `/project/`.
 
 Per iteration: 
 1. `new`
@@ -75,7 +75,7 @@ To collapse a duplicate, run `rename <old> <new>` (e.g. `rename :HumanBeing :Per
 
 ### Tests
 
-`test` runs the three SAMOD tests: model, data and query.
+`test` runs the SAMOD model, data and query tests, with the consistency check of the data test reported on its own as `consistency`.
 
 The model test checks the TBox alone. It fails if:
 
@@ -85,13 +85,19 @@ The model test checks the TBox alone. It fails if:
 
 The same problems on reused terms (e.g. `dcterms:rights`, typed only `rdf:Property`) are warnings: their vocabulary cannot be edited here. Datatypes outside the OWL 2 datatype map (e.g. `xsd:date`) are always warnings: they are not OWL 2 DL, but HermiT ignores them. Without Java, HermiT is skipped with a warning. `merge` runs the model test on the current model.
 
-The data and query tests fail if:
+The data test fails if:
 
 - the ABox uses a property or class, or the TBox refers to a local (`:`) term, that the TBox does not describe (usually a typo);
-- an object property has a literal value (usually a misspelled individual name) or a datatype property has an IRI value;
+- an object property has a literal value (usually a misspelled individual name) or a datatype property has an IRI value.
+
+The consistency test (also `samosa check`, on project/) fails if:
+
 - a literal does not fit its datatype, e.g. `"four"^^xsd:integer`;
-- HermiT (OWL 2 DL) finds TBox+ABox inconsistent or rejects it. Without Java, owlrl (OWL 2 RL, pure Python) is used instead, with a warning: it misses DL-only clashes;
-- a CQ query fails (see below).
+- HermiT (OWL 2 DL) finds TBox+ABox inconsistent or rejects it. Without Java, owlrl (OWL 2 RL, pure Python) is used instead, with a warning: it misses DL-only clashes.
+
+When it passes, it reports the reasoner and the number of triples and individuals checked. When HermiT finds an inconsistency, the explanation comes from owlrl (e.g. `Disjoint classes :Cat and :Dog have a common individual :rex`) or, for clashes only OWL 2 DL sees, from re-checking each individual's assertions alone with HermiT (`the assertions on :x clash with the TBox`).
+
+The query test fails if a CQ query fails (see below).
 
 It also warns, without failing, about glossary terms that no CQ query or no ABox triple uses. Queries run on the asserted triples; with `--reason` they run on the OWL 2 RL closure, so CQs that rely on inference (e.g. `?x a :Animal` for an individual typed `:Mammal`) pass.
 
@@ -113,9 +119,9 @@ Each run also writes its results, passing or not, as JSON for reporting: `test <
 ```
 
 - `phase`: `first-version`, `refactored` or `merge`. A merge file also has `cases`, the iterations in the bag (its `iteration` is null when `merge` runs without one).
-- `test`: `model`, `data`, `query`, `coverage` (glossary terms unused by the queries or the ABox) or `merge` (conflicts and possible duplicates). In a merge file, model results have `case: "current model"`.
+- `test`: `model`, `data`, `consistency`, `query`, `coverage` (glossary terms unused by the queries or the ABox) or `merge` (conflicts and possible duplicates). In a merge file, model results have `case: "current model"`.
 - `status`: `PASS`, `FAIL` or `WARN`. Model and data tests write one `PASS` when they find nothing to report.
-- Extra fields: `term` (the IRI or glossary term concerned), `other` (the iteration a merge result compares with), `missing_from` (coverage), and for queries `cq`, `question`, `results` (row count), `expected`, `missing`, `unexpected` or `error`.
+- Extra fields: `term` (the IRI or glossary term concerned), `other` (the iteration a merge result compares with), `missing_from` (coverage), for consistency `reasoner`, `triples` and `individuals` (counts, on the `PASS`), `explanation` (list of strings, on an inconsistency) and `subject`, `value`, `datatype` (ill-typed literal), and for queries `cq`, `question`, `results` (row count), `expected`, `missing`, `unexpected` or `error`.
 
 The printed lines follow the same shape: `STATUS [case] test: message`.
 
