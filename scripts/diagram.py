@@ -1,6 +1,7 @@
 # scripts/diagram.py
 
 import copy
+import json
 import shutil
 import subprocess
 import sys
@@ -19,24 +20,14 @@ for prefix, uri in (("", NS["g"]), ("y", NS["y"]), ("yed", "http://www.yworks.co
 NODE_PROTO = {"class": "Class", "datatype": "Datatype", "individual": "instance", "literal": '"value"^^datatype'}
 EDGE_PROTO = {"object": "objectProperty", "data": "dataProperty", "subclass": "predicate", "type": "predicate",
               "object-use": "objectProperty", "data-use": "dataProperty"}
+URL = "d4"  # GraphML key of a node's url: what the node stands for (see `key`), to keep its position across redraws
+FORMATS = ("png", "svg", "pdf")  # exports written next to the GraphML file
 
-DOT_NODE = {"class": 'shape=box style="rounded,filled" fillcolor="#FFFF00"',
-            "datatype": 'shape=parallelogram style=filled fillcolor="#CCFFCC"',
-            "individual": 'shape=circle style=filled fillcolor="#FF99CC" penwidth=3 width=0.25 fixedsize=true xlabel={label} label=""',
-            "literal": "shape=plaintext"}
-DOT_EDGE = {"object": 'color="#000080" fontcolor="#000080" dir=both arrowtail=dot arrowhead=normal',
-            "data": 'color="#008000" fontcolor="#008000" dir=both arrowtail=odot arrowhead=empty',
-            "subclass": "", "type": ""}
-DOT_EDGE["object-use"] = DOT_EDGE["object"] + " style=dashed"
-
-# Mermaid shapes and Graffoo colours. Mermaid cannot draw Graffoo's dot at the
-# start of property edges, so properties are told apart by colour only.
-MERMAID_NODE = {"class": '("{}"):::owlClass', "datatype": '[/"{}"/]:::datatype',
-                "individual": '(("{}")):::individual', "literal": '["{}"]:::literal'}
-MERMAID_STYLE = {"owlClass": "fill:#FFFF00,stroke:#000", "datatype": "fill:#CCFFCC,stroke:#000",
-                 "individual": "fill:#FF99CC,stroke:#000", "literal": "fill:none,stroke:none"}
-MERMAID_EDGE = {"object": "#000080", "data": "#008000"}
-DOT_EDGE["data-use"] = DOT_EDGE["data"] + " style=dashed"
+# Graffoo (yEd) shapes and arrows in Graphviz
+DOT_SHAPE = {"roundrectangle": 'box style="rounded,filled"', "parallelogram": "parallelogram style=filled",
+             "ellipse": "circle style=filled", "rectangle": "box style=filled"}
+DOT_ARROW = {"delta": "normal", "standard": "normal", "white_delta": "empty", "circle": "dot",
+             "transparent_circle": "odot", "none": "none"}
 
 
 def extract(g):
@@ -129,32 +120,6 @@ def labeler(g):
     return name
 
 
-def write(base, stem, nodes, edges, name, graffoo):
-    """Write `<stem>.mmd` and, with `graffoo`, `<stem>.graphml` and `<stem>.png`.
-
-    Args:
-        base: Output directory.
-        stem: File name stem, `"tbox"` or `"abox"`.
-        nodes: Node dict from `extract` or `extract_abox`.
-        edges: Edge list from `extract` or `extract_abox`.
-        name: Function mapping a node or property to its display label.
-        graffoo: If true, also write the Graffoo files. The PNG needs Graphviz.
-
-    Returns:
-        The list of written paths.
-    """
-    (base / f"{stem}.mmd").write_text(mermaid(nodes, edges, name), encoding="utf-8")
-    written = [base / f"{stem}.mmd"]
-    if graffoo:
-        (base / f"{stem}.graphml").write_text(graphml(nodes, edges, name), encoding="utf-8")
-        written.append(base / f"{stem}.graphml")
-        if shutil.which("dot"):
-            subprocess.run(["dot", "-Tpng", "-o", str(base / f"{stem}.png")],
-                           input=dot(nodes, edges, name), text=True, check=True)
-            written.append(base / f"{stem}.png")
-    return written
-
-
 def usage(g, abox, nodes, edges):
     """Add property usages found in the ABox, in place.
 
@@ -181,8 +146,16 @@ def usage(g, abox, nodes, edges):
                     edges.append((d, r, p, kinds[p] + "-use"))
 
 
+def key(n):
+    """Identify a node across redraws: its IRI, or the Turtle of a literal node's triple.
+
+    Blank nodes get new ids at each parse, so their position is not kept.
+    """
+    return " ".join(x.n3() for x in n) if isinstance(n, tuple) else str(n)
+
+
 def graphml(nodes, edges, name):
-    """Render nodes and edges as Graffoo GraphML for yEd.
+    """Render nodes and edges as Graffoo GraphML for yEd, with every node at (0, 0).
 
     Args:
         nodes: Node dict from `extract`.
@@ -190,10 +163,11 @@ def graphml(nodes, edges, name):
         name: Function mapping an IRI to its display label.
 
     Returns:
-        The GraphML document as a string, built from the prototypes in `graffoo.graphml`.
+        The GraphML root element, built from the prototypes in `graffoo.graphml`.
+        Each node's url (key `d4`) is its `key`.
     """
-    tree = ET.parse(TEMPLATE)
-    graph = tree.getroot().find("g:graph", NS)
+    root = ET.parse(TEMPLATE).getroot()
+    graph = root.find("g:graph", NS)
     label_of = lambda el: (el.findtext(".//y:NodeLabel", "", NS) or el.findtext(".//y:EdgeLabel", "", NS)).strip()
     protos = {label_of(el): el for el in graph.iter() if el.tag in (f"{{{NS['g']}}}node", f"{{{NS['g']}}}edge")}
     for el in list(graph):
@@ -201,14 +175,18 @@ def graphml(nodes, edges, name):
             graph.remove(el)
 
     ids = {n: f"n{i}" for i, n in enumerate(nodes)}
-    for i, (n, kind) in enumerate(nodes.items()):
+    for n, kind in nodes.items():
         node = copy.deepcopy(protos[NODE_PROTO[kind]])
         node.set("id", ids[n])
+        for old in node.findall(f"g:data[@key='{URL}']", NS):
+            node.remove(old)
+        node.insert(0, ET.Element(f"{{{NS['g']}}}data", key=URL))
+        node[0].text = key(n)
         node.find(".//y:NodeLabel", NS).text = name(n)
         geo = node.find(".//y:Geometry", NS)
-        if kind != "individual":  
+        if kind != "individual":
             geo.set("width", str(10 * len(name(n)) + 30))
-        geo.set("x", str((i % 5) * 300)); geo.set("y", str((i // 5) * 150))
+        geo.set("x", "0"); geo.set("y", "0")
         graph.append(node)
     for i, (s, t, p, kind) in enumerate(edges):
         edge = copy.deepcopy(protos[EDGE_PROTO[kind]])
@@ -217,75 +195,154 @@ def graphml(nodes, edges, name):
             edge.find(".//y:LineStyle", NS).set("type", "dashed")
         edge.find(".//y:EdgeLabel", NS).text = {"subclass": "rdfs:subClassOf", "type": "rdf:type"}.get(kind) or name(p)
         graph.append(edge)
-    return ET.tostring(tree.getroot(), encoding="unicode", xml_declaration=True)
+    return root
 
 
-def mermaid(nodes, edges, name):
-    """Render nodes and edges as a Mermaid flowchart in Graffoo colours.
-
-    Args:
-        nodes: Node dict from `extract`.
-        edges: Edge list from `extract`.
-        name: Function mapping an IRI to its display label.
-
-    Returns:
-        The Mermaid source as a string.
-    """
-    q = lambda s: s.replace('"', "#quot;")
-    ids = {n: f"n{i}" for i, n in enumerate(nodes)}
-    out = ["flowchart LR"]
-    out += [f"  {ids[n]}{MERMAID_NODE[kind].format(q(name(n)))}" for n, kind in nodes.items()]
-    colored = {}
-    for i, (s, t, p, kind) in enumerate(edges):
-        label = {"subclass": "rdfs:subClassOf", "type": "rdf:type"}.get(kind) or name(p)
-        arrow = "-.->" if kind.endswith("-use") else "-->"
-        out.append(f'  {ids[s]} {arrow}|"{q(label)}"| {ids[t]}')
-        if kind.removesuffix("-use") in MERMAID_EDGE:
-            colored.setdefault(MERMAID_EDGE[kind.removesuffix("-use")], []).append(str(i))
-    out += [f"  classDef {c} {style},color:#000" for c, style in MERMAID_STYLE.items()]
-    out += [f"  linkStyle {','.join(ix)} stroke:{color},color:{color}" for color, ix in colored.items()]
-    return "\n".join(out) + "\n"
+def geometry(root):
+    """Map the id of each node of a GraphML tree to its `y:Geometry` (top-left `x`, `y`, `width`, `height`)."""
+    return {n.get("id"): n.find(".//y:Geometry", NS) for n in root.iter(f"{{{NS['g']}}}node")}
 
 
-def dot(nodes, edges, name):
-    """Render nodes and edges as a Graphviz DOT graph in Graffoo style.
+def dot(root, placed=()):
+    """Render a Graffoo GraphML tree as a Graphviz DOT graph in Graffoo style.
 
     Args:
-        nodes: Node dict from `extract`.
-        edges: Edge list from `extract`.
-        name: Function mapping an IRI to its display label.
+        root: GraphML root element, as from `graphml`.
+        placed: Ids of the nodes to give their GraphML position (`pos`, pinned
+            for `neato`). Graphviz's y axis points up, so y is negated.
 
     Returns:
-        The DOT source as a string.
+        The DOT source as a string. Node names are the GraphML ids.
     """
-    q = lambda s: '"' + s.replace('"', '\\"') + '"'
-    out = ['digraph G { rankdir=LR; node [fontname="Helvetica"]; edge [fontname="Helvetica"];']
-    for n, kind in nodes.items():
-        out.append(f'{q(str(n))} [label={q(name(n))} {DOT_NODE[kind].format(label=q(name(n)))}];')
-    for s, t, p, kind in edges:
-        label = {"subclass": "rdfs:subClassOf", "type": "rdf:type"}.get(kind) or name(p)
-        out.append(f"{q(str(s))} -> {q(str(t))} [label={q(label)} {DOT_EDGE[kind]}];")
+    q = lambda s: '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    out = ['digraph G { rankdir=LR; nodesep=0.8; ranksep=1.2; node [fontname="Helvetica" fontsize=16 fixedsize=true]; edge [fontname="Helvetica" fontsize=16];']
+    for n in root.iter(f"{{{NS['g']}}}node"):
+        geo, fill, border, label, shape = (n.find(f".//y:{t}", NS) for t in ("Geometry", "Fill", "BorderStyle", "NodeLabel", "Shape"))
+        w, h = float(geo.get("width")), float(geo.get("height"))
+        attrs = [f"width={w / 72} height={h / 72}"]
+        attrs.append(f'shape={DOT_SHAPE[shape.get("type")]} fillcolor="{fill.get("color")}" penwidth={border.get("width")}'
+                     if fill.get("color") else "shape=plaintext")
+        text = q(label.text or "")
+        attrs.append(f'xlabel={text} label=""' if label.get("modelName") == "eight_pos" else f"label={text}")
+        if n.get("id") in placed:
+            attrs.append(f'pos="{float(geo.get("x")) + w / 2},{-float(geo.get("y")) - h / 2}!"')
+        out.append(f'{n.get("id")} [{" ".join(attrs)}];')
+    for e in root.iter(f"{{{NS['g']}}}edge"):
+        line, arrows = e.find(".//y:LineStyle", NS), e.find(".//y:Arrows", NS)
+        c = line.get("color")
+        dashed = " style=dashed" if line.get("type") == "dashed" else ""
+        out.append(f'{e.get("source")} -> {e.get("target")} [label={q(e.findtext(".//y:EdgeLabel", "", NS).strip())} '
+                   f'color="{c}" fontcolor="{c}" dir=both arrowtail={DOT_ARROW[arrows.get("source")]} '
+                   f'arrowhead={DOT_ARROW[arrows.get("target")]}{dashed}];')
     out.append("}")
     return "\n".join(out)
 
 
-def main(iteration: str, refactored: bool = False, graffoo: bool = False):
-    """Write Mermaid diagrams of an iteration's TBox (`tbox.mmd`) and ABox (`abox.mmd`).
+def saved(path):
+    """Read the node positions of a GraphML file written by `draw`.
 
-    In the TBox diagram, property usages found in the ABox, if any, are drawn
-    as dashed edges. The ABox diagram is written only if `abox.ttl` exists.
+    Returns:
+        A dict mapping each node's url (see `key`) to its top-left `(x, y)`.
+        Empty if the file does not exist.
+    """
+    if not path.exists():
+        return {}
+    root = ET.parse(path).getroot()
+    return {n.findtext(f"g:data[@key='{URL}']", "", NS): (float(g.get("x")), float(g.get("y")))
+            for n in root.iter(f"{{{NS['g']}}}node") if (g := n.find(".//y:Geometry", NS)) is not None}
+
+
+def place(root, positions):
+    """Position the nodes of a GraphML tree, in place.
+
+    Nodes whose url is in `positions` keep that position. If none is, Graphviz
+    `dot` lays out the whole graph. Otherwise `neato` places the new nodes
+    around the kept ones, which it does not move relative to each other.
+    Without Graphviz, new nodes go on a grid.
+
+    Args:
+        root: GraphML root element, as from `graphml`.
+        positions: Dict from `saved`.
+    """
+    geos = geometry(root)
+    urls = {n.get("id"): n.findtext(f"g:data[@key='{URL}']", "", NS) for n in root.iter(f"{{{NS['g']}}}node")}
+    placed = {i for i, u in urls.items() if u in positions}
+    for i in placed:
+        geos[i].set("x", str(positions[urls[i]][0])); geos[i].set("y", str(positions[urls[i]][1]))
+    if len(placed) == len(geos):
+        return
+    if shutil.which("dot") is None:
+        for k, i in enumerate(i for i in geos if i not in placed):
+            geos[i].set("x", str((k % 5) * 300)); geos[i].set("y", str((k // 5) * 150))
+        return
+    cmd = ["neato", "-s"] if placed else ["dot"]  # -s: pos in points
+    layout = json.loads(subprocess.run([*cmd, "-Tjson"], input=dot(root, placed), text=True,
+                                       capture_output=True, check=True).stdout)
+    for obj in layout.get("objects", []):
+        x, y = map(float, obj["pos"].split(","))
+        geo = geos[obj["name"]]
+        geo.set("x", str(round(x - float(geo.get("width")) / 2, 2)))
+        geo.set("y", str(round(-y - float(geo.get("height")) / 2, 2)))
+
+
+def export(path, root):
+    """Write a GraphML tree to `path` and, with Graphviz, its PNG, SVG and PDF exports.
+
+    The exports are drawn by `neato -n2` with every node at its GraphML position.
+
+    Returns:
+        The list of written paths.
+    """
+    path.write_text(ET.tostring(root, encoding="unicode", xml_declaration=True), encoding="utf-8")
+    written = [path]
+    if shutil.which("dot"):
+        src = dot(root, geometry(root))
+        for fmt in FORMATS:
+            subprocess.run(["neato", "-n2", f"-T{fmt}", "-o", str(path.with_suffix(f".{fmt}"))],
+                           input=src, text=True, check=True)
+            written.append(path.with_suffix(f".{fmt}"))
+    return written
+
+
+def draw(path, nodes, edges, name):
+    """Write a Graffoo diagram and its exports, keeping the saved position of every node still in it.
+
+    Args:
+        path: The `.graphml` file.
+        nodes: Node dict from `extract` or `extract_abox`.
+        edges: Edge list from `extract` or `extract_abox`.
+        name: Function mapping a node or property to its display label.
+
+    Returns:
+        The list of written paths.
+    """
+    root = graphml(nodes, edges, name)
+    place(root, saved(path))
+    return export(path, root)
+
+
+def folder(iteration, refactored):
+    """Directory of an iteration's files: `iterations/<it>/`, or `refactoring/<it>/` if `refactored`."""
+    it = resolve_iteration(iteration)
+    return Path("refactoring") / it.name if refactored else it
+
+
+def main(iteration: str, refactored: bool = False):
+    """Draw Graffoo diagrams of an iteration's TBox (`tbox.graphml`) and ABox (`abox.graphml`), with PNG, SVG and PDF exports.
+
+    Nodes already in a previous diagram keep their saved position; new ones
+    are laid out by Graphviz. In the TBox diagram, property usages found in the
+    ABox, if any, are drawn as dashed edges. The ABox diagram is written only
+    if `abox.ttl` exists.
 
     Args:
         iteration: Iteration path or name, resolved with `resolve_iteration`.
         refactored: If true, read from `refactoring/<iteration>/` instead.
-        graffoo: If true, also write Graffoo diagrams for yEd (`tbox.graphml`,
-            `abox.graphml`) and, if Graphviz is installed, Graffoo-style PNGs.
 
     Raises:
         SystemExit: If `tbox.ttl` does not exist.
     """
-    it = resolve_iteration(iteration)
-    base = Path("refactoring") / it.name if refactored else it
+    base = folder(iteration, refactored)
     tbox = base / "tbox.ttl"
     if not tbox.exists():
         print(f"Error: {tbox} not found. Run the previous step first.")
@@ -295,12 +352,40 @@ def main(iteration: str, refactored: bool = False, graffoo: bool = False):
     nodes, edges = extract(g)
     if abox is not None:
         usage(g, abox, nodes, edges)
-    written = write(base, "tbox", nodes, edges, labeler(g), graffoo)
+    written = draw(base / "tbox.graphml", nodes, edges, labeler(g))
     if abox is not None:
-        written += write(base, "abox", *extract_abox(abox), labeler(abox), graffoo)
+        written += draw(base / "abox.graphml", *extract_abox(abox), labeler(abox))
     print(f"Wrote {', '.join(map(str, written))}")
-    if graffoo and shutil.which("dot") is None:
-        print("PNG skipped: install Graphviz (`sudo apt install graphviz`).")
+    if shutil.which("dot") is None:
+        print("Nodes placed on a grid and exports skipped: install Graphviz (`sudo apt install graphviz`).")
+
+
+def save_layout(iteration: str, stem: str, positions: dict, refactored: bool = False):
+    """Move the nodes of a saved diagram and write its exports again.
+
+    Only positions change: labels, nodes and edges stay as drawn.
+
+    Args:
+        iteration: Iteration path or name, resolved with `resolve_iteration`.
+        stem: `"tbox"` or `"abox"`.
+        positions: Maps node ids to `{"x": ..., "y": ...}`, top-left corners in
+            pixels. Unknown ids are ignored.
+        refactored: If true, the diagram under `refactoring/<iteration>/`.
+
+    Raises:
+        SystemExit: If the diagram does not exist.
+    """
+    path = folder(iteration, refactored) / f"{stem}.graphml"
+    if stem not in ("tbox", "abox") or not path.exists():
+        print(f"Error: {path} not found. Draw the diagrams first.")
+        sys.exit(1)
+    root = ET.parse(path).getroot()
+    geos = geometry(root)
+    for i, p in positions.items():
+        if i in geos:
+            geos[i].set("x", str(float(p["x"]))); geos[i].set("y", str(float(p["y"])))
+    print(f"Wrote {', '.join(map(str, export(path, root)))}")
+
 
 if __name__ == "__main__":
-    main(sys.argv[1], "--refactored" in sys.argv[2:], "--graffoo" in sys.argv[2:])
+    main(sys.argv[1], "--refactored" in sys.argv[2:])

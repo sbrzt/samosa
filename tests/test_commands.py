@@ -6,7 +6,7 @@ import sys
 import pytest
 
 import main as cli
-from conftest import zoo
+from conftest import PREFIXES, zoo
 from scripts import draft_abox, generate_iteration
 from scripts.common import dump_yaml, individual_id, load_yaml, resolve_iteration
 
@@ -193,6 +193,18 @@ def test_api_reads_and_writes_requirements(client, project):
     assert client.put("/iterations/01-zoo/requirements", json=data).json() == {"ok": True}
     assert load_yaml(project / "iterations" / "01-zoo" / "requirements.yaml")["scenario"]["description"] == "Changed."
     assert client.get("/iterations/99-none/requirements").status_code == 404
+
+
+def test_api_saves_diagram_layouts(client, project):
+    client.post("/new", params={"iteration_name": "zoo"})
+    it = project / "iterations" / "01-zoo"
+    (it / "tbox.ttl").write_text(PREFIXES + ":Animal a owl:Class .")
+    client.post("/diagram", params={"iteration": "01-zoo"})
+    reply = client.put("/iterations/01-zoo/diagram/tbox", json={"n0": {"x": 7, "y": 8}}).json()
+    assert reply["ok"] and 'x="7.0" y="8.0"' in (it / "tbox.graphml").read_text()
+    assert client.put("/iterations/01-zoo/diagram/abox", json={}).json()["ok"] is False  # not drawn
+    assert client.put("/iterations/01-zoo/diagram/oops", json={}).status_code == 422
+    assert client.put("/iterations/99-none/diagram/tbox", json={}).status_code == 404
 
 
 def test_api_turns_exceptions_into_failed_replies(client, monkeypatch):

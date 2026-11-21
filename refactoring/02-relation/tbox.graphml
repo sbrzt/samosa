@@ -15,9 +15,9 @@
   <graph edgedefault="directed" id="G">
     <data key="d7" />
     <node id="n0">
-      <data key="d6">
+      <data key="d4">http://purl.org/spar/datacite/QualifiedRelation</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="290" x="0" y="0" />
+          <y:Geometry height="44.0" width="290" x="0.0" y="-82.49" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">datacite:QualifiedRelation</y:NodeLabel>
@@ -26,9 +26,9 @@
       </data>
     </node>
     <node id="n1">
-      <data key="d6">
+      <data key="d4">http://www.w3.org/2002/07/owl#Thing</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="120" x="300" y="0" />
+          <y:Geometry height="44.0" width="120" x="674.0" y="-82.49" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">owl:Thing</y:NodeLabel>

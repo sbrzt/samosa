@@ -15,9 +15,9 @@
   <graph edgedefault="directed" id="G">
     <data key="d7" />
     <node id="n0">
-      <data key="d6">
+      <data key="d4">http://purl.org/spar/datacite/RightsIdentifier</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="280" x="0" y="0" />
+          <y:Geometry height="44.0" width="280" x="-9.492957746478936" y="-427.1508322663252" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">datacite:RightsIdentifier</y:NodeLabel>
@@ -26,9 +26,9 @@
       </data>
     </node>
     <node id="n1">
-      <data key="d6">
+      <data key="d4">http://purl.org/spar/datacite/RightsIdentifierScheme</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="340" x="300" y="0" />
+          <y:Geometry height="44.0" width="340" x="285.0112676056342" y="-265.97695262483995" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">datacite:RightsIdentifierScheme</y:NodeLabel>
@@ -37,9 +37,9 @@
       </data>
     </node>
     <node id="n2">
-      <data key="d6">
+      <data key="d4">http://purl.org/spar/datacite/Identifier</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="220" x="600" y="0" />
+          <y:Geometry height="44.0" width="220" x="640.7270166453267" y="-436.32471190781047" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">datacite:Identifier</y:NodeLabel>
@@ -48,9 +48,9 @@
       </data>
     </node>
     <node id="n3">
-      <data key="d6">
+      <data key="d4">http://purl.org/spar/datacite/IdentifierScheme</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="280" x="900" y="0" />
+          <y:Geometry height="44.0" width="280" x="916.0496798975671" y="-259.6215108834827" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">datacite:IdentifierScheme</y:NodeLabel>
@@ -59,9 +59,9 @@
       </data>
     </node>
     <node id="n4">
-      <data key="d6">
+      <data key="d4">http://www.essepuntato.it/2010/06/literalreification/Literal</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="180" x="1200" y="0" />
+          <y:Geometry height="44.0" width="180" x="660.7431498079385" y="-574.8386683738796" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">literal:Literal</y:NodeLabel>
@@ -70,9 +70,9 @@
       </data>
     </node>
     <node id="n5">
-      <data key="d6">
+      <data key="d4">http://www.w3.org/2002/07/owl#Thing</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="120" x="0" y="150" />
+          <y:Geometry height="44.0" width="120" x="473.3198463508322" y="-333.51395646606915" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">owl:Thing</y:NodeLabel>
@@ -81,9 +81,9 @@
       </data>
     </node>
     <node id="n6">
-      <data key="d6">
+      <data key="d4">http://purl.org/vocab/frbr/core#Endeavour</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="170" x="300" y="150" />
+          <y:Geometry height="44.0" width="170" x="676.9162612035852" y="-207.10473751600512" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">frbr:Endeavour</y:NodeLabel>
@@ -92,9 +92,9 @@
       </data>
     </node>
     <node id="n7">
-      <data key="d6">
+      <data key="d4">http://www.w3.org/2001/XMLSchema#anyURI</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="43.0" width="130" x="600" y="150" />
+          <y:Geometry height="43.0" width="130" x="695.3339308578743" y="-39.955313700384124" />
           <y:Fill color="#CCFFCC" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="72.96875" x="26.56310910535865" y="10.078125">xsd:anyURI</y:NodeLabel>
@@ -103,9 +103,9 @@
       </data>
     </node>
     <node id="n8">
-      <data key="d6">
+      <data key="d4">http://www.w3.org/2000/01/rdf-schema#Literal</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="43.0" width="150" x="900" y="150" />
+          <y:Geometry height="43.0" width="150" x="176.2834827144688" y="-573.3924455825864" />
           <y:Fill color="#CCFFCC" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="72.96875" x="26.56310910535865" y="10.078125">rdfs:Literal</y:NodeLabel>
@@ -114,9 +114,9 @@
       </data>
     </node>
     <node id="n9">
-      <data key="d6">
+      <data key="d4">http://purl.org/spar/datacite/spdx</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="20.0" width="20.0" x="1200" y="150" />
+          <y:Geometry height="20.0" width="20.0" x="441.79820742637645" y="-126.01536491677338" />
           <y:Fill color="#FF99CC" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="3.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="eight_pos" modelPosition="e" textColor="#000000" visible="true" width="68.5703125" x="24.0" y="-1.421875">datacite:spdx</y:NodeLabel>
@@ -125,9 +125,9 @@
       </data>
     </node>
     <node id="n10">
-      <data key="d6">
+      <data key="d4">http://purl.org/dc/terms/RightsStatement</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="260" x="0" y="300" />
+          <y:Geometry height="44.0" width="260" x="0.0" y="-44.0" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">dcterms:RightsStatement</y:NodeLabel>
@@ -234,18 +234,7 @@
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e9" source="n1" target="n7">
-      <data key="d10">
-        <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
-          <y:LineStyle color="#008000" type="dashed" width="1.0" />
-          <y:Arrows source="transparent_circle" target="white_delta" />
-          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#008000" visible="true" width="102.8203125" x="86.99520934650445" y="-11.331705729166742">fabio:hasURL</y:EdgeLabel>
-          <y:BendStyle smoothed="false" />
-        </y:PolyLineEdge>
-      </data>
-    </edge>
-    <edge id="e10" source="n0" target="n8">
+    <edge id="e9" source="n0" target="n8">
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
@@ -256,7 +245,7 @@
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e11" source="n0" target="n1">
+    <edge id="e10" source="n0" target="n1">
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
@@ -267,7 +256,18 @@
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e12" source="n10" target="n7">
+    <edge id="e11" source="n10" target="n7">
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
+          <y:LineStyle color="#008000" type="dashed" width="1.0" />
+          <y:Arrows source="transparent_circle" target="white_delta" />
+          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#008000" visible="true" width="102.8203125" x="86.99520934650445" y="-11.331705729166742">fabio:hasURL</y:EdgeLabel>
+          <y:BendStyle smoothed="false" />
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="e12" source="n1" target="n7">
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />

@@ -21,7 +21,7 @@ Each iteration lives under `iterations/<NN>-<name>/requirements.yaml` and declar
 | `samosa new <name>`             | scaffold a new iteration            |
 | `samosa tbox <iter>`            | glossary -> tbox.ttl                |
 | `samosa draft-abox <iter>`      | (optional) draft the abox: block    |
-| `samosa diagram <iter> [--graffoo]` | tbox.mmd and, once abox.ttl exists, abox.mmd (Mermaid, Graffoo colours); with `--graffoo` also tbox/abox.graphml (yEd) and tbox/abox.png (needs Graphviz) |
+| `samosa diagram <iter>`         | Graffoo diagrams tbox.graphml and, once abox.ttl exists, abox.graphml (yEd), with .png, .svg and .pdf exports; nodes keep their saved positions, see below (needs Graphviz) |
 | `samosa abox <iter>`            | abox: block -> abox.ttl             |
 | `samosa test <iter> [--reason]` | model, data and query tests on tbox.ttl + abox.ttl, see below |
 | `samosa align <iter>`           | refactoring/\<iter\>/{tbox,abox}.ttl, refactored_query in requirements.yaml |
@@ -44,7 +44,7 @@ uv sync --extra api
 uv run fastapi dev api.py   # from the repository root
 ```
 
-Open http://127.0.0.1:8000/ for the web interface (`ui/index.html`). Each iteration has four tabs: **Requirements** (a form for `requirements.yaml`), **First version**, **Refactoring** and **Merge**. Each phase tab lists its steps in order, each with what it does, the files it writes, a Run button and the output of its last run, followed by that phase's diagrams (Mermaid, drawn in the browser with mermaid.js from a CDN; tick the Graffoo box on a diagram step to also write yEd files) and test results (every test with its messages, including the explanation of an inconsistency, and every CQ with missing and unexpected rows), read from the `results.json` files (see [Results file](#results-file)). A tab is marked done once the iteration's status reaches the end of that phase. **Current model** holds the project actions (re-test, consistency check, documentation, milestones) and an overview of every iteration's results per phase. Steps save unsaved requirements before they run. The tabs follow the WAI-ARIA tabs pattern (arrow keys, Home and End move between them), and run results are announced to screen readers. http://127.0.0.1:8000/docs lists the raw API. Each command is `POST /<command>` with the CLI arguments as query parameters (e.g. `POST /test?iteration=01-rights&refactored=true`) and returns `{"ok": bool, "output": str}`. `GET /iterations/<iter>/requirements` returns `requirements.yaml` as JSON, `PUT` on the same path overwrites it with a JSON body, and all iteration files are served under `/iterations/`, `/refactoring/` and `/project/`.
+Open http://127.0.0.1:8000/ for the web interface (`ui/index.html`). Each iteration has four tabs: **Requirements** (a form for `requirements.yaml`), **First version**, **Refactoring** and **Merge**. Each phase tab lists its steps in order, each with what it does, the files it writes, a Run button and the output of its last run, followed by that phase's diagrams (see [Diagrams](#diagrams)) and test results (every test with its messages, including the explanation of an inconsistency, and every CQ with missing and unexpected rows), read from the `results.json` files (see [Results file](#results-file)). A tab is marked done once the iteration's status reaches the end of that phase. **Current model** holds the project actions (re-test, consistency check, documentation, milestones) and an overview of every iteration's results per phase. Steps save unsaved requirements before they run. The tabs follow the WAI-ARIA tabs pattern (arrow keys, Home and End move between them), and run results are announced to screen readers. http://127.0.0.1:8000/docs lists the raw API. Each command is `POST /<command>` with the CLI arguments as query parameters (e.g. `POST /test?iteration=01-rights&refactored=true`) and returns `{"ok": bool, "output": str}`. `GET /iterations/<iter>/requirements` returns `requirements.yaml` as JSON, `PUT` on the same path overwrites it with a JSON body, `PUT /iterations/<iter>/diagram/<tbox|abox>[?refactored=true]` saves a diagram's layout (`{node id: {"x": ..., "y": ...}}`, top-left corners), and all iteration files are served under `/iterations/`, `/refactoring/` and `/project/`.
 
 Per iteration: 
 1. `new`
@@ -60,6 +60,12 @@ Per iteration:
 11. `merge <iter>`: add the iteration to the current model (see below)
 12. `check`
 13. `docs`: once the ontology metadata in `ontology.yaml` is filled in
+
+### Diagrams
+
+`diagram` draws the TBox and ABox in [Graffoo](https://essepuntato.it/graffoo/) as yEd GraphML files built from the prototypes in `scripts/graffoo.graphml`. Each node records the IRI it stands for (its yEd `url`). A new diagram is laid out by Graphviz `dot`. Drawn again, every node still in the diagram keeps its saved position, and `neato` places only the new ones. `neato -n2` then writes the PNG, SVG and PDF exports at those positions. Without Graphviz, new nodes go on a grid and no export is written.
+
+In the web interface the diagrams are drawn from the GraphML files with Cytoscape.js (from a CDN). Nodes can be dragged, nothing else: labels, nodes and edges change only through the requirements. **Save layout** writes the positions back to the GraphML file and writes the exports again. Moved but unsaved nodes survive other steps, but not drawing the diagram again.
 
 ### Merging (SAMOD step 2)
 

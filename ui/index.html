@@ -63,8 +63,6 @@
   .body { margin-top: 8px; }
   .row { display: flex; gap: 6px; align-items: end; }
   .list > button, .body > button { justify-self: start; }
-  .check { display: flex; flex-direction: row; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
-  .check input { flex: none; width: auto; }
 
   /* Tabs: one per phase of the iteration (WAI-ARIA tabs pattern, automatic activation). */
   [role="tablist"] { display: flex; gap: 2px; margin-top: 16px; box-shadow: inset 0 -1px 0 var(--line); overflow-x: auto; overflow-y: hidden; }
@@ -104,9 +102,11 @@
 
   .diagrams { display: grid; gap: 16px; }
   .diagrams figure { margin: 0; }
-  .diagrams figcaption { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
-  .mmd { border: 1px solid var(--line); border-radius: 6px; background: #fff; color: #1b1f24; padding: 8px; overflow: auto; min-height: 60px; }
-  .mmd svg { max-width: 100%; height: auto; }
+  .diagrams figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+  .diagrams figcaption > span { display: contents; }
+  .diagrams figcaption button { padding: 3px 10px; font-size: 13px; }
+  .diagram { border: 1px solid var(--line); border-radius: 6px; background: #fff; color: #1b1f24; padding: 8px; height: 60vh; min-height: 60px; }
+  .diagram:empty, .diagram.message { height: auto; }
 
   .results { display: grid; gap: 10px; }
   .table-wrap { overflow-x: auto; }
@@ -178,9 +178,10 @@
       <h3>Steps</h3>
       <ol class="steps" id="steps-first"></ol>
       <h3>Diagrams</h3>
+      <p class="muted small">Drag the nodes to arrange a diagram, then save its layout: this also writes its PNG, SVG and PDF exports. Drawing the diagrams again keeps the saved position of every node.</p>
       <div class="diagrams">
-        <figure><figcaption>TBox <span id="links-tbox"></span></figcaption><div class="mmd" id="mmd-tbox" role="img" aria-label="TBox diagram"></div></figure>
-        <figure><figcaption>ABox <span id="links-abox"></span></figcaption><div class="mmd" id="mmd-abox" role="img" aria-label="ABox diagram"></div></figure>
+        <figure><figcaption>TBox <span id="links-tbox"></span></figcaption><div class="diagram" id="diagram-tbox" role="img" aria-label="TBox diagram"></div></figure>
+        <figure><figcaption>ABox <span id="links-abox"></span></figcaption><div class="diagram" id="diagram-abox" role="img" aria-label="ABox diagram"></div></figure>
       </div>
       <h3>Test results</h3>
       <div class="results" id="results-first"></div>
@@ -191,9 +192,10 @@
       <h3>Steps</h3>
       <ol class="steps" id="steps-refactoring"></ol>
       <h3>Diagrams</h3>
+      <p class="muted small">Drag the nodes to arrange a diagram, then save its layout: this also writes its PNG, SVG and PDF exports.</p>
       <div class="diagrams">
-        <figure><figcaption>Refactored TBox <span id="links-refactored"></span></figcaption><div class="mmd" id="mmd-refactored" role="img" aria-label="Refactored TBox diagram"></div></figure>
-        <figure><figcaption>Refactored ABox <span id="links-refactored-abox"></span></figcaption><div class="mmd" id="mmd-refactored-abox" role="img" aria-label="Refactored ABox diagram"></div></figure>
+        <figure><figcaption>Refactored TBox <span id="links-refactored"></span></figcaption><div class="diagram" id="diagram-refactored" role="img" aria-label="Refactored TBox diagram"></div></figure>
+        <figure><figcaption>Refactored ABox <span id="links-refactored-abox"></span></figcaption><div class="diagram" id="diagram-refactored-abox" role="img" aria-label="Refactored ABox diagram"></div></figure>
       </div>
       <h3>Test results</h3>
       <div class="results" id="results-refactoring"></div>
@@ -228,10 +230,9 @@
 </main>
 <div id="announce" role="status" class="visually-hidden"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
 <script>
 const $ = (id) => document.getElementById(id);
-window.mermaid?.initialize({ startOnLoad: false, securityLevel: "strict", theme: "default" });  // white panel, Graffoo colours
 let current = null, data = {}, clean = "{}", currentTab = "requirements", running = false;
 
 // Shape of requirements.yaml: a string is a field kind, [x] is a list of x, {...} is a group of fields.
@@ -255,8 +256,8 @@ const STEPS = {
       does: "Drafts example individuals from the scenario and replaces the ABox section of the requirements. Check them under Requirements before the next step.",
       writes: "iterations/{it}/requirements.yaml" },
     { id: "abox", cmd: "abox", title: "Generate ABox", does: "Builds the RDF ABox from the ABox section of the requirements.", writes: "iterations/{it}/abox.ttl" },
-    { id: "diagram", cmd: "diagram", graffoo: true, title: "Draw diagrams", does: "Draws the TBox and, once it exists, the ABox. Run it again after changing either.",
-      writes: "iterations/{it}/tbox.mmd, abox.mmd" },
+    { id: "diagram", cmd: "diagram", title: "Draw diagrams", does: "Draws the TBox and, once it exists, the ABox, in Graffoo. Run it again after changing either.",
+      writes: "iterations/{it}/tbox.graphml, abox.graphml, with .png, .svg and .pdf exports" },
     { id: "test", cmd: "test", title: "Test", does: "Runs the model, data, consistency and query tests. If all pass, the status becomes tested.",
       writes: "iterations/{it}/results.json" },
   ],
@@ -265,8 +266,8 @@ const STEPS = {
       does: "Under Requirements, set “align to” on each glossary term that a term of an existing vocabulary replaces (e.g. dcterms:rights)." },
     { id: "align", cmd: "align", title: "Align to vocabularies", does: "Rewrites the TBox, the ABox and the queries with the chosen vocabulary terms.",
       writes: "refactoring/{it}/tbox.ttl, abox.ttl; refactored queries in requirements.yaml" },
-    { id: "diagram-refactored", cmd: "diagram", refactored: true, graffoo: true, title: "Draw refactored diagrams", does: "Draws the refactored TBox and ABox.",
-      writes: "refactoring/{it}/tbox.mmd, abox.mmd" },
+    { id: "diagram-refactored", cmd: "diagram", refactored: true, title: "Draw refactored diagrams", does: "Draws the refactored TBox and ABox, in Graffoo.",
+      writes: "refactoring/{it}/tbox.graphml, abox.graphml, with .png, .svg and .pdf exports" },
     { id: "test-refactored", cmd: "test", refactored: true, title: "Test refactored version",
       does: "Runs the tests on the refactored TBox and ABox with the refactored queries. If all pass, the status becomes aligned.",
       writes: "refactoring/{it}/results.json" },
@@ -353,8 +354,6 @@ const scopeOf = (step) => (step.project ? "project" : current);
 function stepCard(step) {
   const body = [el("h4", { textContent: step.title }), el("p", { textContent: step.does })];
   if (step.writes) body.push(el("p", { className: "small muted" }, "Writes ", el("code", { textContent: step.writes.replaceAll("{it}", current) })));
-  if (step.graffoo) body.push(el("label", { className: "check" }, el("input", { type: "checkbox", id: `graffoo-${step.id}` }),
-    "Also write Graffoo diagrams for yEd (.graphml, and .png if Graphviz is installed)"));
   const action = step.tab
     ? el("button", { type: "button", onclick: () => showTab(step.tab, true) }, "Open Requirements")
     : el("button", { type: "button", className: "run", onclick: () => run(step) }, "Run",
@@ -393,7 +392,6 @@ async function run(step) {
   const params = step.project ? {} : { iteration: current };
   if (step.refactored) params.refactored = true;
   if (step.online) params.online = true;
-  if (step.graffoo && $(`graffoo-${step.id}`)?.checked) params.graffoo = true;
   setRunning(true);
   outputs.set(key, { running: true });
   paint(step);
@@ -438,6 +436,7 @@ function showTab(name, focus) {
     $(`panel-${t}`).hidden = !on;
   }
   if (focus) $(`tab-${name}`).focus();
+  fitVisible();
   history.replaceState(null, "", `#${encodeURIComponent(current)}/${name}`);
 }
 
@@ -497,35 +496,129 @@ $("tabs").onkeydown = (e) => {
 // ---- Diagrams -------------------------------------------------------------
 
 const refreshDocs = async () => ($("docs-link").hidden = !(await exists("/project/docs/index.html")));
-let renders = 0;
 const exists = async (url) => (await fetch(url, { method: "HEAD", cache: "no-store" })).ok;
 
-// Draw the .mmd files with Mermaid, and link the source and any Graffoo files written with the checkbox on.
+// Graffoo diagrams, read from the .graphml files and drawn with Cytoscape. Nodes can only be dragged: "Save layout"
+// writes their positions back to the .graphml file, and Python writes its exports again.
+const Y = "http://www.yworks.com/xml/graphml", G = "http://graphml.graphdrawing.org/xmlns";
+const SHAPES = { roundrectangle: "round-rectangle", parallelogram: "rhomboid", ellipse: "ellipse", rectangle: "rectangle" };
+const ARROWS = { delta: ["triangle", "filled"], standard: ["triangle", "filled"], white_delta: ["triangle", "hollow"],
+                 circle: ["circle", "filled"], transparent_circle: ["circle", "hollow"], none: ["none", "filled"] };
+const PANELS = { tbox: ["iterations", "tbox"], abox: ["iterations", "abox"], refactored: ["refactoring", "tbox"], "refactored-abox": ["refactoring", "abox"] };
+const EXPORTS = [["graphml", "GraphML (yEd)"], ["png", "PNG"], ["svg", "SVG"], ["pdf", "PDF"]];
+const FONT = { "font-family": "Helvetica, Arial, sans-serif", "font-size": 16 };
+const STYLE = [
+  { selector: "node", style: { ...FONT, shape: "data(shape)", width: "data(w)", height: "data(h)", label: "data(label)", color: "#000",
+      "background-color": "data(fill)", "background-opacity": "data(opacity)", "border-color": "data(border)", "border-width": "data(bw)",
+      "text-valign": "center", "text-halign": "center" } },
+  { selector: "node[?outside]", style: { "text-halign": "right", "text-margin-x": 4 } },  // individuals: label east of the circle, as in Graffoo
+  { selector: "edge", style: { ...FONT, "curve-style": "bezier", width: 1, label: "data(label)", color: "data(color)", "line-color": "data(color)",
+      "line-style": "data(line)", "text-background-color": "#fff", "text-background-opacity": 0.8,
+      "source-arrow-shape": "data(tail)", "source-arrow-fill": "data(tailFill)", "source-arrow-color": "data(color)",
+      "target-arrow-shape": "data(head)", "target-arrow-fill": "data(headFill)", "target-arrow-color": "data(color)" } },
+];
+const diagrams = {};  // panel id -> { name, xml, cy, dirty, status }
+
+// Cytoscape elements of a Graffoo GraphML file: shapes, colours, arrows and positions as written by `samosa diagram`.
+function graffoo(xml) {
+  const doc = new DOMParser().parseFromString(xml, "application/xml");
+  const y = (e, tag) => e.getElementsByTagNameNS(Y, tag)[0];
+  const nodes = [...doc.getElementsByTagNameNS(G, "node")].map((n) => {
+    const geo = y(n, "Geometry"), fill = y(n, "Fill"), border = y(n, "BorderStyle"), label = y(n, "NodeLabel");
+    const w = +geo.getAttribute("width"), h = +geo.getAttribute("height");
+    return { data: { id: n.getAttribute("id"), label: label.textContent.trim(), w, h, shape: SHAPES[y(n, "Shape").getAttribute("type")] ?? "rectangle",
+                     fill: fill.getAttribute("color") ?? "#fff", opacity: fill.hasAttribute("color") ? 1 : 0,
+                     border: border.getAttribute("color") ?? "#000", bw: border.hasAttribute("color") ? +border.getAttribute("width") : 0,
+                     outside: label.getAttribute("modelName") === "eight_pos" },
+             position: { x: +geo.getAttribute("x") + w / 2, y: +geo.getAttribute("y") + h / 2 } };  // GraphML: top-left, Cytoscape: centre
+  });
+  const edges = [...doc.getElementsByTagNameNS(G, "edge")].map((e) => {
+    const line = y(e, "LineStyle"), arrows = y(e, "Arrows");
+    const [tail, tailFill] = ARROWS[arrows.getAttribute("source")] ?? ARROWS.none;
+    const [head, headFill] = ARROWS[arrows.getAttribute("target")] ?? ARROWS.none;
+    return { data: { id: e.getAttribute("id"), source: e.getAttribute("source"), target: e.getAttribute("target"),
+                     label: y(e, "EdgeLabel")?.textContent.trim() ?? "", color: line.getAttribute("color"),
+                     line: line.getAttribute("type") === "dashed" ? "dashed" : "solid", tail, tailFill, head, headFill } };
+  });
+  return [...nodes, ...edges];
+}
+
+// Fit each diagram to its box the first time the box is visible (a hidden tab has no size).
+function fitVisible() {
+  for (const d of Object.values(diagrams))
+    if (d.cy && !d.fitted && d.cy.container().offsetParent) { d.cy.resize(); d.cy.fit(undefined, 20); d.fitted = true; }
+}
+
+// Caption controls of a diagram: save layout, fit, status and links to the saved files.
+async function controls(id) {
+  const d = diagrams[id], [dir, stem] = PANELS[id], base = `/${dir}/${d.name}/${stem}`;
+  const items = [];
+  if (d.cy) {
+    const save = el("button", { type: "button", className: "primary", textContent: "Save layout", onclick: () => saveLayout(id) });
+    save.setAttribute("aria-disabled", !d.dirty);
+    items.push(save, el("button", { type: "button", textContent: "Fit", onclick: () => d.cy.fit(undefined, 20) }));
+  }
+  if (d.status) items.push(el("span", { textContent: d.status }));
+  for (const [ext, text] of EXPORTS)
+    if (d.xml && await exists(`${base}.${ext}`)) items.push(el("a", { href: `${base}.${ext}?${Date.now()}`, target: "_blank", textContent: text }));
+  if (diagrams[id] === d) $(`links-${id}`).replaceChildren(...items);
+}
+
 async function refreshDiagrams() {
   const name = current;
-  const panels = [["tbox", "iterations", "tbox"], ["abox", "iterations", "abox"],
-                  ["refactored", "refactoring", "tbox"], ["refactored-abox", "refactoring", "abox"]];
-  for (const [id, dir, stem] of panels) {
-    const box = $(`mmd-${id}`), base = `/${dir}/${name}/${stem}`;
-    const r = await fetch(`${base}.mmd`, { cache: "no-store" });
-    const links = [];
-    for (const [ext, text] of [["mmd", "Mermaid source"], ["graphml", "Graffoo (yEd)"], ["png", "Graffoo PNG"]])
-      if (ext === "mmd" ? r.ok : await exists(`${base}.${ext}`))
-        links.push(el("a", { href: `${base}.${ext}?${Date.now()}`, target: "_blank", textContent: text }));
+  for (const [id, [dir, stem]] of Object.entries(PANELS)) {
+    const r = await fetch(`/${dir}/${name}/${stem}.graphml`, { cache: "no-store" });
+    const xml = r.ok ? await r.text() : null;
     if (name !== current) return;  // another iteration was selected meanwhile
-    $(`links-${id}`).replaceChildren(...links.flatMap((a) => [" · ", a]));
-    if (!r.ok) {
+    const old = diagrams[id];
+    if (old && old.name === name && old.xml === xml) continue;  // unchanged on disk: keep it, with any unsaved moves
+    old?.cy?.destroy();
+    const d = (diagrams[id] = { name, xml, dirty: false, status: "" });
+    const box = $(`diagram-${id}`);
+    box.classList.add("message");
+    if (!xml) {
       const step = dir === "refactoring" ? "Draw refactored diagrams" : "Draw diagrams";
       box.textContent = `Not drawn yet: run “${step}”${stem === "abox" ? " once the ABox exists" : ""}.`;
-      continue;
+    } else if (!window.cytoscape) {
+      box.textContent = "Cytoscape could not be loaded (offline?). Open the PNG or SVG instead.";
+    } else {
+      box.textContent = "";
+      box.classList.remove("message");
+      try {
+        d.cy = cytoscape({ container: box, elements: graffoo(xml), style: STYLE, layout: { name: "preset" },
+                           boxSelectionEnabled: false, autounselectify: true });
+        d.cy.on("dragfree", "node", () => { d.dirty = true; d.status = "Unsaved layout"; controls(id); });
+      } catch (e) {
+        box.classList.add("message");
+        box.textContent = `Cannot draw diagram: ${e.message ?? e}`;
+      }
     }
-    if (!window.mermaid) { box.textContent = "Mermaid could not be loaded (offline?). Open the source instead."; continue; }
-    try {
-      box.innerHTML = (await mermaid.render(`mmd${++renders}`, await r.text())).svg;
-    } catch (e) {
-      box.textContent = `Cannot render diagram: ${e.message ?? e}`;
-    }
+    controls(id);
   }
+  fitVisible();
+}
+
+async function saveLayout(id) {
+  const d = diagrams[id], [dir, stem] = PANELS[id];
+  if (!d.dirty || running) return;
+  const positions = Object.fromEntries(d.cy.nodes().map((n) =>
+    [n.id(), { x: n.position("x") - n.data("w") / 2, y: n.position("y") - n.data("h") / 2 }]));
+  let o;
+  try {
+    const r = await fetch(`/iterations/${encodeURIComponent(d.name)}/diagram/${stem}?refactored=${dir === "refactoring"}`,
+                          { method: "PUT", body: JSON.stringify(positions), headers: { "Content-Type": "application/json" } });
+    const body = await r.json();
+    o = r.ok ? body : { ok: false, output: JSON.stringify(body.detail) };
+  } catch (e) {
+    o = { ok: false, output: String(e) };
+  }
+  if (o.ok) {
+    d.dirty = false;
+    d.xml = await (await fetch(`/${dir}/${d.name}/${stem}.graphml`, { cache: "no-store" })).text();  // so the next refresh keeps this view
+  }
+  d.status = o.ok ? "Layout saved" : `Not saved: ${o.output}`;
+  announce(d.status);
+  controls(id);
 }
 
 // ---- Test results -----------------------------------------------------------
@@ -684,7 +777,7 @@ $("new-form").onsubmit = async (e) => {
   const names = await (await fetch("/iterations")).json();
   go(names.find((n) => n.endsWith(name)) || names[names.length - 1]);
 };
-window.onbeforeunload = () => (JSON.stringify(data) !== clean ? true : undefined);
+window.onbeforeunload = () => (JSON.stringify(data) !== clean || Object.values(diagrams).some((d) => d.dirty) ? true : undefined);
 
 $("steps-project").replaceChildren(...STEPS.project.map(stepCard));
 refreshDocs();

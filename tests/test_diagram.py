@@ -60,38 +60,31 @@ def test_labeler_shortens_iris_and_shows_literals_as_turtle():
     assert name(BNode("b1")) == "_:b1" and name("rdf:type") == "rdf:type"
 
 
-def test_mermaid_draws_literals_as_plain_text():
-    key = (E("tom"), E("legs"), Literal("4"))
-    text = diagram.mermaid({E("tom"): "individual", key: "literal"}, [(E("tom"), key, E("legs"), "data")],
-                           diagram.labeler(TBOX))
-    assert '  n1["#quot;4#quot;"]:::literal' in text.splitlines()
-    assert "  classDef literal fill:none,stroke:none,color:#000" in text.splitlines()
-    assert "  linkStyle 0 stroke:#008000,color:#008000" in text.splitlines()
-
-
-def test_mermaid_uses_graffoo_shapes_and_colours():
-    nodes = {E("A"): "class", XSD.string: "datatype", E("i"): "individual"}
-    edges = [(E("A"), E("A"), "", "subclass"), (E("A"), E("A"), E("p"), "object"),
-             (E("A"), XSD.string, E("d"), "data-use"), (E("i"), E("A"), "rdf:type", "type")]
-    text = diagram.mermaid(nodes, edges, lambda iri: 'say "hi"' if iri == E("A") else name(iri))
-    lines = text.splitlines()
-    assert lines[0] == "flowchart LR"
-    assert '  n0("say #quot;hi#quot;"):::owlClass' in lines
-    assert '  n1[/"xsd:string"/]:::datatype' in lines and '  n2((":i")):::individual' in lines
-    assert '  n0 -->|"rdfs:subClassOf"| n0' in lines and '  n2 -->|"rdf:type"| n0' in lines
-    assert '  n0 -.->|":d"| n1' in lines
-    assert "  linkStyle 1 stroke:#000080,color:#000080" in lines
-    assert "  linkStyle 2 stroke:#008000,color:#008000" in lines
+G = "{http://graphml.graphdrawing.org/xmlns}"
+Y = "{http://www.yworks.com/xml/graphml}"
 
 
 def test_dot_and_graphml_render_every_node_and_edge():
     nodes, edges = diagram.extract(TBOX)
-    dot = diagram.dot(nodes, edges, name)
-    assert dot.startswith("digraph G") and dot.count("->") == len(edges)
-    root = ET.fromstring(diagram.graphml(nodes, edges, name))
-    ns = {"g": "http://graphml.graphdrawing.org/xmlns"}
-    assert len(root.findall(".//g:graph/g:node", ns)) == len(nodes)
-    assert len(root.findall(".//g:graph/g:edge", ns)) == len(edges)
+    root = diagram.graphml(nodes, edges, name)
+    assert len(root.findall(f".//{G}graph/{G}node")) == len(nodes)
+    assert len(root.findall(f".//{G}graph/{G}edge")) == len(edges)
+    dot = diagram.dot(root)
+    assert dot.startswith("digraph G") and dot.count("->") == len(edges) and "pos=" not in dot
+
+
+def test_graphml_nodes_carry_their_iri_and_dot_draws_graffoo():
+    nodes = {E("A"): "class", XSD.string: "datatype", E("i"): "individual", (E("i"), E("d"), Literal('say "hi"')): "literal"}
+    edges = [(E("A"), XSD.string, E("d"), "data-use"), (E("i"), E("A"), "rdf:type", "type"), (E("A"), E("A"), E("p"), "object")]
+    root = diagram.graphml(nodes, edges, diagram.labeler(TBOX))
+    urls = [n.findtext(f"{G}data[@key='d4']") for n in root.iter(f"{G}node")]
+    assert urls == [EX + "A", str(XSD.string), EX + "i", f'<{EX}i> <{EX}d> "say \\"hi\\""']
+    dot = diagram.dot(root, {"n0"}).splitlines()
+    assert dot[1].startswith('n0 [width=') and 'shape=box style="rounded,filled" fillcolor="#FFFF00"' in dot[1] and dot[1].endswith('pos="25.0,-22.0!"];')
+    assert "shape=parallelogram" in dot[2] and 'xlabel=":i" label=""' in dot[3] and "pos=" not in dot[3]
+    assert 'shape=plaintext label="\\"say \\\\\\"hi\\\\\\"\\""' in dot[4]
+    assert 'n0 -> n1 [label=":d" color="#008000"' in dot[5] and "arrowtail=odot arrowhead=empty style=dashed" in dot[5]
+    assert "arrowtail=none arrowhead=normal" in dot[6] and 'color="#000080"' in dot[7] and "arrowtail=dot" in dot[7]
 
 
 def write_tbox(project):
@@ -102,48 +95,81 @@ def write_tbox(project):
     return it
 
 
-def test_main_writes_mermaid_only_by_default(project, capsys):
+def positions(path):
+    return {u.rsplit("/", 1)[-1]: xy for u, xy in diagram.saved(path).items()}
+
+
+needs_graphviz = pytest.mark.skipif(diagram.shutil.which("dot") is None, reason="needs Graphviz")
+
+
+@needs_graphviz
+def test_main_writes_graphml_and_exports(project, capsys):
     it = write_tbox(project)
     diagram.main(it.name)
-    assert (it / "tbox.mmd").read_text().startswith("flowchart LR")
-    abox = (it / "abox.mmd").read_text()
-    assert '((":tom")):::individual' in abox and '["#quot;Tom#quot;"]:::literal' in abox
-    assert not list(it.glob("*.graphml"))
-    assert "Wrote iterations/01-zoo/tbox.mmd, iterations/01-zoo/abox.mmd" in capsys.readouterr().out
-
-
-def test_main_without_abox_draws_only_the_tbox(project):
-    it = write_tbox(project)
-    (it / "abox.ttl").unlink()
-    diagram.main(it.name)
-    assert (it / "tbox.mmd").exists() and not (it / "abox.mmd").exists()
-
-
-def test_abox_graphml_renders_literals(project):
-    nodes, edges = diagram.extract_abox(ABOX)
-    root = ET.fromstring(diagram.graphml(nodes, edges, diagram.labeler(ABOX)))
-    labels = [l.text for l in root.iter("{http://www.yworks.com/xml/graphml}NodeLabel")]
+    for stem in ("tbox", "abox"):
+        assert {p.suffix for p in it.glob(f"{stem}.*")} == {".ttl", ".graphml", ".png", ".svg", ".pdf"}
+    labels = [l.text for l in ET.parse(it / "abox.graphml").iter(f"{Y}NodeLabel")]
     assert '"Tom"' in labels and ":tom" in labels
+    tbox = positions(it / "tbox.graphml")
+    assert len(set(tbox.values())) == len(tbox)  # laid out, not stacked
+    assert "Wrote iterations/01-zoo/tbox.graphml, iterations/01-zoo/tbox.png" in capsys.readouterr().out
 
 
-def test_main_graffoo_without_graphviz(project, monkeypatch, capsys):
+@needs_graphviz
+def test_redraw_keeps_saved_positions_and_places_new_nodes(project):
+    it = write_tbox(project)
+    diagram.main(it.name)
+    root = ET.parse(it / "tbox.graphml").getroot()
+    animal = next(n.get("id") for n in root.iter(f"{G}node") if n.findtext(f"{G}data[@key='d4']") == EX + "Animal")
+    diagram.save_layout(it.name, "tbox", {animal: {"x": 1000, "y": 2000}})
+    before = positions(it / "tbox.graphml")
+    assert before["Animal"] == (1000.0, 2000.0)
+    diagram.main(it.name)
+    assert positions(it / "tbox.graphml") == before  # nothing new: nothing moves
+    (it / "tbox.ttl").write_text((TBOX + graph(":Plant a owl:Class .")).serialize(format="turtle"))
+    diagram.main(it.name)
+    after = positions(it / "tbox.graphml")
+    dx, dy = after["Animal"][0] - before["Animal"][0], after["Animal"][1] - before["Animal"][1]
+    assert all(after[k] == pytest.approx((x + dx, y + dy), abs=0.01) for k, (x, y) in before.items())  # kept, at most shifted together
+    assert "Plant" in after
+
+
+def test_save_layout_moves_only_positions(project, monkeypatch, capsys):
     it = write_tbox(project)
     monkeypatch.setattr(diagram.shutil, "which", lambda cmd: None)
-    diagram.main(it.name, graffoo=True)
-    assert (it / "tbox.graphml").exists() and (it / "abox.graphml").exists()
-    assert not list(it.glob("*.png"))
-    assert "PNG skipped" in capsys.readouterr().out
+    diagram.main(it.name)
+    old = (it / "tbox.graphml").read_text()
+    diagram.save_layout(it.name, "tbox", {"n1": {"x": 12.5, "y": -3}, "nope": {"x": 0, "y": 0}})
+    new = (it / "tbox.graphml").read_text()
+    geo = ET.parse(it / "tbox.graphml").getroot().find(f".//{G}node[@id='n1']//{Y}Geometry")
+    assert (geo.get("x"), geo.get("y")) == ("12.5", "-3.0")
+    strip = lambda t: [l for l in ET.fromstring(t).iter() if l.tag != f"{Y}Geometry"]
+    assert [(e.tag, e.text) for e in strip(old)] == [(e.tag, e.text) for e in strip(new)]
+    assert "Wrote iterations/01-zoo/tbox.graphml" in capsys.readouterr().out
 
 
-def test_main_graffoo_png(project, monkeypatch):
+def test_save_layout_needs_a_diagram(project, capsys):
     it = write_tbox(project)
-    calls = []
-    monkeypatch.setattr(diagram.shutil, "which", lambda cmd: "/usr/bin/dot")
-    monkeypatch.setattr(diagram.subprocess, "run", lambda cmd, **kw: calls.append((cmd, kw["input"])))
-    diagram.main(it.name, graffoo=True)
-    assert [c[0][:4] for c in calls] == [["dot", "-Tpng", "-o", f"iterations/{it.name}/tbox.png"],
-                                         ["dot", "-Tpng", "-o", f"iterations/{it.name}/abox.png"]]
-    assert all(c[1].startswith("digraph G") for c in calls)
+    with pytest.raises(SystemExit):
+        diagram.save_layout(it.name, "tbox", {})
+    assert "tbox.graphml not found" in capsys.readouterr().out
+
+
+def test_main_without_abox_draws_only_the_tbox(project, monkeypatch):
+    it = write_tbox(project)
+    (it / "abox.ttl").unlink()
+    monkeypatch.setattr(diagram.shutil, "which", lambda cmd: None)
+    diagram.main(it.name)
+    assert (it / "tbox.graphml").exists() and not (it / "abox.graphml").exists()
+
+
+def test_main_without_graphviz_uses_a_grid(project, monkeypatch, capsys):
+    it = write_tbox(project)
+    monkeypatch.setattr(diagram.shutil, "which", lambda cmd: None)
+    diagram.main(it.name)
+    assert {p.suffix for p in it.glob("tbox.*")} == {".ttl", ".graphml"}
+    assert sorted(positions(it / "tbox.graphml").values())[:2] == [(0.0, 0.0), (0.0, 150.0)]
+    assert "exports skipped" in capsys.readouterr().out
 
 
 def test_main_needs_a_tbox(project, capsys):

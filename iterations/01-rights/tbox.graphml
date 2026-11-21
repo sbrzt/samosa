@@ -15,9 +15,9 @@
   <graph edgedefault="directed" id="G">
     <data key="d7" />
     <node id="n0">
-      <data key="d6">
+      <data key="d4">https://www.example.org/RightsStatement</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="190" x="0" y="0" />
+          <y:Geometry height="44.0" width="190" x="107.31856594110116" y="-368.6409731113957" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">:RightsStatement</y:NodeLabel>
@@ -26,9 +26,9 @@
       </data>
     </node>
     <node id="n1">
-      <data key="d6">
+      <data key="d4">https://www.example.org/RightsIdentifier</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="200" x="300" y="0" />
+          <y:Geometry height="44.0" width="200" x="560.3857874519846" y="-370.82765685019206" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">:RightsIdentifier</y:NodeLabel>
@@ -37,9 +37,9 @@
       </data>
     </node>
     <node id="n2">
-      <data key="d6">
+      <data key="d4">https://www.example.org/RightsIdentifierScheme</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="260" x="600" y="0" />
+          <y:Geometry height="44.0" width="260" x="1114.946478873239" y="-387.8419974391805" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">:RightsIdentifierScheme</y:NodeLabel>
@@ -48,9 +48,9 @@
       </data>
     </node>
     <node id="n3">
-      <data key="d6">
+      <data key="d4">http://www.w3.org/2002/07/owl#Thing</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="120" x="900" y="0" />
+          <y:Geometry height="44.0" width="120" x="0.0" y="-68.0" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">owl:Thing</y:NodeLabel>
@@ -59,9 +59,9 @@
       </data>
     </node>
     <node id="n4">
-      <data key="d6">
+      <data key="d4">http://www.w3.org/2000/01/rdf-schema#Literal</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="43.0" width="150" x="1200" y="0" />
+          <y:Geometry height="43.0" width="150" x="723.8601792573623" y="-80.33879641485275" />
           <y:Fill color="#CCFFCC" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="72.96875" x="26.56310910535865" y="10.078125">rdfs:Literal</y:NodeLabel>
@@ -70,9 +70,9 @@
       </data>
     </node>
     <node id="n5">
-      <data key="d6">
+      <data key="d4">https://www.example.org/spdx</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="20.0" width="20.0" x="0" y="150" />
+          <y:Geometry height="20.0" width="20.0" x="1236.4170294494238" y="-202.00064020486556" />
           <y:Fill color="#FF99CC" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="3.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="eight_pos" modelPosition="e" textColor="#000000" visible="true" width="68.5703125" x="24.0" y="-1.421875">:spdx</y:NodeLabel>

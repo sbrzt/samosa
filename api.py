@@ -3,11 +3,13 @@ import functools
 import io
 import threading
 from pathlib import Path
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 
 from main import COMMANDS, summary
+from scripts import diagram
 from scripts.common import dump_yaml, load_yaml
 
 app = FastAPI(title="SAMOSA")
@@ -57,6 +59,14 @@ def get_requirements(name: str):
 def put_requirements(name: str, data: dict):
     dump_yaml(data, requirements(name))
     return {"ok": True}
+
+
+@app.put("/iterations/{name}/diagram/{stem}")
+def put_layout(name: str, stem: Literal["tbox", "abox"], positions: dict[str, dict[str, float]], refactored: bool = False):
+    """Save the node positions of a diagram (node id -> top-left x, y) and write its exports again."""
+    if name not in list_iterations():
+        raise HTTPException(404, f"iteration '{name}' not found")
+    return endpoint(diagram.save_layout)(name, stem, positions, refactored)
 
 
 for d in ("iterations", "refactoring", "project"):  # generated files (tbox.ttl, tbox.png, ...)
