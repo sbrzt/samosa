@@ -95,8 +95,8 @@ abox:
   - property: hasLiteralValue
     value: CC-BY-1.0
   - property: usesIdentifierScheme
-    value: rightsIdentifierScheme1
-- individual: rightsIdentifierScheme1
+    value: spdx
+- individual: spdx
   type: RightsIdentifierScheme
   properties:
   - property: hasURL
@@ -112,7 +112,9 @@ competency_questions:
     SELECT ?literal_value
     WHERE {
       ?resource :hasRights [
+        a :RightsStatement ;
         :hasIdentifier [
+          a :RightsIdentifier ;
           :hasLiteralValue ?literal_value
         ]
       ] .
@@ -123,7 +125,9 @@ competency_questions:
     SELECT ?literal_value
     WHERE {
       ?resource <http://purl.org/dc/terms/rights> [
+        a <http://purl.org/dc/terms/RightsStatement> ;
         <http://purl.org/spar/datacite/hasIdentifier> [
+          a <http://purl.org/spar/datacite/RightsIdentifier> ;
           <http://www.essepuntato.it/2010/06/literalreification/hasLiteralValue> ?literal_value
         ]
       ] .
@@ -138,25 +142,29 @@ competency_questions:
     SELECT ?rights_statement_url ?rights_identifier_scheme_url
     WHERE {
       ?resource :hasRights [
+        a :RightsStatement ;
         :hasURL ?rights_statement_url ;
         :hasIdentifier [
-          :usesIdentifierScheme [
-            :hasURL ?rights_identifier_scheme_url
+          a :RightsIdentifier ;
+          :usesIdentifierScheme :spdx
           ]
-        ]
-      ] .
+       ] .
+      :spdx a :RightsIdentifierScheme ;
+          :hasURL ?rights_identifier_scheme_url .
     }
-  refactored_query: |
+  refactored_query: |-
     PREFIX : <https://www.example.org/>
 
     SELECT ?rights_statement_url ?rights_identifier_scheme_url
     WHERE {
       ?resource <http://purl.org/dc/terms/rights> [
+        a <http://purl.org/dc/terms/RightsStatement> ;
         <http://purl.org/spar/fabio/hasURL> ?rights_statement_url ;
         <http://purl.org/spar/datacite/hasIdentifier> [
-          <http://purl.org/spar/datacite/usesIdentifierScheme> [
-            <http://purl.org/spar/fabio/hasURL> ?rights_identifier_scheme_url
+          a <http://purl.org/spar/datacite/RightsIdentifier> ;
+          <http://purl.org/spar/datacite/usesIdentifierScheme> <http://purl.org/spar/datacite/spdx>
           ]
-        ]
-      ] .
+       ] .
+      <http://purl.org/spar/datacite/spdx> a <http://purl.org/spar/datacite/RightsIdentifierScheme> ;
+          <http://purl.org/spar/fabio/hasURL> ?rights_identifier_scheme_url .
     }

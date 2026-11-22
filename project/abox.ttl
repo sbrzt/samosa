@@ -15,16 +15,16 @@
     datacite:hasRelationObject :article1 ;
     datacite:hasRelationSubject :dataset1 .
 
+datacite:spdx a datacite:RightsIdentifierScheme ;
+    fabio:hasURL "https://spdx.org/licenses/"^^xsd:anyURI .
+
 :article1 a owl:Thing .
 
 :dataset1 a owl:Thing .
 
 :rightsidentifier1 a datacite:RightsIdentifier ;
-    datacite:usesIdentifierScheme :rightsidentifierscheme1 ;
+    datacite:usesIdentifierScheme datacite:spdx ;
     literal:hasLiteralValue "CC-BY-1.0" .
-
-:rightsidentifierscheme1 a datacite:RightsIdentifierScheme ;
-    fabio:hasURL "https://spdx.org/licenses/"^^xsd:anyURI .
 
 :rightsstatement1 a dcterms:RightsStatement ;
     datacite:hasIdentifier :rightsidentifier1 ;

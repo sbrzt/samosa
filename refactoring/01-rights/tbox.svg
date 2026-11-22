@@ -22,7 +22,7 @@
 <text text-anchor="middle" x="464.5" y="-243.22" font-family="Helvetica,sans-Serif" font-size="16.00">datacite:RightsIdentifierScheme</text>
 </g>
 <!-- n0&#45;&gt;n1 -->
-<g id="edge11" class="edge">
+<g id="edge10" class="edge">
 <title>n0&#45;&gt;n1</title>
 <path fill="none" stroke="#000080" stroke-dasharray="5,2" d="M191.92,-382.41C251.98,-352.58 350.34,-303.72 411.04,-273.58"/>
 <ellipse fill="#000080" stroke="#000080" cx="188.02" cy="-384.34" rx="4" ry="4"/>
@@ -49,7 +49,7 @@
 <text text-anchor="middle" x="260.78" y="-551.14" font-family="Helvetica,sans-Serif" font-size="16.00">rdfs:Literal</text>
 </g>
 <!-- n0&#45;&gt;n8 -->
-<g id="edge10" class="edge">
+<g id="edge11" class="edge">
 <title>n0&#45;&gt;n8</title>
 <path fill="none" stroke="#008000" stroke-dasharray="5,2" d="M163.71,-437C184.74,-462.55 215.33,-499.72 236.52,-525.47"/>
 <ellipse fill="none" stroke="#008000" cx="160.89" cy="-433.57" rx="4" ry="4"/>
@@ -76,7 +76,7 @@
 <text text-anchor="middle" x="769.83" y="-17.7" font-family="Helvetica,sans-Serif" font-size="16.00">xsd:anyURI</text>
 </g>
 <!-- n1&#45;&gt;n7 -->
-<g id="edge13" class="edge">
+<g id="edge12" class="edge">
 <title>n1&#45;&gt;n7</title>
 <path fill="none" stroke="#008000" stroke-dasharray="5,2" d="M501.14,-219.96C559.48,-176.87 672.94,-93.07 732.02,-49.43"/>
 <ellipse fill="none" stroke="#008000" cx="497.55" cy="-222.61" rx="4" ry="4"/>
@@ -160,7 +160,7 @@
 <text text-anchor="middle" x="139.49" y="-21.24" font-family="Helvetica,sans-Serif" font-size="16.00">dcterms:RightsStatement</text>
 </g>
 <!-- n10&#45;&gt;n0 -->
-<g id="edge9" class="edge">
+<g id="edge13" class="edge">
 <title>n10&#45;&gt;n0</title>
 <path fill="none" stroke="#000080" stroke-dasharray="5,2" d="M139.53,-55.38C139.63,-126.27 139.86,-302.25 139.96,-375.45"/>
 <ellipse fill="#000080" stroke="#000080" cx="139.53" cy="-51.3" rx="4" ry="4"/>
@@ -168,7 +168,7 @@
 <text text-anchor="middle" x="53.74" y="-220.62" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000080">datacite:hasIdentifier</text>
 </g>
 <!-- n10&#45;&gt;n7 -->
-<g id="edge12" class="edge">
+<g id="edge9" class="edge">
 <title>n10&#45;&gt;n7</title>
 <path fill="none" stroke="#008000" stroke-dasharray="5,2" d="M277.88,-24.27C411.09,-23.52 606.59,-22.42 706.28,-21.86"/>
 <ellipse fill="none" stroke="#008000" cx="273.72" cy="-24.29" rx="4" ry="4"/>

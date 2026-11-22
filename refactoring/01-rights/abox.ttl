@@ -9,12 +9,12 @@
 :paper1 a owl:Thing ;
     dcterms:rights :rightsstatement1 .
 
-:rightsidentifier1 a datacite:RightsIdentifier ;
-    datacite:usesIdentifierScheme :rightsidentifierscheme1 ;
-    literal:hasLiteralValue "CC-BY-1.0" .
-
-:rightsidentifierscheme1 a datacite:RightsIdentifierScheme ;
+datacite:spdx a datacite:RightsIdentifierScheme ;
     fabio:hasURL "https://spdx.org/licenses/"^^xsd:anyURI .
+
+:rightsidentifier1 a datacite:RightsIdentifier ;
+    datacite:usesIdentifierScheme datacite:spdx ;
+    literal:hasLiteralValue "CC-BY-1.0" .
 
 :rightsstatement1 a dcterms:RightsStatement ;
     datacite:hasIdentifier :rightsidentifier1 ;

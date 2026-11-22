@@ -19,10 +19,10 @@
 
 :rightsidentifier1 a :RightsIdentifier ;
     :hasLiteralValue "CC-BY-1.0" ;
-    :usesIdentifierScheme :rightsidentifierscheme1 .
+    :usesIdentifierScheme :spdx .
 
 
 
-:rightsidentifierscheme1 a :RightsIdentifierScheme ;
+:spdx a :RightsIdentifierScheme ;
     :hasURL "https://spdx.org/licenses/" .
 

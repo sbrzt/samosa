@@ -17,7 +17,7 @@
     <node id="n0">
       <data key="d4">https://www.example.org/article1</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="20.0" width="20.0" x="580.0" y="-297.0" />
+          <y:Geometry height="20.0" width="20.0" x="-38.28015564202356" y="-269.3735408560311" />
           <y:Fill color="#FF99CC" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="3.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="eight_pos" modelPosition="e" textColor="#000000" visible="true" width="68.5703125" x="24.0" y="-1.421875">:article1</y:NodeLabel>
@@ -28,7 +28,7 @@
     <node id="n1">
       <data key="d4">http://www.w3.org/2002/07/owl#Thing</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="120" x="845.0" y="-269.0" />
+          <y:Geometry height="44.0" width="120" x="99.08560311284018" y="-355.1945525291829" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">owl:Thing</y:NodeLabel>
@@ -39,7 +39,7 @@
     <node id="n2">
       <data key="d4">https://www.example.org/dataset1</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="20.0" width="20.0" x="580.0" y="-218.0" />
+          <y:Geometry height="20.0" width="20.0" x="335.78210116731515" y="-270.49027237354073" />
           <y:Fill color="#FF99CC" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="3.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="eight_pos" modelPosition="e" textColor="#000000" visible="true" width="68.5703125" x="24.0" y="-1.421875">:dataset1</y:NodeLabel>
@@ -61,7 +61,7 @@
     <node id="n4">
       <data key="d4">https://www.example.org/QualifiedRelation</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="44.0" width="210" x="485.0" y="-140.0" />
+          <y:Geometry height="44.0" width="210" x="-186.32295719844382" y="-181.4396887159533" />
           <y:Fill color="#FFFF00" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="1.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="44.84375" x="18.562235514322992" y="10.578125">:QualifiedRelation</y:NodeLabel>
@@ -72,7 +72,7 @@
     <node id="n5">
       <data key="d4">https://www.example.org/isCitedBy</data><data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="20.0" width="20.0" x="580.0" y="-38.0" />
+          <y:Geometry height="20.0" width="20.0" x="147.92217898832675" y="-78.33463035019457" />
           <y:Fill color="#FF99CC" transparent="false" />
           <y:BorderStyle color="#000000" type="line" width="3.0" />
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="22.84375" modelName="eight_pos" modelPosition="e" textColor="#000000" visible="true" width="68.5703125" x="24.0" y="-1.421875">:isCitedBy</y:NodeLabel>
