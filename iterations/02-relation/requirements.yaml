@@ -52,7 +52,9 @@ glossary:
     member_of: ''
 abox:
 - individual: dataset1
+  properties: []
 - individual: article1
+  properties: []
 - individual: qualifiedRelation1
   type: QualifiedRelation
   properties:
@@ -96,22 +98,22 @@ competency_questions:
         <http://purl.org/spar/datacite/hasRelationObject> ?object .
     }
 - id: '03'
-  question: What is the characterization of a given relation between two entities?
+  question: What are the subjects and the objects of relations in which one entity is cited by the other?
   expected_result:
-  - :qualifiedRelation1, :dataset1, :isCitedBy, :article1
+  - :qualifiedRelation1, :dataset1, :article1
   query: |
-    SELECT ?relation ?subject ?char ?object
+    SELECT ?relation ?subject ?object
     WHERE {
       ?relation a :QualifiedRelation ;
         :hasRelationSubject ?subject ;
-        :hasRelationCharacterization ?char ;
+        :hasRelationCharacterization :isCitedBy ;
         :hasRelationObject ?object .
     }
   refactored_query: |
-    SELECT ?relation ?subject ?char ?object
+    SELECT ?relation ?subject ?object
     WHERE {
       ?relation a <http://purl.org/spar/datacite/QualifiedRelation> ;
         <http://purl.org/spar/datacite/hasRelationSubject> ?subject ;
-        <http://purl.org/spar/datacite/hasRelationCharacterization> ?char ;
+        <http://purl.org/spar/datacite/hasRelationCharacterization> <http://purl.org/spar/cito/isCitedBy> ;
         <http://purl.org/spar/datacite/hasRelationObject> ?object .
     }

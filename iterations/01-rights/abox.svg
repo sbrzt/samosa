@@ -37,10 +37,9 @@
 <!-- n0&#45;&gt;n2 -->
 <g id="edge2" class="edge">
 <title>n0&#45;&gt;n2</title>
-<path fill="none" stroke="#000080" d="M478.06,-311.75C478.59,-278.91 479.69,-210.47 480.24,-176.3"/>
-<ellipse fill="#000080" stroke="#000080" cx="477.99" cy="-316.03" rx="4" ry="4"/>
-<polygon fill="#000080" stroke="#000080" points="483.74,-176.19 480.4,-166.13 476.74,-176.07 483.74,-176.19"/>
-<text text-anchor="middle" x="436.65" y="-231.23" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000080">:hasRights</text>
+<path fill="none" stroke="#000000" d="M477.93,-320.03C478.38,-292.13 479.64,-213.71 480.24,-176.32"/>
+<polygon fill="#000000" stroke="#000000" points="483.74,-176.19 480.4,-166.13 476.74,-176.07 483.74,-176.19"/>
+<text text-anchor="middle" x="436.58" y="-235.37" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000000">:hasRights</text>
 </g>
 <!-- n3 -->
 <g id="node4" class="node">
@@ -51,10 +50,9 @@
 <!-- n2&#45;&gt;n3 -->
 <g id="edge7" class="edge">
 <title>n2&#45;&gt;n3</title>
-<path fill="none" stroke="#000080" d="M496.82,-164.44C533.69,-183.6 623.42,-230.26 662.09,-250.36"/>
-<ellipse fill="#000080" stroke="#000080" cx="493.22" cy="-162.56" rx="4" ry="4"/>
-<polygon fill="#000080" stroke="#000080" points="660.67,-253.57 671.16,-255.08 663.9,-247.36 660.67,-253.57"/>
-<text text-anchor="middle" x="526.46" y="-212.6" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000080">:hasIdentifier</text>
+<path fill="none" stroke="#000000" d="M489.67,-160.72C520.41,-176.7 620.77,-228.88 662.19,-250.41"/>
+<polygon fill="#000000" stroke="#000000" points="660.67,-253.57 671.16,-255.08 663.9,-247.36 660.67,-253.57"/>
+<text text-anchor="middle" x="522.93" y="-210.77" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000000">:hasIdentifier</text>
 </g>
 <!-- n7 -->
 <g id="node8" class="node">
@@ -77,10 +75,9 @@
 <!-- n2&#45;&gt;n8 -->
 <g id="edge8" class="edge">
 <title>n2&#45;&gt;n8</title>
-<path fill="none" stroke="#008000" d="M464.22,-147.14C432.04,-129.72 360.04,-90.74 319.4,-68.74"/>
-<ellipse fill="none" stroke="#008000" cx="468.11" cy="-149.24" rx="4" ry="4"/>
-<polygon fill="none" stroke="#008000" points="320.96,-65.6 310.5,-63.92 317.63,-71.76 320.96,-65.6"/>
-<text text-anchor="middle" x="358.31" y="-113.14" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#008000">:hasURL</text>
+<path fill="none" stroke="#000000" d="M471.63,-151.15C444.7,-136.57 363.47,-92.6 319.33,-68.7"/>
+<polygon fill="#000000" stroke="#000000" points="320.96,-65.6 310.5,-63.92 317.63,-71.76 320.96,-65.6"/>
+<text text-anchor="middle" x="361.98" y="-115.12" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000000">:hasURL</text>
 </g>
 <!-- n4 -->
 <g id="node5" class="node">
@@ -103,10 +100,9 @@
 <!-- n3&#45;&gt;n5 -->
 <g id="edge4" class="edge">
 <title>n3&#45;&gt;n5</title>
-<path fill="none" stroke="#008000" d="M694.77,-270.96C732.85,-300.27 836.2,-379.79 882.07,-415.1"/>
-<ellipse fill="none" stroke="#008000" cx="691.47" cy="-268.42" rx="4" ry="4"/>
-<polygon fill="none" stroke="#008000" points="880.13,-418.02 890.19,-421.35 884.4,-412.47 880.13,-418.02"/>
-<text text-anchor="middle" x="852.92" y="-348.23" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#008000">:hasLiteralValue</text>
+<path fill="none" stroke="#000000" d="M688.3,-265.98C719.43,-289.93 833.38,-377.63 882.15,-415.15"/>
+<polygon fill="#000000" stroke="#000000" points="880.13,-418.02 890.19,-421.35 884.4,-412.47 880.13,-418.02"/>
+<text text-anchor="middle" x="849.72" y="-345.77" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000000">:hasLiteralValue</text>
 </g>
 <!-- n6 -->
 <g id="node7" class="node">
@@ -117,10 +113,9 @@
 <!-- n3&#45;&gt;n6 -->
 <g id="edge5" class="edge">
 <title>n3&#45;&gt;n6</title>
-<path fill="none" stroke="#000080" d="M691.42,-245.24C709.39,-221.6 744.72,-175.14 763.38,-150.61"/>
-<ellipse fill="#000080" stroke="#000080" cx="688.99" cy="-248.43" rx="4" ry="4"/>
-<polygon fill="#000080" stroke="#000080" points="766.16,-152.72 769.43,-142.64 760.59,-148.49 766.16,-152.72"/>
-<text text-anchor="middle" x="637.4" y="-185.12" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000080">:usesIdentifierScheme</text>
+<path fill="none" stroke="#000000" d="M686.57,-251.62C702.11,-231.17 742.74,-177.74 763.3,-150.71"/>
+<polygon fill="#000000" stroke="#000000" points="766.16,-152.72 769.43,-142.64 760.59,-148.49 766.16,-152.72"/>
+<text text-anchor="middle" x="634.93" y="-188.37" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000000">:usesIdentifierScheme</text>
 </g>
 <!-- n9 -->
 <g id="node10" class="node">
@@ -143,10 +138,9 @@
 <!-- n6&#45;&gt;n10 -->
 <g id="edge10" class="edge">
 <title>n6&#45;&gt;n10</title>
-<path fill="none" stroke="#008000" d="M759.74,-124.33C729.68,-104.91 664.11,-62.56 627.72,-39.05"/>
-<ellipse fill="none" stroke="#008000" cx="763.38" cy="-126.68" rx="4" ry="4"/>
-<polygon fill="none" stroke="#008000" points="629.44,-35.99 619.14,-33.51 625.64,-41.87 629.44,-35.99"/>
-<text text-anchor="middle" x="660.23" y="-86.89" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#008000">:hasURL</text>
+<path fill="none" stroke="#000000" d="M766.74,-128.85C741.36,-112.45 667.58,-64.8 627.96,-39.21"/>
+<polygon fill="#000000" stroke="#000000" points="629.44,-35.99 619.14,-33.51 625.64,-41.87 629.44,-35.99"/>
+<text text-anchor="middle" x="663.85" y="-89.23" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000000">:hasURL</text>
 </g>
 </g>
 </svg>

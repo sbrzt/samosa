@@ -21,6 +21,7 @@ scripts/generate_iteration.py
 scripts/generate_tbox.py
 scripts/merge.py
 scripts/milestone.py
+scripts/model_test.py
 scripts/test_iteration.py
 scripts/verify_cqs.py
 tests/test_align.py
@@ -32,5 +33,6 @@ tests/test_generate_abox.py
 tests/test_generate_tbox.py
 tests/test_merge.py
 tests/test_milestone.py
+tests/test_model_test.py
 tests/test_test_iteration.py
 tests/test_verify_cqs.py

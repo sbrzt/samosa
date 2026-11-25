@@ -2,7 +2,6 @@
 
 import io
 import shutil
-import subprocess
 import sys
 import uuid
 import zipfile
@@ -15,34 +14,7 @@ SOURCE = Path("project") / "tbox.ttl"
 OUT = Path("project") / "docs"
 
 
-def build_local(source, out):
-    """Build the LODE site with the local `oc-lode` package (`lode build`).
-
-    Runs the `lode` command line in a subprocess of the current interpreter,
-    so its output can be printed (and captured by the web API).
-
-    Args:
-        source: Ontology file to document.
-        out: Output directory.
-
-    Raises:
-        SystemExit: If `oc-lode` is not installed or the build fails.
-    """
-    try:
-        import lode  # noqa: F401
-    except ImportError:
-        print("Error: oc-lode is not installed. Run `uv sync --extra docs`, "
-              "or use --online to build with the LODE 2.0 web service.")
-        sys.exit(1)
-    cmd = [sys.executable, "-c", "from lode.cli import main; main()", "build",
-           "--file", str(source), "--read-as", "owl", "--out", str(out), "--warnings"]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    print((result.stdout + result.stderr).strip())
-    if result.returncode:
-        sys.exit(1)
-
-
-def build_online(source, out):
+def build(source, out):
     """Build the LODE site with the LODE 2.0 web service (`POST /build`).
 
     Uploads `source` to lode.opencitations.net and unpacks the returned ZIP.
@@ -87,18 +59,13 @@ def build_online(source, out):
     print(f"Built with {LODE_API} ({len(archive.namelist())} files)")
 
 
-def main(online: bool = False):
-    """Generate the HTML documentation of the current model with LODE 2.0.
+def main():
+    """Generate the HTML documentation of the current model with the LODE 2.0 web service.
 
     Documents `project/tbox.ttl` (written by `merge`, with the ontology header
     from `ontology.yaml`) into `project/docs/`, replacing its previous content.
     Open `project/docs/index.html`, or `/project/docs/index.html` in the web
-    interface.
-
-    Args:
-        online: If true, upload `project/tbox.ttl` to the LODE 2.0 web service
-            (lode.opencitations.net) instead of using the local `oc-lode`
-            package (`uv sync --extra docs`).
+    interface. `project/tbox.ttl` is uploaded to lode.opencitations.net.
 
     Raises:
         SystemExit: If `project/tbox.ttl` is missing or the build fails.
@@ -108,10 +75,10 @@ def main(online: bool = False):
         sys.exit(1)
     if OUT.exists():
         shutil.rmtree(OUT)  # generated: stale pages of removed terms would linger
-    (build_online if online else build_local)(SOURCE, OUT)
+    build(SOURCE, OUT)
     index = next(OUT.glob("index.html"), None) or next(OUT.rglob("*.html"), None)
     print(f"Documentation: {index or OUT}")
 
 
 if __name__ == "__main__":
-    main("--online" in sys.argv[1:])
+    main()

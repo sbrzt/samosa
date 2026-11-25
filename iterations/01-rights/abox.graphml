@@ -150,9 +150,9 @@
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
-          <y:LineStyle color="#000080" type="line" width="1.0" />
-          <y:Arrows source="circle" target="delta" />
-          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#000080" visible="true" width="116.953125" x="79.92880309650434" y="-11.361775716145985">:hasRights</y:EdgeLabel>
+          <y:LineStyle color="#000000" type="line" width="1.0" />
+          <y:Arrows source="none" target="standard" />
+          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="76.15625" x="102.1398423217646" y="-11.421875000000227">:hasRights</y:EdgeLabel>
           <y:BendStyle smoothed="false" />
         </y:PolyLineEdge>
       </data>
@@ -172,9 +172,9 @@
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
-          <y:LineStyle color="#008000" type="line" width="1.0" />
-          <y:Arrows source="transparent_circle" target="white_delta" />
-          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#008000" visible="true" width="102.8203125" x="86.99520934650445" y="-11.331705729166742">:hasLiteralValue</y:EdgeLabel>
+          <y:LineStyle color="#000000" type="line" width="1.0" />
+          <y:Arrows source="none" target="standard" />
+          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="76.15625" x="102.1398423217646" y="-11.421875000000227">:hasLiteralValue</y:EdgeLabel>
           <y:BendStyle smoothed="false" />
         </y:PolyLineEdge>
       </data>
@@ -183,9 +183,9 @@
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
-          <y:LineStyle color="#000080" type="line" width="1.0" />
-          <y:Arrows source="circle" target="delta" />
-          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#000080" visible="true" width="116.953125" x="79.92880309650434" y="-11.361775716145985">:usesIdentifierScheme</y:EdgeLabel>
+          <y:LineStyle color="#000000" type="line" width="1.0" />
+          <y:Arrows source="none" target="standard" />
+          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="76.15625" x="102.1398423217646" y="-11.421875000000227">:usesIdentifierScheme</y:EdgeLabel>
           <y:BendStyle smoothed="false" />
         </y:PolyLineEdge>
       </data>
@@ -205,9 +205,9 @@
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
-          <y:LineStyle color="#000080" type="line" width="1.0" />
-          <y:Arrows source="circle" target="delta" />
-          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#000080" visible="true" width="116.953125" x="79.92880309650434" y="-11.361775716145985">:hasIdentifier</y:EdgeLabel>
+          <y:LineStyle color="#000000" type="line" width="1.0" />
+          <y:Arrows source="none" target="standard" />
+          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="76.15625" x="102.1398423217646" y="-11.421875000000227">:hasIdentifier</y:EdgeLabel>
           <y:BendStyle smoothed="false" />
         </y:PolyLineEdge>
       </data>
@@ -216,9 +216,9 @@
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
-          <y:LineStyle color="#008000" type="line" width="1.0" />
-          <y:Arrows source="transparent_circle" target="white_delta" />
-          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#008000" visible="true" width="102.8203125" x="86.99520934650445" y="-11.331705729166742">:hasURL</y:EdgeLabel>
+          <y:LineStyle color="#000000" type="line" width="1.0" />
+          <y:Arrows source="none" target="standard" />
+          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="76.15625" x="102.1398423217646" y="-11.421875000000227">:hasURL</y:EdgeLabel>
           <y:BendStyle smoothed="false" />
         </y:PolyLineEdge>
       </data>
@@ -238,9 +238,9 @@
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0" />
-          <y:LineStyle color="#008000" type="line" width="1.0" />
-          <y:Arrows source="transparent_circle" target="white_delta" />
-          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#008000" visible="true" width="102.8203125" x="86.99520934650445" y="-11.331705729166742">:hasURL</y:EdgeLabel>
+          <y:LineStyle color="#000000" type="line" width="1.0" />
+          <y:Arrows source="none" target="standard" />
+          <y:EdgeLabel alignment="center" backgroundColor="#FFFFFF" distance="2.0" fontFamily="Dialog" fontSize="16" fontStyle="plain" hasLineColor="false" height="22.84375" modelName="centered" modelPosition="center" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="76.15625" x="102.1398423217646" y="-11.421875000000227">:hasURL</y:EdgeLabel>
           <y:BendStyle smoothed="false" />
         </y:PolyLineEdge>
       </data>

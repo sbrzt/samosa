@@ -49,8 +49,8 @@ def test_extract_abox_draws_individuals_classes_and_assertions():
     assert nodes[blank] == "individual"
     assert [k for k in nodes.values()].count("literal") == 3  # equal values of different assertions stay apart
     assert (E("tom"), E("Animal"), "rdf:type", "type") in edges and OWL.NamedIndividual not in nodes
-    assert (E("tom"), E("jerry"), E("eats"), "object") in edges and (E("tom"), blank, E("eats"), "object") in edges
-    assert (E("jerry"), (E("jerry"), E("legs"), four), E("legs"), "data") in edges
+    assert (E("tom"), E("jerry"), E("eats"), "assertion") in edges and (E("tom"), blank, E("eats"), "assertion") in edges
+    assert (E("jerry"), (E("jerry"), E("legs"), four), E("legs"), "assertion") in edges
 
 
 def test_labeler_shortens_iris_and_shows_literals_as_turtle():

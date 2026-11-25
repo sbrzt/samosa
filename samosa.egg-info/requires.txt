@@ -6,6 +6,3 @@ rdflib>=7.5.0
 
 [api]
 fastapi[standard]>=0.115
-
-[docs]
-oc-lode>=2.1.1

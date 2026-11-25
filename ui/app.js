@@ -47,10 +47,9 @@ const STEPS = {
     { id: "retest", cmd: "merge", project: true, title: "Re-test current model", does: "Rebuilds the current model from the merged iterations and re-tests each of them.",
       writes: "project/results.json" },
     { id: "check", cmd: "check", project: true, title: "Check consistency", does: "Checks the current TBox and ABox for consistency with HermiT (OWL 2 DL)." },
-    { id: "docs", cmd: "docs", project: true, title: "Write documentation (LODE, local)", does: "Builds HTML documentation of the current TBox with LODE 2.0 on this machine.",
+    { id: "docs", cmd: "docs", project: true, title: "Write documentation",
+      does: "Builds HTML documentation of the current TBox by uploading project/tbox.ttl to the LODE 2.0 web service (lode.opencitations.net).",
       writes: "project/docs/" },
-    { id: "docs-online", cmd: "docs", project: true, online: true, title: "Write documentation (LODE online)",
-      does: "Same, but uploads project/tbox.ttl to lode.opencitations.net.", writes: "project/docs/" },
     { id: "milestones", cmd: "restore", project: true, title: "List milestones",
       does: "Lists the saved states of the project. Restore one from the command line with: samosa restore <name>." },
   ],
@@ -157,7 +156,6 @@ async function run(step) {
   const key = `${scopeOf(step)}/${step.id}`, scope = scopeOf(step);
   const params = step.project ? {} : { iteration: current };
   if (step.refactored) params.refactored = true;
-  if (step.online) params.online = true;
   setRunning(true);
   outputs.set(key, { running: true });
   paint(step);

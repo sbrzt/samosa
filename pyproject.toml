@@ -16,9 +16,6 @@ dependencies = [
 api = [
     "fastapi[standard]>=0.115",
 ]
-docs = [
-    "oc-lode>=2.1.1",
-]
 
 [project.scripts]
 samosa = "main:main"

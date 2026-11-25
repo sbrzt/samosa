@@ -50,18 +50,16 @@
 <!-- n3&#45;&gt;n0 -->
 <g id="edge4" class="edge">
 <title>n3&#45;&gt;n0</title>
-<path fill="none" stroke="#000080" d="M393.32,-136.99C347.2,-156.01 220.38,-208.32 172.4,-228.11"/>
-<ellipse fill="#000080" stroke="#000080" cx="397.26" cy="-135.36" rx="4" ry="4"/>
-<polygon fill="#000080" stroke="#000080" points="170.84,-224.96 162.93,-232.01 173.51,-231.44 170.84,-224.96"/>
-<text text-anchor="middle" x="174.36" y="-187.75" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000080">datacite:hasRelationObject</text>
+<path fill="none" stroke="#000000" d="M400.95,-133.84C363.29,-149.37 223.34,-207.1 172.39,-228.11"/>
+<polygon fill="#000000" stroke="#000000" points="170.84,-224.96 162.93,-232.01 173.51,-231.44 170.84,-224.96"/>
+<text text-anchor="middle" x="178.17" y="-186.18" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000000">datacite:hasRelationObject</text>
 </g>
 <!-- n3&#45;&gt;n2 -->
 <g id="edge5" class="edge">
 <title>n3&#45;&gt;n2</title>
-<path fill="none" stroke="#000080" d="M427.39,-136.98C472.55,-155.68 595.27,-206.48 642.1,-225.87"/>
-<ellipse fill="#000080" stroke="#000080" cx="423.59" cy="-135.41" rx="4" ry="4"/>
-<polygon fill="#000080" stroke="#000080" points="640.78,-229.12 651.36,-229.71 643.46,-222.65 640.78,-229.12"/>
-<text text-anchor="middle" x="421.75" y="-186.63" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000080">datacite:hasRelationSubject</text>
+<path fill="none" stroke="#000000" d="M419.9,-133.88C456.98,-149.23 592.37,-205.28 642.11,-225.88"/>
+<polygon fill="#000000" stroke="#000000" points="640.78,-229.12 651.36,-229.71 643.46,-222.65 640.78,-229.12"/>
+<text text-anchor="middle" x="418" y="-185.08" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000000">datacite:hasRelationSubject</text>
 </g>
 <!-- n4 -->
 <g id="node5" class="node">
@@ -72,10 +70,9 @@
 <!-- n3&#45;&gt;n4 -->
 <g id="edge3" class="edge">
 <title>n3&#45;&gt;n4</title>
-<path fill="none" stroke="#000080" d="M410.66,-111.57C410.97,-89.67 411.48,-53.19 411.81,-30.43"/>
-<ellipse fill="#000080" stroke="#000080" cx="410.6" cy="-115.72" rx="4" ry="4"/>
-<polygon fill="#000080" stroke="#000080" points="415.31,-30.25 411.95,-20.2 408.31,-30.15 415.31,-30.25"/>
-<text text-anchor="middle" x="262.23" y="-76.2" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000080">datacite:hasRelationCharacterization</text>
+<path fill="none" stroke="#000000" d="M410.54,-119.72C410.82,-99.98 411.44,-56.29 411.81,-30.39"/>
+<polygon fill="#000000" stroke="#000000" points="415.31,-30.25 411.95,-20.2 408.31,-30.15 415.31,-30.25"/>
+<text text-anchor="middle" x="262.17" y="-80.26" font-family="Helvetica,sans-Serif" font-size="16.00" fill="#000000">datacite:hasRelationCharacterization</text>
 </g>
 <!-- n5 -->
 <g id="node6" class="node">

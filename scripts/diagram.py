@@ -19,7 +19,7 @@ for prefix, uri in (("", NS["g"]), ("y", NS["y"]), ("yed", "http://www.yworks.co
 
 NODE_PROTO = {"class": "Class", "datatype": "Datatype", "individual": "instance", "literal": '"value"^^datatype'}
 EDGE_PROTO = {"object": "objectProperty", "data": "dataProperty", "subclass": "predicate", "type": "predicate",
-              "object-use": "objectProperty", "data-use": "dataProperty"}
+              "object-use": "objectProperty", "data-use": "dataProperty", "assertion": "predicate"}
 URL = "d4"  # GraphML key of a node's url: what the node stands for (see `key`), to keep its position across redraws
 FORMATS = ("png", "svg", "pdf")  # exports written next to the GraphML file
 
@@ -82,7 +82,7 @@ def extract_abox(abox):
         `"class"` (`owl:NamedIndividual` is left out). Each literal value is its
         own node of kind `"literal"`, keyed by the `(subject, property, value)`
         triple, so equal values of different assertions are drawn apart.
-        Edges have kind `"type"`, `"object"` or `"data"`.
+        Edges have kind `"type"` or `"assertion"`, both drawn as black arrows.
     """
     nodes, edges = {}, []
     for s, p, o in sorted(abox):
@@ -94,10 +94,10 @@ def extract_abox(abox):
             edges.append((s, o, "rdf:type", "type"))
         elif isinstance(o, Literal):
             nodes[(s, p, o)] = "literal"
-            edges.append((s, (s, p, o), p, "data"))
+            edges.append((s, (s, p, o), p, "assertion"))
         else:
             nodes.setdefault(o, "individual")
-            edges.append((s, o, p, "object"))
+            edges.append((s, o, p, "assertion"))
     return nodes, edges
 
 

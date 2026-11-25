@@ -31,7 +31,7 @@ Each iteration lives under `iterations/<NN>-<name>/requirements.yaml` and declar
 | `samosa rename <old> <new>`     | replace a term in every iteration (collapse duplicates), re-align, re-merge |
 | `samosa check`                  | consistency test (HermiT via owlready2) on project/ |
 | `samosa restore [<milestone>]`  | list the milestones, or restore the project to one |
-| `samosa docs [--online]`        | HTML documentation of project/tbox.ttl with LODE 2.0, into project/docs/ |
+| `samosa docs`                   | HTML documentation of project/tbox.ttl with LODE 2.0, into project/docs/ |
 
 `align` also fills the refactored TBox: for each aligned term it fetches the term's vocabulary (content negotiation on the prefix namespace, cached as `vocabularies/<prefix>.ttl`) and copies every triple describing the term (blank nodes followed). Every namespace used by the refactored TBox/ABox but missing from `prefixes.yaml` is appended to it. The prefix name comes from, in order: bindings in the loaded vocabularies/rdflib, the namespace's own RDF (fetched), prefix.cc, or the namespace IRI itself. If a namespace does not serve RDF, drop the vocabulary's Turtle file into `vocabularies/<prefix>.ttl` by hand.
 
@@ -172,10 +172,7 @@ After a serious failure, go back to a milestone: `restore` lists them, `restore 
 
 `merge` writes the metadata in `ontology.yaml` (`iri`, `version`, `version_iri`, `title`, `description`, `creators`, `license`; empty fields are left out) as the `owl:Ontology` header of `project/tbox.ttl`. It also adds `rdfs:isDefinedBy <iri>` to every local term. Labels and comments come from the glossary.
 
-`docs` turns `project/tbox.ttl` into a static HTML site in `project/docs/` (open `project/docs/index.html`) with [LODE 2.0](https://lode.opencitations.net/), replacing the folder's previous content:
-
-- by default with the local [`oc-lode`](https://pypi.org/project/oc-lode/) package: `uv sync --extra docs`;
-- with `--online`, by uploading `project/tbox.ttl` to the LODE 2.0 web service (`POST https://lode.opencitations.net/build`). Nothing needs to be installed, but the ontology leaves your machine.
+`docs` turns `project/tbox.ttl` into a static HTML site in `project/docs/` (open `project/docs/index.html`) with [LODE 2.0](https://lode.opencitations.net/), replacing the folder's previous content. It uploads `project/tbox.ttl` to the LODE 2.0 web service (`POST https://lode.opencitations.net/build`): nothing needs to be installed, but the ontology leaves your machine.
 
 ## Tests
 
@@ -183,14 +180,13 @@ After a serious failure, go back to a milestone: `restore` lists them, `restore 
 uv run pytest
 ```
 
-The suite in `tests/` runs every command in a temporary project, with the network blocked (LODE, Ollama, prefix.cc and vocabulary downloads are faked). The test that builds real documentation runs only if `oc-lode` is installed (`uv sync --extra docs`), and the API tests only if FastAPI is (`uv sync --extra api`).
+The suite in `tests/` runs every command in a temporary project, with the network blocked (LODE, Ollama, prefix.cc and vocabulary downloads are faked). The API tests run only if FastAPI is installed (`uv sync --extra api`).
 
 ## Setup
 
 ```
 uv sync
 uv tool install -e .   # puts `samosa` on PATH (run it from the project folder)
-uv sync --extra docs   # optional, for `docs` without --online (oc-lode)
 # optional, for draft-abox: install Ollama (https://ollama.com), then
 ollama pull qwen3:4b
 ```
